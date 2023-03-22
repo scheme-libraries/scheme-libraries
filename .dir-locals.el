@@ -46,6 +46,7 @@
 	     ("(\\(increment!\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(list-case\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(match\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(with-syntax\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(loop\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(rec\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(syntax-case\\)\\>" 1 font-lock-keyword-face))))))))
