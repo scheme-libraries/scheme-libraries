@@ -29,9 +29,12 @@
 	  (put 'with-syntax 'scheme-indent-function 1)
 	  (font-lock-add-keywords
 	   nil
-	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
+	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\|define-language\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
+	     ("(\\(extends\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(entry\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(terminals\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(fields\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(protocol\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(sealed\\)\\>" 1 font-lock-keyword-face)
