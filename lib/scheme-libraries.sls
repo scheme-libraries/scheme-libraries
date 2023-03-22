@@ -4,6 +4,7 @@
 
 (library (scheme-libraries)
   (export
+    define-auxiliary-syntax
     define/who
     define-syntax/who
     define-values
@@ -11,6 +12,7 @@
     make-thread-parameter
     with-implicit)
   (import
+    (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries define-values)
     (scheme-libraries parameters)
