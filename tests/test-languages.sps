@@ -33,9 +33,10 @@
     (define-language L1
       (extends Lsrc)
       (terminals
-        (+ (symbol (x))))
+        (+ (symbol (y))))
       (Expr (e)
-            x))
+        (+ y)
+        (- x)))
 
     (display (language->datum L1)) (newline)
 
