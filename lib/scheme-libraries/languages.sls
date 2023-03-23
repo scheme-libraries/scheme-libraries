@@ -11,7 +11,8 @@
     extends
     maybe
     terminals
-    language->datum)
+    language->datum
+    with-output-language)
   (import
     (rnrs)
     (scheme-libraries)
@@ -28,6 +29,7 @@
 
   (define language->datum-key)
   (define extend-language-key)
+  (define with-output-language-key)
 
   (define-syntax/who define-language
     (lambda (x)
@@ -220,11 +222,14 @@
                           [entry entry]
                           [terminals terminals]
                           [nonterminals nonterminals]
-                          [(definition ...) definition*])
+                          [(definition ...) definition*]
+                          [productions productions])
               #'(begin
                   definition ...
                   (define-syntax language-name
-                    (make-language-transformer #'language-name #'entry #'terminals #'nonterminals)))))))
+                    (make-language-transformer #'language-name #'entry #'terminals #'nonterminals #'in-context-at))
+                  (define-syntax in-context-at
+                    (make-in-context-at-transformer #'productions)))))))
       (syntax-case x ()
         [(_ stx language-name (base-terminal ...) (base-nonterminal ...)
             entry-clause terminals-clause (nonterminal-clause ...))
@@ -243,9 +248,11 @@
            (generate-language-definition stx #'language-name #'entry-clause terminals nonterminals))])))
 
   (define make-language-transformer
-    (lambda (who entry terminals nonterminals)
+    (lambda (who entry terminals nonterminals in-context-at)
       (lambda (x)
-        (syntax-case x (extend-language-key language->datum-key)
+        (syntax-case x (extend-language-key
+                        language->datum-key
+                        with-output-language-key)
           [(_ extend-language-key stx language-name entry-clause terminals-clause nonterminal-clauses)
            (with-syntax ([terminals terminals]
                          [nonterminals nonterminals])
@@ -260,7 +267,38 @@
                   (entry entry-name)
                   (terminals terminal-clause ...)
                   nonterminal-clause ...))]
+          [(_ with-output-language-key k e ...)
+           (with-syntax ([in-context-at in-context-at])
+             (with-implicit (k in-context)
+               #'(let-syntax ([in-context
+                               (lambda (x)
+                                 (define who 'in-context)
+                                 (syntax-case x ()
+                                   [(key nonterminal-name expr (... ...))
+                                    #'(in-context-at key nonterminal-name expr (... ...))]
+                                   [_ (syntax-violation who "invalid syntax" x)]))])
+                   e ...)))]
           [_ (syntax-violation who "invalid use of language name" x)]))))
+
+  (define make-in-context-at-transformer
+    (lambda (productions)
+      (lambda (x)
+        (display productions (current-error-port)) (newline (current-error-port))
+        (syntax-case x ()
+          [(_ k nonterminal-name e ...)
+           (with-syntax ([productions productions])
+             (with-implicit (k quasiquote)
+               (display #'(nonterminal-name e ...) (current-error-port)) (newline (current-error-port))
+               #'(let-syntax ([quasiquote (make-quasiquote-transformer #'quasiquote #'nonterminal-name #'productions)])
+                   e ...)))]))))
+
+  (define make-quasiquote-transformer
+    (lambda (qq nonterminal-name productions)
+      (define  who 'quasiquote)
+      (lambda (x)
+        (syntax-case x ()
+          ;; FIXME
+          [_ (syntax-violation who "invalid syntax" x)]))))
 
   (define-syntax/who language->datum
     (lambda (x)
@@ -268,4 +306,17 @@
         [(_ language-name)
          (identifier? #'language-name)
          #'(language-name language->datum-key)]
-        [_ (syntax-violation who "invalid syntax" x)]))))
+        [_ (syntax-violation who "invalid syntax" x)])))
+
+  (define-syntax/who with-output-language
+    (lambda (x)
+      (syntax-case x ()
+        [(k lang-name e ...)
+         (identifier? #'lang-name)
+         #'(lang-name with-output-language-key k e ...)]
+        [(k (lang-name nonterminal-name) e ...)
+         (for-all identifier? #'(lang-name nonterminal-name))
+         (with-implicit (k in-context)
+           #'(lang-name with-output-language-key k (in-context e ...)))])))
+
+  )

@@ -45,6 +45,8 @@
       (Stmt ()
         (- x)))
 
+    (with-output-language L1 (in-context Expr `3))
+
     (language->datum L1)))
 
 (test-end "languages")
