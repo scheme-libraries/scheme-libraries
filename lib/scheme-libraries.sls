@@ -10,12 +10,14 @@
     define-values
     make-parameter
     make-thread-parameter
+    symbolic-identifier=?
     with-implicit)
   (import
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries define-values)
     (scheme-libraries parameters)
+    (scheme-libraries helpers)
     (scheme-libraries thread-parameters)
     (scheme-libraries with-implicit))
 
