@@ -7,7 +7,8 @@
     parse-terminals-clause
     parse-nonterminal-clauses
     parse-extended-terminals-clause
-    parse-extended-nonterminal-clauses)
+    parse-extended-nonterminal-clauses
+    parse-entry-clause)
   (import
     (rnrs)
     (scheme-libraries))
@@ -204,6 +205,18 @@
                          (f cl* plus minus))))))]
             [_ (syntax-violation who "invalid extended nonterminal clause" stx cl)])))
       (fold-left parse-extended-nonterminal-clause nonterminals cl*)))
+
+  (define parse-entry-clause
+    (lambda (stx nonterminals cl)
+      (syntax-case cl ()
+        [(_ nonterminal-name)
+         (identifier? #'nonterminal-name)
+         #'nonterminal-name]
+        [#f
+         (syntax-case nonterminals ()
+           [((nonterminal-name . _) . _)
+            #'nonterminal-name])]
+        [_ (syntax-violation who "invalid entry clause" stx cl)])))
 
   (define production-clause?
     (lambda (cl)

@@ -87,22 +87,60 @@
   (define-syntax define-extended-language
     (lambda (x)
       (define who 'define-language)
+      (define-record-type meta-variable-binding
+        (nongenerative) (opaque #f))
+      (define-record-type meta-variable-terminal-binding
+        (nongenerative) (parent meta-variable-binding) (sealed #t)
+        (fields terminal-name))
+      (define-record-type meta-variable-nonterminal-binding
+        (nongenerative) (parent meta-variable-binding) (sealed #t)
+        (fields nonterminal-name))
       (define generate-language-definition
         (lambda (stx language-name entry-clause terminals nonterminals)
-          (define parse-entry-clause
-            (lambda (cl)
-              (syntax-case cl ()
-                [(_ nonterminal-name)
-                 (identifier? #'nonterminal-name)
-                 #'nonterminal-name]
-                [#f
-                 (syntax-case nonterminals ()
-                   [((nonterminal-name . _) . _)
-                    #'nonterminal-name])]
-                [_ (syntax-violation who "invalid entry clause" stx cl)])))
+          (define meta-variables (make-eq-hashtable))
+          (define collect-terminal-meta-variables!
+            (lambda ()
+              (for-each
+               (lambda (terminal)
+                 (syntax-case terminal ()
+                   [(terminal-name (meta-var ...))
+                    (for-each
+                     (lambda (meta-var)
+                       (hashtable-update!
+                        meta-variables
+                        (syntax->datum meta-var)
+                        (lambda (val)
+                          (when val
+                            (syntax-violation who "duplicate meta-variable" stx meta-var))
+                          (make-meta-variable-terminal-binding #'terminal-name))
+                        #f))
+                     #'(meta-var ...))]
+                   [_ (assert  #f)]))
+               terminals)))
+          (define collect-nonterminal-meta-variables!
+            (lambda ()
+              (for-each
+               (lambda (nonterminal)
+                 (syntax-case nonterminal ()
+                   [(nonterminal-name (meta-var ...) . cls)
+                    (for-each
+                     (lambda (meta-var)
+                       (hashtable-update!
+                        meta-variables
+                        (syntax->datum meta-var)
+                        (lambda (val)
+                          (when val
+                            (syntax-violation who "duplicate meta-variable" stx meta-var))
+                          (make-meta-variable-nonterminal-binding #'nonterminal-name))
+                        #f))
+                     #'(meta-var ...))]
+                   [_ (assert #f)]))
+               nonterminals)))
           (when (null? nonterminals)
             (syntax-violation who "missing nonterminal clause" stx))
-          (let ([entry (parse-entry-clause entry-clause)])
+          (let ([entry (parse-entry-clause stx nonterminals entry-clause)])
+            (collect-terminal-meta-variables!)
+            (collect-nonterminal-meta-variables!)
             (with-syntax ([language-name language-name]
                           [entry entry]
                           [terminals terminals]
