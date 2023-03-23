@@ -140,6 +140,7 @@
                      #'(meta-var ...))]
                    [_ (assert #f)]))
                nonterminals)))
+          ;; TODO: Maybe rename production.
           (define parse-production
             (lambda (cl)
               (syntax-case cl ()
@@ -168,28 +169,62 @@
                       [else (assert #f)]))]
                   [else
                    (list (list) #'(keyword id))])]
-                [_ (syntax-violation who "invalid production clause" cl)])))
+                [_ (syntax-violation who "invalid production clause" stx cl)])))
           (define parse-productions
-            (lambda (nonterminal)
-              (syntax-case nonterminal ()
-                [(nonterminal-name meta-vars production-clause ...)
-                 (map parse-production #'(production-clause ...))]
-                [_ (assert #f)])))
+            (lambda (parent-name cl*)
+              (let f ([cl* cl*])
+                (if (null? cl*)
+                    (values '() '())
+                    (let-values ([(definition* production*) (f (cdr cl*))])
+                      (define production (parse-production (car cl*)))
+                      (with-syntax ([(record-name constructor-name predicate-name)
+                                     (generate-temporaries #'(record-name constructor-name predicate-name))]
+                                    [parent-name parent-name]
+                                    [((var ...) . _) production])
+                        (with-syntax ([(accessor ...) (generate-temporaries #'(var ...))]
+                                      [production production])
+                          (values
+                           (cons
+                            #'(define-record-type (record-name constructor-name predicate-name)
+                                (nongenerative) (parent parent-name) #;(opaque #t) (sealed #t)
+                                (fields (immutable var accessor) ...))
+                            definition*)
+                           ;; XXX: Are terminals naked or do they fulfill the predicate name?
+                           (cons #'(constructor-name predicate-name (accessor ...) production)
+                                 production*)))))))))
           (define parse-productions*
             (lambda ()
-              (map parse-productions nonterminals)))
+              (let f ([nonterminals nonterminals])
+                (syntax-case nonterminals ()
+                  [() (values '() '())]
+                  [((nonterminal-name meta-vars cl ...) . nonterminals)
+                   (with-syntax ([(record-name constructor-name) (generate-temporaries #'(record-name constructor-name))]
+                                 [predicate-name (construct-name #'nonterminal-name language-name "-" #'nonterminal-name "?")])
+                     (let-values ([(definition1* production1*)
+                                   (f #'nonterminals)]
+                                  [(definition2* production2*)
+                                   (parse-productions #'record-name #'(cl ...))])
+                       (values
+                        (cons #'(define-record-type (record-name constructor-name predicate-name )
+                                  (nongenerative) #;(opaque #t))
+                              (append definition1* definition2*))
+                        (append production1* production2*))))]
+                  [_ (assert #f)]))))
           (when (null? nonterminals)
             (syntax-violation who "missing nonterminal clause" stx))
           (collect-terminal-meta-variables!)
           (collect-nonterminal-meta-variables!)
-          (let ([productions (parse-productions*)]
-                [entry (parse-entry-clause stx nonterminals entry-clause)])
+          (let-values ([(definition* productions) (parse-productions*)]
+                       [(entry) (parse-entry-clause stx nonterminals entry-clause)])
             (with-syntax ([language-name language-name]
                           [entry entry]
                           [terminals terminals]
-                          [nonterminals nonterminals])
-              #'(define-syntax language-name
-                  (make-language-transformer #'language-name #'entry #'terminals #'nonterminals))))))
+                          [nonterminals nonterminals]
+                          [(definition ...) definition*])
+              #'(begin
+                  definition ...
+                  (define-syntax language-name
+                    (make-language-transformer #'language-name #'entry #'terminals #'nonterminals)))))))
       (syntax-case x ()
         [(_ stx language-name (base-terminal ...) (base-nonterminal ...)
             entry-clause terminals-clause (nonterminal-clause ...))
