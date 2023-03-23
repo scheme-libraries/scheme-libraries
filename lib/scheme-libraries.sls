@@ -4,10 +4,12 @@
 
 (library (scheme-libraries)
   (export
+    construct-name
     define-auxiliary-syntax
     define/who
     define-syntax/who
     define-values
+    ellipsis?
     make-parameter
     make-thread-parameter
     symbolic-identifier=?
