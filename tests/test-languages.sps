@@ -23,7 +23,10 @@
         x))
     (language->datum Lsrc)))
 
-(test-equal '(define-language Lsrc (entry Expr) (terminals (symbol (x))) (Expr (e) x))
+(test-equal '(define-language L1
+               (entry Expr)
+               (terminals (symbol (x)) (symbol (y)))
+               (Expr (e f) y))
   (let ()
     (define-language Lsrc
       (terminals
@@ -34,12 +37,9 @@
       (extends Lsrc)
       (terminals
         (+ (symbol (y))))
-      (Expr (e)
+      (Expr (e f)
         (+ y)
         (- x)))
-
-    (display (language->datum L1)) (newline)
-
     (language->datum L1)))
 
 (test-end "languages")

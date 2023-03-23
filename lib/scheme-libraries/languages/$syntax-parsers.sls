@@ -5,7 +5,7 @@
 (library (scheme-libraries languages $syntax-parsers)
   (export
     parse-terminals-clause
-    parse-nonterminal-clause
+    parse-nonterminal-clauses
     parse-extended-terminals-clause
     parse-extended-nonterminal-clauses)
   (import
@@ -40,7 +40,7 @@
     (lambda (stx cl*)
       (define nonterminals (make-eq-hashtable))
       (define parse-nonterminal-clause
-        (lambda (stx cl)
+        (lambda (cl)
           (syntax-case cl ()
             [(nonterminal-name (meta-var ...) production-clause1 production-clause2 ...)
              (and (for-all identifier? #'(nonterminal-name meta-var ...))
@@ -52,7 +52,7 @@
                 (syntax->datum #'nonterminal-name)
                 (lambda (val)
                   (when val
-                    (syntax-violation who "duplicate nonterminal clause" stx cl))
+                    (syntax-violation who "duplicate nonterminal" stx #'nonterminal-name))
                   #t)
                 #f)
                #'(nonterminal-name (meta-var ...) production-clause1 production-clause2 ...))]
@@ -109,15 +109,11 @@
     (lambda (t1 t2)
       (equal? (syntax->datum t1) (syntax->datum t2))))
 
-  (define nonterminal=?
-    (lambda (n1 n2)
-      (equal? (syntax->datum n1) (syntax->datum n2))))
-
   (define parse-extended-nonterminal-clauses
     (lambda (stx nonterminals cl*)
 
       (define remove-production-clauses
-        (lambda (minus production-clauses)
+        (lambda (minus base-production-clause*)
           (fold-left
            (lambda (base-production-clauses production-clause)
              (let f ([base-production-clauses base-production-clauses])
@@ -129,7 +125,7 @@
                 [else
                  (cons (car base-production-clauses)
                        (f (cdr base-production-clauses)))])))
-           #'(base-production-clauses ...) minus)))
+           base-production-clause* minus)))
 
       (define remove-nonterminals
         (lambda (name meta-var* minus nonterminals)
@@ -137,7 +133,7 @@
             (syntax-case nonterminals ()
               [()
                (syntax-violation who "nonterminal not defined in base language" stx name)]
-              [(((base-nonterminal-name (base-meta-var ...)) base-production-clause ...) . nonterminals)
+              [((base-nonterminal-name (base-meta-var ...) base-production-clause ...) . nonterminals)
                (symbolic-identifier=? name #'base-nonterminal-name)
                (let ([production-clause* (remove-production-clauses minus #'(base-production-clause ...))])
                  (if (null? production-clause*)
@@ -152,7 +148,7 @@
             (syntax-case nonterminals ()
               [()
                (list (cons* name meta-var* plus))]
-              [(((base-nonterminal-name (base-meta-var ...)) base-production-clause ...) . nonterminals)
+              [((base-nonterminal-name (base-meta-var ...)) base-production-clause ... . nonterminals)
                (symbolic-identifier=? name #'base-nonterminal-name)
                (cons (cons* name meta-var* (append #'(base-production-clause ...) plus))
                      #'nonterminals)]
@@ -160,7 +156,7 @@
                (cons #'nonterminal (f #'nonterminals))]))))
 
       (define parse-extended-production-clause
-        (lambda (nonterminal cl plus minus)
+        (lambda (cl plus minus)
           (syntax-case cl (+ -)
             [(+ production-clause ...)
              ;; TODO: Where to syntax-check production clause?
@@ -186,7 +182,7 @@
                 (syntax->datum nonterminal-name)
                 (lambda (val)
                   (when val
-                    (syntax-violation who "duplicate extended nonterminal clause" stx cl))
+                    (syntax-violation who "duplicate extended nonterminal" stx nonterminal-name))
                   #t)
                 #f)
                (let f ([cl* #'(extended-production-clause ...)]
@@ -202,10 +198,17 @@
                        (let-values ([(plus minus)
                                      (parse-extended-production-clause cl plus minus)])
                          (f cl* plus minus))))))]
-            [_ (syntax-violation who "invalid extended nonterminal clause")])))
+            [_ (syntax-violation who "invalid extended nonterminal clause" stx cl)])))
       (fold-left parse-extended-nonterminal-clause nonterminals cl*)))
 
   (define production-clause?
     (lambda (cl)
       ;; FIXME
-      #t)))
+      #t))
+
+  (define production-clause=?
+    (lambda (cl1 cl2)
+      ;; FIXME: Handle bound maybe and ....
+      (equal? (syntax->datum cl1) (syntax->datum cl2))))
+
+)
