@@ -123,9 +123,12 @@
             entry-clause terminals-clause (nonterminal-clause ...))
          (let ([stx #'stx])
            (define terminals (parse-terminals-clause stx #'terminals-clause))
-           (define nonterminals (map (lambda (cl)
-                                       (parse-nonterminal-clause stx cl))
-                                     #'(nonterminal-clause ...)))
+           (define nonterminals (parse-nonterminal-clauses stx #'(nonterminal-clause ...))
+
+
+             (map (lambda (cl)
+                    (parse-nonterminal-clause stx cl))
+                  #'(nonterminal-clause ...)))
            (generate-language-definition stx #'language-name #'entry-clause terminals nonterminals))])))
 
   (define make-language-transformer
