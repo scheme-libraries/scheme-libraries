@@ -22,6 +22,10 @@
   (define-auxiliary-syntax maybe)
   (define-auxiliary-syntax terminals)
 
+  (define keyword)
+  (define nonterminal)
+  (define terminal)
+
   (define language->datum-key)
   (define extend-language-key)
 
@@ -91,10 +95,10 @@
         (nongenerative) (opaque #f))
       (define-record-type meta-variable-terminal-binding
         (nongenerative) (parent meta-variable-binding) (sealed #t)
-        (fields terminal-name))
+        (fields name))
       (define-record-type meta-variable-nonterminal-binding
         (nongenerative) (parent meta-variable-binding) (sealed #t)
-        (fields nonterminal-name))
+        (fields name))
       (define generate-language-definition
         (lambda (stx language-name entry-clause terminals nonterminals)
           (define meta-variables (make-eq-hashtable))
@@ -136,11 +140,50 @@
                      #'(meta-var ...))]
                    [_ (assert #f)]))
                nonterminals)))
+          (define parse-production
+            (lambda (cl)
+              (syntax-case cl ()
+                ;; TODO: Handle <ellipsis>
+                [(cl1 . cl2)
+                 (with-syntax ([((var1 ...) ast1) (parse-production #'cl1)]
+                               [((var2 ...) ast2) (parse-production #'cl2)])
+                   #'((var1 ... var2 ...) (cons ast1 ast2)))]
+                [()
+                 #'(() (list))]
+                [id
+                 (identifier? #'id)
+                 (cond
+                  [(hashtable-ref meta-variables (identifier->meta-variable #'id) #f)
+                   =>
+                   (lambda (binding)
+                     (cond
+                      [(meta-variable-terminal-binding? binding)
+                       (with-syntax ([meta-var (meta-variable-terminal-binding-name binding)])
+                         (with-syntax ([(var) (generate-temporaries #'(meta-var))])
+                           #'((var) (terminal meta-var))))]
+                      [(meta-variable-nonterminal-binding? binding)
+                       (with-syntax ([meta-var (meta-variable-nonterminal-binding-name binding)])
+                         (with-syntax ([(var) (generate-temporaries #'(meta-var))])
+                           #'((var) (nonterminal meta-var))))]
+                      [else (assert #f)]))]
+                  [else
+                   (list (list) #'(keyword id))])]
+                [_ (syntax-violation who "invalid production clause" cl)])))
+          (define parse-productions
+            (lambda (nonterminal)
+              (syntax-case nonterminal ()
+                [(nonterminal-name meta-vars production-clause ...)
+                 (map parse-production #'(production-clause ...))]
+                [_ (assert #f)])))
+          (define parse-productions*
+            (lambda ()
+              (map parse-productions nonterminals)))
           (when (null? nonterminals)
             (syntax-violation who "missing nonterminal clause" stx))
-          (let ([entry (parse-entry-clause stx nonterminals entry-clause)])
-            (collect-terminal-meta-variables!)
-            (collect-nonterminal-meta-variables!)
+          (collect-terminal-meta-variables!)
+          (collect-nonterminal-meta-variables!)
+          (let ([productions (parse-productions*)]
+                [entry (parse-entry-clause stx nonterminals entry-clause)])
             (with-syntax ([language-name language-name]
                           [entry entry]
                           [terminals terminals]

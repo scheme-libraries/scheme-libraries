@@ -8,7 +8,8 @@
     parse-nonterminal-clauses
     parse-extended-terminals-clause
     parse-extended-nonterminal-clauses
-    parse-entry-clause)
+    parse-entry-clause
+    identifier->meta-variable)
   (import
     (rnrs)
     (scheme-libraries))
@@ -227,5 +228,19 @@
     (lambda (cl1 cl2)
       ;; FIXME: Handle bound maybe and ....
       (equal? (syntax->datum cl1) (syntax->datum cl2))))
+
+  (define identifier->meta-variable
+    (lambda (id)
+      (define s (symbol->string (syntax->datum id)))
+      (do ([n (- (string-length s) 1)
+              (- n 1)])
+          ((or (negative? n)
+               (not (memv (string-ref s n) '(#\* #\^ #\?))))
+           (do ([n n
+                   (- n 1)])
+               ((or (negative? n)
+                    (not (char-numeric? (string-ref s n))))
+                (string->symbol (substring s 0 (+ n 1)))))))))
+
 
 )
