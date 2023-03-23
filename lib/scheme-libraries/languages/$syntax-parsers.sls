@@ -147,7 +147,9 @@
           (let f ([nonterminals nonterminals])
             (syntax-case nonterminals ()
               [()
-               (list (cons* name meta-var* plus))]
+               (if (null? plus)
+                   (list)
+                   (list (cons* name meta-var* plus)))]
               [((base-nonterminal-name (base-meta-var ...)) base-production-clause ... . nonterminals)
                (symbolic-identifier=? name #'base-nonterminal-name)
                (cons (cons* name meta-var* (append #'(base-production-clause ...) plus))
@@ -170,7 +172,9 @@
               plus
               (append (reverse #'(production-clause ...)) minus))]
             [_ (syntax-violation who "invalid extended production clause" stx cl)])))
+
       (define nonterminal-names (make-eq-hashtable))
+
       (define parse-extended-nonterminal-clause
         (lambda (nonterminals cl)
           (syntax-case cl ()

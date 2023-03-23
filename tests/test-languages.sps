@@ -32,6 +32,8 @@
       (terminals
         (symbol (x)))
       (Expr (e)
+        x)
+      (Stmt (s)
         x))
     (define-language L1
       (extends Lsrc)
@@ -39,7 +41,10 @@
         (+ (symbol (y))))
       (Expr (e f)
         (+ y)
+        (- x))
+      (Stmt ()
         (- x)))
+
     (language->datum L1)))
 
 (test-end "languages")
