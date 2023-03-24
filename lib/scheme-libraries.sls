@@ -38,7 +38,10 @@
     exact-integer?
     exact-positive-integer?
     exact-nonnegative-integer?
-    nonnegative-fixnum?)
+    nonnegative-fixnum?
+
+    ;; (scheme-libraries record-writer)
+    record-writer)
   (import
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-auxiliary-syntax)
@@ -47,10 +50,9 @@
     (scheme-libraries exceptions)
     (scheme-libraries parameters)
     (scheme-libraries helpers)
+    (scheme-libraries lists)
     (scheme-libraries match)
     (scheme-libraries numbers)
-    (scheme-libraries lists)
+    (scheme-libraries record-writer)
     (scheme-libraries thread-parameters)
-    (scheme-libraries with-implicit))
-
-  )
+    (scheme-libraries with-implicit)))
