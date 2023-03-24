@@ -23,6 +23,8 @@ An /atom/ is a datum value that is neither a pair nor a vector.
 The ~(scheme-libraries basic-format-strings)~ library is a drop-in replacement for
 the ~(srfi :28)~ library of SRFI 28.
 
+** Counters
+
 ** Displayed conditions
 
 ** Exceptions
@@ -32,6 +34,8 @@ the ~(srfi :28)~ library of SRFI 28.
 ** Implicit identifiers
 
 ** Implicit who
+
+** Impure programming
 
 ** Lists
 

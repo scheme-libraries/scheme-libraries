@@ -21,6 +21,9 @@
     ;; (scheme-libraries basic-format-strings)
     format
 
+    ;; (scheme-libraries counters)
+    make-counter
+
     ;; (scheme-libraries display-condition)
     display-condition
 
@@ -35,6 +38,10 @@
     &format
     make-format-condition
     format-condition?
+
+    ;; (scheme-libraries impure)
+    increment!
+    prepend!
 
     ;; (scheme-libraries lists)
     length+
@@ -145,6 +152,7 @@
   (import
     (scheme-libraries atom)
     (scheme-libraries basic-format-strings)
+    (scheme-libraries counters)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries define-values)
@@ -153,6 +161,7 @@
     (scheme-libraries filenames)
     (scheme-libraries format-conditions)
     (scheme-libraries helpers)
+    (scheme-libraries impure)
     (scheme-libraries lists)
     (scheme-libraries match)
     (scheme-libraries numbers)
