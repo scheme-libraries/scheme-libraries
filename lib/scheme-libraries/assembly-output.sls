@@ -8,6 +8,7 @@
     emit-comment)
   (import
     (rnrs)
+    (scheme-libraries assembly-output $target)
     (scheme-libraries define-who)
     (scheme-libraries thread-parameters))
 
@@ -35,10 +36,11 @@
               (f (+ i 1) ch))))
         (put-string port " */\n"))))
 
-  (define/who emit-label
-    (lambda (?)
-      (let ([port (assembly-output-port)])
-        ...)))
+  (define emit-label
+    (lambda (label)
+      (put-string (assembly-output-port)
+                  (format "~s:~%"
+                          (label->string label)))))
 
   (define/who assembly-output-port
     (make-thread-parameter
