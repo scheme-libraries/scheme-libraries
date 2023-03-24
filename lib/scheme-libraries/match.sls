@@ -12,12 +12,11 @@
     guard)
   (import
     (rnrs)
+    (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries helpers)
     (scheme-libraries lists))
 
-  (define-syntax ->
-    (lambda (stx)
-      (syntax-violation '-> "invalid use of auxiliary syntax" stx)))
+  (define-auxiliary-syntax ->)
 
   (define split
     (lambda (obj k succ fail)
