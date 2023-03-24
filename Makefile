@@ -13,4 +13,4 @@ check:
 repl:
 	$(scheme)
 
-.PHONY: all check
+.PHONY: all check repl
