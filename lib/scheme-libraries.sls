@@ -39,6 +39,9 @@
     make-format-condition
     format-condition?
 
+    ;; (scheme-libraries gensyms)
+    gensym
+
     ;; (scheme-libraries impure)
     increment!
     prepend!
@@ -160,6 +163,7 @@
     (scheme-libraries exceptions)
     (scheme-libraries filenames)
     (scheme-libraries format-conditions)
+    (scheme-libraries gensyms)
     (scheme-libraries helpers)
     (scheme-libraries impure)
     (scheme-libraries lists)
