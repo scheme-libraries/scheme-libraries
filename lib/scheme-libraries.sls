@@ -15,6 +15,9 @@
     symbolic-identifier=?
     with-implicit
 
+    ;; (scheme-libraries basic-format-strings)
+    format
+
     ;; (scheme-libraries lists)
     length+
     split-at
@@ -33,11 +36,13 @@
     exact-nonnegative-integer?
     nonnegative-fixnum?)
   (import
+    (scheme-libraries basic-format-strings)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries define-values)
     (scheme-libraries parameters)
     (scheme-libraries helpers)
+    (scheme-libraries match)
     (scheme-libraries numbers)
     (scheme-libraries lists)
     (scheme-libraries thread-parameters)
