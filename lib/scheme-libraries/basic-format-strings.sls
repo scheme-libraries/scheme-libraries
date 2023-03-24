@@ -13,7 +13,7 @@
     (lambda (cntl . arg*)
       (define not-enough-values-available-violation
         (lambda ()
-          (assertion-violation who "not enough values available for control string" cntl)))
+          (assertion-violation who "too few arguments for control string" cntl)))
       (unless (string? cntl)
         (assertion-violation who "invalid control string argument" cntl))
       (let-values ([(p extract) (open-string-output-port)])
@@ -49,5 +49,5 @@
                 (f i arg*)]))]
            [else
             (unless (null? arg*)
-              (apply assertion-violation who "too many values available for control string" cntl arg*))
+              (assertion-violation who "too many arguments for control string" cntl))
             (extract)]))))))

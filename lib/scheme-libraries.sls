@@ -18,6 +18,10 @@
     ;; (scheme-libraries basic-format-strings)
     format
 
+    ;; (scheme-libraries exceptions)
+    assertion-violationf
+    errorf
+
     ;; (scheme-libraries lists)
     length+
     split-at
@@ -40,6 +44,7 @@
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries define-values)
+    (scheme-libraries exceptions)
     (scheme-libraries parameters)
     (scheme-libraries helpers)
     (scheme-libraries match)
