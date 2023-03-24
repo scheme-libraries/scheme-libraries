@@ -53,6 +53,18 @@ the ~(srfi :244)~ library of SRFI 244.
 
 ** Reading
 
+*** Annotated datums
+
+*** Lexemes
+
+*** Positions
+
+*** Readers
+
+*** Source locations
+
+*** Tokenizers
+
 ** Record writing
 
 ** Testing
