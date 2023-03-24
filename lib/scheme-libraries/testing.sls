@@ -72,7 +72,9 @@
     (rnrs)
     (rnrs eval)
     (rnrs mutable-pairs)
+    (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
+    (scheme-libraries display-condition)
     (scheme-libraries thread-parameters))
 
   (define-record-type test-runner
@@ -169,7 +171,25 @@
                (put-string output-port " -")])
             (put-string output-port " ")
             (put-string output-port test-name)))
-        (put-char output-port #\newline))))
+        (put-char output-port #\newline)
+        (case kind
+          [(fail xfail)
+           (let ([actual-error (test-result-ref runner 'actual-error #f)])
+             (when actual-error
+               (display-condition actual-error (current-error-port))
+               (newline (current-error-port)))
+             (put-string output-port "  ---\n")
+             (for-each
+              (lambda (e)
+                (let ([key (car e)])
+                  (unless (or (memv key '(result-kind))
+                              (and actual-error
+                                   (symbol=? key 'actual-value)))
+                    (put-string output-port
+                                (format "  ~s: ~s\n"
+                                        key (cdr e))))))
+              (test-result-alist runner))
+             (put-string output-port "  ...\n"))]))))
 
   (define/who test-on-group-begin-simple
     (lambda (runner suite-name count)
@@ -463,7 +483,8 @@
     (syntax-rules ()
       [(test-evaluate-with-catch test-expression)
        (guard (condition (else
-			  (test-result-set! (test-runner-current) 'actual-error
+			  (test-result-set! (test-runner-current)
+                                            'actual-error
 					    condition)
 			  #f))
          test-expression)]))

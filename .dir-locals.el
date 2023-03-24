@@ -25,6 +25,7 @@
           (put 'protocol 'scheme-indent-function 0)
 	  (put 'guard 'scheme-indent-function 1)
 	  (put 'rec 'scheme-indent-function 1)
+          (put 'test-datums 'scheme-indent-function 'defun)
 	  (put 'with-implicit 'scheme-indent-function 1)
 	  (put 'with-syntax 'scheme-indent-function 1)
 	  (font-lock-add-keywords
@@ -45,4 +46,5 @@
 	     ("(\\(match\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(loop\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(rec\\)\\>" 1 font-lock-keyword-face)
-	     ("(\\(syntax-case\\)\\>" 1 font-lock-keyword-face))))))))
+	     ("(\\(syntax-case\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(test-datums\\)\\>" 1 font-lock-keyword-face))))))))
