@@ -1,0 +1,62 @@
+#+TITLE: Scheme Libraries
+#+AUTHOR: Marc Nieper-Wißkirchen
+#+EMAIL: marc@nieper-wisskirchen.de
+
+#+LANGUAGE: en
+
+* Libraries
+
+** Atoms
+
+The ~(scheme-libraries atoms)~ library exports a predicate testing for
+atomicity.
+
+An /atom/ is a datum value that is neither a pair nor a vector.
+
+- Function: atom? object ::
+  Return ~#t~ if the argument is an atom; otherwise return ~#f~.
+
+** Auxiliary syntax
+
+** Basic format strings
+
+The ~(scheme-libraries basic-format-strings)~ library is a drop-in replacement for
+the ~(srfi :28)~ library of SRFI 28.
+
+** Displayed conditions
+
+** Exceptions
+
+** Format conditions
+
+** Implicit identifiers
+
+** Implicit who
+
+** Lists
+
+** Match
+
+The ~(scheme-libraries match)~ library is a drop-in replacement for
+the ~(srfi :241 match)~ library of SRFI 241.
+
+** Multiple-value definitions
+
+The ~(scheme-libraries define-values)~ library is a drop-in replacement for
+the ~(srfi :244)~ library of SRFI 244.
+
+** Numbers
+
+** Parameters
+
+** Ports
+
+** Reading
+
+** Record writing
+
+** Testing
+
+** Thread parameters
+
+** Unicode

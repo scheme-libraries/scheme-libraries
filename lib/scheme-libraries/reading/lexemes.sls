@@ -31,7 +31,7 @@
     dot?)
   (import
     (rnrs)
-    (scheme-libraries atom)
+    (scheme-libraries atoms)
     (scheme-libraries reading positions))
 
   (define-record-type lexeme

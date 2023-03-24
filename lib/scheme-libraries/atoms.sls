@@ -2,7 +2,7 @@
 
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (scheme-libraries atom)
+(library (scheme-libraries atoms)
   (export
     atom?)
   (import

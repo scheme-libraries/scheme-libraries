@@ -21,7 +21,7 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
-    (scheme-libraries atom)
+    (scheme-libraries atoms)
     (scheme-libraries numbers)
     (scheme-libraries reading source-locations))
 
