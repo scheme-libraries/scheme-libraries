@@ -7,19 +7,20 @@
     assembly-output-port
     emit
     emit-comment
-    emit-directive
     emit-label)
   (import
     (rnrs)
     (scheme-libraries assembly-output $target)
+    (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
+    (scheme-libraries ports)
     (scheme-libraries thread-parameters))
 
   (define/who emit-comment
     (lambda (comment)
       (unless (string? comment)
-        (assertion-violation who "invalid comment argument" port))
-      (let ([n (string-length n)]
+        (assertion-violation who "invalid comment argument" comment))
+      (let ([n (string-length comment)]
             [port (assembly-output-port)])
         (put-string port "/* ")
         (let f ([i 0] [prev-ch #f])
@@ -45,7 +46,7 @@
                   (format "~s:~%"
                           (label->string label)))))
 
-  (define emit
+  (define/who emit
     (lambda (key . arg*)
       (unless (symbol? key)
         (assertion-violation who "invalid key argument" key))
