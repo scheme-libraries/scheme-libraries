@@ -1,4 +1,4 @@
-# Makefile for nathan.
+# Makefile for scheme libraries.
 # Copyright © Marc Nieper-Wißkirchen (2023).
 
 scheme = scheme --libdirs lib
