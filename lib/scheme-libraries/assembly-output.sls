@@ -5,7 +5,10 @@
 (library (scheme-libraries assembly-output)
   (export
     assembly-output-port
-    emit-comment)
+    emit
+    emit-comment
+    emit-directive
+    emit-label)
   (import
     (rnrs)
     (scheme-libraries assembly-output $target)
@@ -41,6 +44,20 @@
       (put-string (assembly-output-port)
                   (format "~s:~%"
                           (label->string label)))))
+
+  (define emit
+    (lambda (key . arg*)
+      (unless (symbol? key)
+        (assertion-violation who "invalid key argument" key))
+      (let ([port (assembly-output-port)])
+        (put-string port "\t")
+        (put-string port (symbol->string key))
+        (do ([sep "\t" ", "]
+             [arg* arg* (cdr arg*)])
+            ((null? arg*))
+          (put-string port sep)
+          (put-string port (operand->string (car arg*))))
+        (put-string port "\n"))))
 
   (define/who assembly-output-port
     (make-thread-parameter
