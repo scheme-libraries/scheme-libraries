@@ -203,6 +203,15 @@
                (match 'whatever
                  [else #f])))
 
+(test-equal 'a (match '(a a)
+                 [(,x ,x) x]
+                 [(,x ,y) #f]))
+
+(test-equal 'c (match '(a b)
+                 [(,x ,x) x]
+                 [(,x ,y) 'c]))
+
+
 (test-end "match")
 
 ;; Local Variables:

@@ -34,7 +34,7 @@
       (define who 'match)
       (define-record-type pattern-variable
         (nongenerative) (sealed #t) (opaque #t)
-        (fields identifier expression level))
+        (fields (mutable identifier) expression level))
       (define-record-type cata-binding
         (nongenerative) (sealed #t) (opaque #t)
         (fields proc-expr value-id* identifier))
@@ -45,20 +45,23 @@
 	      (assert (identifier? id))
 	      (symbol-hash (syntax->datum id))))
 	  (make-hashtable identifier-hash bound-identifier=?)))
-      (define check-pattern-variables
+      (define pattern-variable-guards
 	(lambda (pvars)
 	  (define ht (make-identifier-hashtable))
-	  (for-each
-	   (lambda (pvar)
-	     (define id (pattern-variable-identifier pvar))
-	     (hashtable-update! ht
-				id
-				(lambda (val)
-				  (when val
-				    (syntax-violation who "repeated pattern variable in match clause" stx id))
-				  #t)
-				#f))
-	   pvars)))
+          (fold-left
+           (lambda (guards pvar)
+             (let ([id (pattern-variable-identifier pvar)])
+               (cond
+                [(hashtable-ref ht id #f)
+                 (with-syntax ([id id]
+                               [(new-id) (generate-temporaries #'(id))]
+                               [guards guards])
+                   (pattern-variable-identifier-set! pvar #'new-id)
+                   #'((equal? id new-id) . guards))]
+                [else
+                 (hashtable-set! ht id #t)
+                 guards])))
+           '() pvars)))
       (define check-cata-bindings
 	(lambda (catas)
 	  (define ht (make-identifier-hashtable))
@@ -66,13 +69,14 @@
 	   (lambda (cata)
 	     (for-each
 	      (lambda (id)
-		(hashtable-update! ht
-				   id
-				   (lambda (val)
-				     (when val
-				       (syntax-violation who "repeated cata variable in match clause" stx id))
-				     #t)
-				   #f))
+		(hashtable-update!
+                 ht
+		 id
+		 (lambda (val)
+		   (when val
+		     (syntax-violation who "repeated cata variable in match clause" stx id))
+		   #t)
+		 #f))
 	      (cata-binding-value-id* cata)))
 	   catas)))
       (define parse-clause
@@ -236,7 +240,7 @@
                          (parse-clause cl)]
                         [(matcher pvars catas)
                          (gen-matcher #'e pat)])
-	    (check-pattern-variables pvars)
+            (define pvar-guards (pattern-variable-guards pvars))
 	    (check-cata-bindings catas)
             (with-syntax ([quasiquote
                            (datum->syntax k 'quasiquote)]
@@ -267,7 +271,7 @@
                 (matcher
                  (lambda ()
                    #`(let ([x u] ...)
-                       (if #,guard-expr
+                       (if (and #,@pvar-guards #,guard-expr)
                            (let ([tmp f] ...)
                              (let-values ([(y ...) e] ...)
                                (let-syntax ([quasiquote quasiquote-transformer])
