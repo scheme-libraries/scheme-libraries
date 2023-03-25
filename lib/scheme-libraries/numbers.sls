@@ -7,7 +7,9 @@
     exact-integer?
     exact-positive-integer?
     exact-nonnegative-integer?
-    nonnegative-fixnum?)
+    nonnegative-fixnum?
+    int32?
+    int64?)
   (import
     (rnrs))
 
@@ -29,4 +31,14 @@
   (define nonnegative-fixnum?
     (lambda (obj)
       (and (fixnum? obj)
-           (not (fxnegative? obj))))))
+           (not (fxnegative? obj)))))
+
+  (define int32?
+    (lambda (x)
+      (and (exact-integer? x)
+           (<= (- (expt 2 31)) x (- (expt 2 31) 1)))))
+
+  (define int64?
+    (lambda (x)
+      (and (exact-integer? x)
+           (<= (- (expt 2 63)) x (- (expt 2 63) 1))))))

@@ -63,6 +63,8 @@
     exact-positive-integer?
     exact-nonnegative-integer?
     nonnegative-fixnum?
+    int32?
+    int64?
 
     ;; (scheme-libraries ports)
     textual-input-port?
