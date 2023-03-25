@@ -15,7 +15,7 @@
     symbolic-identifier=?
     with-implicit
 
-    ;; (scheme-libraries atom)
+    ;; (scheme-libraries atoms)
     atom?
 
     ;; (scheme-libraries basic-format-strings)
@@ -41,6 +41,8 @@
 
     ;; (scheme-libraries gensyms)
     gensym
+    gensym-suffix
+    gensym-marker
 
     ;; (scheme-libraries impure)
     increment!
@@ -155,7 +157,7 @@
     unicode-scalar-value?
     unicode-width)
   (import
-    (scheme-libraries atom)
+    (scheme-libraries atoms)
     (scheme-libraries basic-format-strings)
     (scheme-libraries counters)
     (scheme-libraries define-auxiliary-syntax)
