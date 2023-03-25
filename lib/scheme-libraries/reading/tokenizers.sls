@@ -96,6 +96,13 @@
               (if (delimiter? (peek-char))
                   (list->string (reverse ch*))
                   (f (cons (read-char) ch*))))))
+        (define read-number-prefix
+          (lambda (initial)
+            (cond
+             [(char=? (peek-char) #\#)
+              (read-char)
+              (string-append initial (string #\# (read-char)))]
+             [else initial])))
         (define read-inline-hex-escape
           (lambda ()
             (let ([start (position)])
@@ -171,7 +178,10 @@
                 (make-atomic val start (position))))
             (define get-number
               (lambda (initial)
-                (let ([s (read-delimited-lexeme initial)])
+                (let* ([initial (if (char=? (string-ref initial 0) #\#)
+                                    (read-number-prefix initial)
+                                    initial)]
+                       [s (read-delimited-lexeme initial)])
                   (cond
                    [(string->number s)
                     =>
