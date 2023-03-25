@@ -41,6 +41,7 @@
 
     ;; (scheme-libraries gensyms)
     gensym
+    gensym-prefix
     gensym-suffix
     gensym-marker
 

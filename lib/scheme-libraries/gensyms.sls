@@ -5,6 +5,7 @@
 (library (scheme-libraries gensyms)
   (export
     gensym
+    gensym-prefix
     gensym-suffix
     gensym-marker)
   (import
@@ -27,6 +28,18 @@
       [(prefix) (gensym prefix "")]
       [() (gensym "g")]))
 
+  (define/who gensym-prefix
+    (lambda (sym)
+      (unless (symbol? sym)
+        (assertion-violation who "invalid gensym argument" sym))
+      (let* ([s (symbol->string sym)]
+             [n (string-length s)])
+        (let f ([k (fx- n 1)])
+          (if (and (fx>=? k 0)
+                   (char<=? #\0 (string-ref s k) #\9))
+              (f (fx- k 1))
+              (substring s 0 (fx+ k 1)))))))
+
   (define/who gensym-suffix
     (lambda (sym)
       (unless (symbol? sym)
@@ -46,10 +59,7 @@
       (let* ([s (symbol->string sym)]
              [n (string-length s)])
         (let f ([k (fx- n 1)])
-          (when (fxnegative? k)
-            (assertion-violation who "gensym has no marker" sym))
-          (if (char<=? #\0 (string-ref s k) #\9)
-              (f (fx- k 1))
-              (string-ref s k))))))
-
-  )
+          (and (not (fxnegative? k))
+               (if (char<=? #\0 (string-ref s k) #\9)
+                   (f (fx- k 1))
+                   (string-ref s k))))))))
