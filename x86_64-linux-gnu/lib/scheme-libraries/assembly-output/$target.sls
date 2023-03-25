@@ -6,6 +6,7 @@
   (export
     label->string
     operand->string
+    target->string
     emit-func-directive
     emit-epilog)
   (import
@@ -31,14 +32,9 @@
         [(disp ,reg 0)
          (guard (register? reg))
          (format "(%~a)" reg)]
-        [(disp rip ,label)
-         (guard (label? label))
-         (format "~a(%rip)" (label->string label))]
         [(disp ,reg ,disp)
          (guard (register? reg) (number? disp))
          (format "~a(%~a)" disp reg)]
-        [(indirect ,[s])
-         (format "*~a" s)]
         [,imm
          (guard (number? imm))
          (format "$~a" imm)]
@@ -46,7 +42,28 @@
          (guard (register? reg))
          (format "%~a" reg)]
         [,label
-         (guard (symbol? label))
+         (guard (label? label))
+         (format "~a(%rip)" (label->string label))]
+        [,_
+         (assertion-violation who "invalid operand argument" op)])))
+
+  (define/who target->string
+    (lambda (op)
+      (match op
+        [(disp ,reg 0)
+         (guard (register? reg))
+         (format "*(%~a)" reg)]
+        [(disp ,reg ,disp)
+         (guard (register? reg) (number? disp))
+         (format "*~a(%~a)" disp reg)]
+        [,imm
+         (guard (number? imm))
+         (format "~a" imm)]
+        [,reg
+         (guard (register? reg))
+         (format "*%~a" reg)]
+        [,label
+         (guard (label? label))
          (label->string label)]
         [,_
          (assertion-violation who "invalid operand argument" op)])))

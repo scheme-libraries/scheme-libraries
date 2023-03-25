@@ -6,6 +6,7 @@
   (export
     assembly-output-port
     emit
+    emit-jump
     emit-comment
     emit-label
     emit-epilog
@@ -68,5 +69,15 @@
           (put-string port sep)
           (put-string port (operand->string (car arg*))))
         (put-string port "\n"))))
+
+  (define/who emit-jump
+    (lambda (key target)
+      (unless (symbol? key)
+        (assertion-violation who "invalid key argument" key))
+      (put-string (assembly-output-port)
+                  (format "\t~a\t~a~%"
+                          key
+                          (target->string target)))))
+
 
   )
