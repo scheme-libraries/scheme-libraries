@@ -5,9 +5,11 @@
 (library (scheme-libraries assembly-output $target)
   (export
     label->string
-    operand->string)
+    operand->string
+    emit-epilog)
   (import
     (rnrs)
+    (scheme-libraries assembly-output $common)
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries gensyms))
@@ -31,4 +33,10 @@
        [(symbol? label) (format ".L~s" (gensym-suffix label))]
        [else
         (assertion-violation who "invalid label argument" label)])))
+
+  (define emit-epilog
+    (lambda ()
+      (put-string (assembly-output-port)
+                  "\t.section\t.note.GNU-stack, \"\", @progbits\n")))
+
   )

@@ -7,13 +7,14 @@
     assembly-output-port
     emit
     emit-comment
-    emit-label)
+    emit-label
+    emit-epilog)
   (import
     (rnrs)
+    (scheme-libraries assembly-output $common)
     (scheme-libraries assembly-output $target)
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
-    (scheme-libraries ports)
     (scheme-libraries thread-parameters))
 
   (define/who emit-comment
@@ -60,11 +61,4 @@
           (put-string port (operand->string (car arg*))))
         (put-string port "\n"))))
 
-  (define/who assembly-output-port
-    (make-thread-parameter
-     (current-output-port)
-     (lambda (port)
-       (unless (textual-output-port? port)
-         (assertion-violation who "invalid port argument" port))
-       port)))
   )
