@@ -8,7 +8,9 @@
     emit
     emit-comment
     emit-label
-    emit-epilog)
+    emit-epilog
+    emit-globl-directive
+    emit-func-directive)
   (import
     (rnrs)
     (scheme-libraries assembly-output $common)
@@ -44,7 +46,13 @@
   (define emit-label
     (lambda (label)
       (put-string (assembly-output-port)
-                  (format "~s:~%"
+                  (format "~a:~%"
+                          (label->string label)))))
+
+  (define emit-globl-directive
+    (lambda (label)
+      (put-string (assembly-output-port)
+                  (format "\t.globl\t~a~%"
                           (label->string label)))))
 
   (define/who emit

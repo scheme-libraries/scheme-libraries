@@ -6,6 +6,7 @@
   (export
     label->string
     operand->string
+    emit-func-directive
     emit-epilog)
   (import
     (rnrs)
@@ -21,8 +22,8 @@
   (define/who operand->string
     (lambda (op)
       (cond
-       [(number? op) (format "$~s" op)]
-       [(register? op) (format "%~s" op)]
+       [(number? op) (format "$~a" op)]
+       [(register? op) (format "%~a" op)]
        [else
         (assertion-violation who "invalid operand argument" op)])))
 
@@ -34,9 +35,13 @@
        [else
         (assertion-violation who "invalid label argument" label)])))
 
+  (define emit-func-directive
+    (lambda (label)
+      (put-string (assembly-output-port)
+                  (format "\t.type\t~a, @function~%"
+                          (label->string label)))))
+
   (define emit-epilog
     (lambda ()
       (put-string (assembly-output-port)
-                  "\t.section\t.note.GNU-stack, \"\", @progbits\n")))
-
-  )
+                  "\t.section\t.note.GNU-stack, \"\", @progbits\n"))))
