@@ -113,6 +113,17 @@
             [(pat1 ell pat2 ... . pat3)
              (ellipsis? #'ell)
              (gen-ellipsis-matcher expr #'pat1 #'(pat2 ...) #'pat3)]
+            [#(x ...)
+             (with-syntax ([(e) (generate-temporaries '(e))])
+               (let-values ([(mat pvars catas)
+                             (gen-matcher #'e #'(x ...))])
+                 (values
+                  (lambda (k)
+                    #`(if (vector? #,expr)
+                          (let ([e (vector->list #,expr)])
+                            #,(mat k))
+                          (fail)))
+                  pvars catas)))]
             [,x
              (identifier? #'x)
              (values

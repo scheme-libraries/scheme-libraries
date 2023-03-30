@@ -211,6 +211,8 @@
                  [(,x ,x) x]
                  [(,x ,y) 'c]))
 
+(test-equal '(a b c) (match '#(a b c)
+                       [#(,x* ...) `(,x* ...)]))
 
 (test-end "match")
 
