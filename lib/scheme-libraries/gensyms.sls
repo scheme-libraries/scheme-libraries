@@ -5,15 +5,17 @@
 (library (scheme-libraries gensyms)
   (export
     gensym
+    gensym-count
     gensym-prefix
     gensym-suffix
     gensym-marker)
   (import
     (rnrs)
     (scheme-libraries counters)
+    (scheme-libraries define-values)
     (scheme-libraries define-who))
 
-  (define counter
+  (define-values (counter gensym-count)
     (make-counter))
 
   (define/who gensym
@@ -50,7 +52,9 @@
           (if (and (fx>=? k 0)
                    (char<=? #\0 (string-ref s k) #\9))
               (f (fx- k 1))
-              (substring s (fx+ k 1) n))))))
+              (let ([k (fx+ k 1)])
+                (and (fx<? k n)
+                     (substring s k n))))))))
 
   (define/who gensym-marker
     (lambda (sym)
