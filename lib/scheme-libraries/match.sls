@@ -110,6 +110,9 @@
                   (k))
                 (list (make-pattern-variable #'x expr 0))
                 (list (make-cata-binding #'loop #'(y ...) #'x))))]
+            [(pat1 ell pat2 ... . ,e)
+             (ellipsis? #'ell)
+             (gen-ellipsis-matcher expr #'pat1 #'(pat2 ...) #',e)]
             [(pat1 ell pat2 ... . pat3)
              (ellipsis? #'ell)
              (gen-ellipsis-matcher expr #'pat1 #'(pat2 ...) #'pat3)]
