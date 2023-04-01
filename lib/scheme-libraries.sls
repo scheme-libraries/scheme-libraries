@@ -41,9 +41,18 @@
 
     ;; (scheme-libraries gensyms)
     gensym
-    gensym-prefix
     gensym-suffix
     gensym-marker
+
+    ;; (scheme-libraries heaps)
+    make-heap
+    heap?
+    heap-ordering-predicate
+    heap-push!
+    heap-pop!
+    heap-top
+    heap-size
+    heap-empty?
 
     ;; (scheme-libraries impure)
     increment!
@@ -169,6 +178,7 @@
     (scheme-libraries filenames)
     (scheme-libraries format-conditions)
     (scheme-libraries gensyms)
+    (scheme-libraries heaps)
     (scheme-libraries helpers)
     (scheme-libraries impure)
     (scheme-libraries lists)

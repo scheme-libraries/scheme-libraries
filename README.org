@@ -31,7 +31,7 @@ the ~(srfi :28)~ library of SRFI 28.
 
 ** Format conditions
 
-** Gensyms
+** Heaps
 
 ** Implicit identifiers
 
