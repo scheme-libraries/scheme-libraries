@@ -35,6 +35,14 @@
         [(disp ,reg ,disp)
          (guard (register? reg) (number? disp))
          (format "~a(%~a)" disp reg)]
+        [(disp ,label 0)
+         (guard (label? label))
+         (format "~a(%rip)" (label->string label))]
+        [(disp ,label ,disp)
+         (guard (label? label) (number? disp))
+         (format "~a+~a(%rip)" disp (label->string label))]
+        [(abs ,disp)
+         (format "~a" disp)]
         [,imm
          (guard (number? imm))
          (format "$~a" imm)]
@@ -56,6 +64,12 @@
         [(disp ,reg ,disp)
          (guard (register? reg) (number? disp))
          (format "*~a(%~a)" disp reg)]
+        [(disp ,label 0)
+         (guard (label? label))
+         (format "~a(%rip)" (label->string label))]
+        [(disp ,label ,disp)
+         (guard (label? label) (number? disp))
+         (format "~a+~a(%rip)" disp (label->string label))]
         [,imm
          (guard (number? imm))
          (format "~a" imm)]
