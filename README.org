@@ -31,6 +31,8 @@ the ~(srfi :28)~ library of SRFI 28.
 
 ** Format conditions
 
+** Heaps
+
 ** Implicit identifiers
 
 ** Implicit who
