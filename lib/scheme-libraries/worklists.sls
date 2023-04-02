@@ -10,7 +10,8 @@
     make-worklist
     worklist=?
     worklist?
-    worklist
+    worklist-empty?
+    worklist-first
     worklist-add!
     worklist-for-each
     element-remove!)
@@ -32,11 +33,19 @@
 
   (define-record-type worklist
     (nongenerative worklist-e15f08f9-239e-441d-b1fc-14a6fc7b3345)
-    (fields (mutable first))
+    (sealed #t)
+    (fields
+      (mutable first))
     (protocol
      (lambda (new)
        (lambda ()
          (new #f)))))
+
+  (define/who worklist-empty?
+    (lambda (wl)
+      (unless (worklist? wl)
+        (assertion-violation who "invalid worklist argument" wl))
+      (not (worklist-first wl))))
 
   (define/who worklist=?
     (lambda (wl1 wl2)

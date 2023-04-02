@@ -44,6 +44,19 @@
     gensym-suffix
     gensym-marker
 
+    ;; (scheme-libraries graph-coloring)
+    color?
+    node
+    node?
+    node=?
+    node-color
+    make-graph
+    graph?
+    graph-colored?
+    graph-add-interference!
+    graph-add-move!
+    color-graph!
+
     ;; (scheme-libraries heaps)
     make-heap
     heap?
@@ -173,7 +186,8 @@
     element-worklist
     make-worklist
     worklist?
-    worklist
+    worklist-empty?
+    worklist-first
     worklist-add!
     worklist-for-each
     element-remove!)
@@ -189,6 +203,7 @@
     (scheme-libraries filenames)
     (scheme-libraries format-conditions)
     (scheme-libraries gensyms)
+    (scheme-libraries graph-coloring)
     (scheme-libraries heaps)
     (scheme-libraries helpers)
     (scheme-libraries impure)

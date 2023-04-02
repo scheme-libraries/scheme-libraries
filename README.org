@@ -31,6 +31,11 @@ the ~(srfi :28)~ library of SRFI 28.
 
 ** Format conditions
 
+** Graph coloring
+
+The ~(scheme-libraries graph-coloring)~ library exports procedure for
+coloring graphs, suitable in register allocators.
+
 ** Heaps
 
 ** Implicit identifiers
