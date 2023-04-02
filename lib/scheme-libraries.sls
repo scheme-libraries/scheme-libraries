@@ -165,7 +165,18 @@
 
     ;; (scheme-libraries unicode)
     unicode-scalar-value?
-    unicode-width)
+    unicode-width
+
+    ;; (scheme-libraries worklists)
+    element
+    element?
+    element-worklist
+    make-worklist
+    worklist?
+    worklist
+    worklist-add!
+    worklist-for-each
+    element-remove!)
   (import
     (scheme-libraries atoms)
     (scheme-libraries basic-format-strings)
@@ -195,4 +206,5 @@
     (scheme-libraries parameters)
     (scheme-libraries thread-parameters)
     (scheme-libraries unicode)
-    (scheme-libraries with-implicit)))
+    (scheme-libraries with-implicit)
+    (scheme-libraries worklists)))
