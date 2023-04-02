@@ -41,6 +41,7 @@
 	     ("(\\(parent\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(mutable\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(immutable\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(assert\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(increment!\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(list-case\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(match\\)\\>" 1 font-lock-keyword-face)

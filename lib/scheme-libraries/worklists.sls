@@ -14,7 +14,8 @@
     worklist-first
     worklist-add!
     worklist-for-each
-    element-remove!)
+    element-remove!
+    worklist->list)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -82,26 +83,36 @@
             (proc element)
             (f next))))))
 
+  (define/who worklist->list
+    (lambda (worklist)
+      (unless (worklist? worklist)
+        (assertion-violation who "invalid worklist argument" worklist))
+      (let f ([element (worklist-first worklist)])
+        (if element
+            (cons element (f (element-next element)))
+            '()))))
+
   (define/who element-remove!
     (lambda (element)
-      (define worklist
-        (begin
-          (unless (element? element)
-            (assertion-violation who "not an element" element))
-          (element-worklist element)))
-      (cond
-       [(not worklist) (values)]
-       [(element-previous element)
-        => (lambda (previous)
-             (element-next-set! previous (element-next element))
-             (element-previous-set! element #f))]
-       [(element-next element)
-        => (lambda (next)
-             (worklist-first-set! worklist next)
-             (element-previous-set! next #f))]
-       [else
-        (worklist-first-set! worklist #f)])
-      (element-next-set! element #f)))
+      (unless (element? element)
+        (assertion-violation who "not an element" element))
+      (let ([worklist (element-worklist element)])
+        (element-worklist-set! element #f)
+        (cond [(not worklist) (values)]
+              [(element-previous element)
+               => (lambda (previous)
+                    (let ([next (element-next element)])
+                      (element-next-set! previous next)
+                      (element-previous-set! element #f)
+                      (when next
+                        (element-previous-set! next previous))))]
+              [(element-next element)
+               => (lambda (next)
+                    (worklist-first-set! worklist next)
+                    (element-previous-set! next #f))]
+              [else
+               (worklist-first-set! worklist #f)])
+        (element-next-set! element #f))))
 
   ;; Record writers
 

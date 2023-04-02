@@ -4,6 +4,7 @@
 
 (import
   (rnrs)
+  (scheme-libraries define-values)
   (scheme-libraries testing)
   (scheme-libraries record-writer)
   (scheme-libraries graph-coloring))
@@ -44,10 +45,15 @@
 
 (test-assert (not (graph-colored? graph)))
 
-(color-graph! graph 1)
+(define-values (colored spilled)
+  (color-graph! graph 1))
+
 (test-assert (graph-colored? graph))
 
 (test-eqv #f (node-color tmp-x))
 (test-eqv 0 (node-color tmp-y))
+
+(test-equal (list tmp-y) colored)
+(test-equal (list tmp-x) spilled)
 
 (test-end "graph coloring")

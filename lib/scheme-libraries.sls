@@ -190,7 +190,8 @@
     worklist-first
     worklist-add!
     worklist-for-each
-    element-remove!)
+    element-remove!
+    worklist->list)
   (import
     (scheme-libraries atoms)
     (scheme-libraries basic-format-strings)

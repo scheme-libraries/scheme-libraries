@@ -265,7 +265,8 @@
     (lambda (graph k)
       (unless (graph? graph)
         (assertion-violation who "invalid graph argument" graph))
-      (unless (exact-nonnegative-integer? k)
+      (unless (or (eqv? k -1)
+                  (exact-nonnegative-integer? k))
         (assertion-violation "invalid color count argument" k))
       (when (graph-colored? graph)
         (assertion-violation who "graph already colored" graph))
@@ -273,8 +274,6 @@
 
   (define docolor!
     (lambda (graph k)
-      ;; We may not need all worklists, e.g. the colored-nodes or
-      ;; spilled-nodes.
       (let ([worklist-moves (graph-worklist-moves graph)]
             [simplify-worklist (make-worklist)]
             [freeze-worklist (make-worklist)]
@@ -327,20 +326,23 @@
 
         (define high-degree?
           (lambda (node)
-            (fx>=? (node-degree node) k)))
+            (and (not (fxnegative? k))
+                 (fx>=? (node-degree node) k))))
 
         (define low-degree?
           (lambda (node)
-            (fx<? (node-degree node) k)))
+            (or (fxnegative? k)
+                (fx<? (node-degree node) k))))
 
         (define conservative?
           (lambda (node*)
-            (fx<? (fold-left (lambda (i node)
-                               (if (high-degree? node)
-                                   (fx+ i 1)
-                                   i))
-                             0 node*)
-                  k)))
+            (or (fxnegative? k)
+                (fx<? (fold-left (lambda (i node)
+                                   (if (high-degree? node)
+                                       (fx+ i 1)
+                                       i))
+                                 0 node*)
+                      k))))
 
         (define node-for-each-active-move
           (lambda (proc node)
@@ -507,7 +509,9 @@
                                                (node-color (ref-alias node))
                                                0)
                              ok-colors))
-                       (- (bitwise-arithmetic-shift-left 1 k) 1)
+                       (if (fxnegative? k)
+                           -1
+                           (- (bitwise-arithmetic-shift-left 1 k) 1))
                        (node-adjacency-list node))])
                  (cond
                   [(zero? ok-colors)
@@ -518,7 +522,8 @@
              select-stack)
             (worklist-for-each
              (lambda (node)
-               (node-color-set! node (node-color (ref-alias node))))
+               (node-color-set! node (node-color (ref-alias node)))
+               (worklist-add! colored-nodes node))
              coalesced-nodes)))
 
         (initialize-worklists!)
@@ -536,8 +541,10 @@
            [(not (worklist-empty? spill-worklist))
             (select-spill!)
             (loop!)]))
-        (assign-colors!))
-      (graph-colored?-set! graph #t)))
+        (assign-colors!)
+        (graph-colored?-set! graph #t)
+        (values (worklist->list colored-nodes)
+                (worklist->list spilled-nodes)))))
 
   ;; Record writers
 
