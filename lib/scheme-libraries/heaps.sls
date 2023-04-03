@@ -47,10 +47,6 @@
       (let* ([size (heap-size heap)]
              [elements (heap-elements heap)]
              [capacity (vector-length elements)])
-        (display "Old size: ")
-        (display size)
-        (newline)
-
         (when (fx=? size (vector-length elements))
           (let ([new-elements (make-vector (* 2 capacity))])
             (do ([i 0 (fx+ i 1)])
