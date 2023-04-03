@@ -35,6 +35,10 @@
         [(disp ,reg ,disp)
          (guard (register? reg) (number? disp))
          (format "~a(%~a)" disp reg)]
+        [(index 1 ,index ,base)
+         (format "(%~a,%~a)" base index)]
+        [(index ,scale ,index ,base)
+         (format "(%~a,%~a,%~a)" base index scale)]
         [(disp ,label 0)
          (guard (label? label))
          (format "~a(%rip)" (label->string label))]
