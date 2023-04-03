@@ -116,6 +116,9 @@
 
   (define node-list-union
     (lambda (node-list1 node-list2)
+      (for-each (lambda (node)
+                  (node-seen?-set! node #t))
+                node-list1)
       (let ([nodes
              (fold-left
               (lambda (nodes node)
@@ -127,7 +130,7 @@
               node-list1 node-list2)])
         (for-each (lambda (node)
                     (node-seen?-set! node #f))
-                  node-list2)
+                  nodes)
         nodes)))
 
   ;; Moves
@@ -161,6 +164,9 @@
 
   (define move-list-union
     (lambda (move-list1 move-list2)
+      (for-each (lambda (move)
+                  (move-seen?-set! move #t))
+                move-list1)
       (let ([moves
              (fold-left
               (lambda (moves move)
@@ -172,7 +178,7 @@
               move-list1 move-list2)])
         (for-each (lambda (move)
                     (move-seen?-set! move #f))
-                  move-list2)
+                  moves)
         moves)))
 
   ;; Graphs
@@ -383,37 +389,39 @@
             (let ([deg (node-degree node)])
               (node-degree-decr! node)
               (when (fx=? deg k)
-                (enable-moves! (cons node (node-adjacency-list node)))
-                (worklist-add! (if (move-related? node)
-                                   freeze-worklist
-                                   simplify-worklist)
-                               node)))))
+                (enable-moves! node)
+                (node-for-each-adjacency
+                 (lambda (node)
+                   (enable-moves! node))
+                 node)
+                (unless (precolored? node graph)
+                  (worklist-add! (if (move-related? node)
+                                     freeze-worklist
+                                     simplify-worklist)
+                                 node))))))
 
         (define combine!
           (lambda (u v)
             (worklist-add! coalesced-nodes v)
             (node-alias-set! v u)
             (node-move-list-union! u v)
-            (enable-moves! (list v))
-            (node-for-each-adjacency
+            (enable-moves! v)
+            (for-each
              (lambda (t)
                (graph-add-interference! graph t u)
                (decrement-degree! t))
-             v)
+             (node-adjacency-list v))
             (when (and (high-degree? u)
                        (frozen? u))
               (worklist-add! spill-worklist u)
               (heap-push! spill-heap u))))
 
         (define enable-moves!
-          (lambda (node*)
-            (for-each
-             (lambda (node)
-               (node-for-each-active-move
-                (lambda (move)
-                  (worklist-add! worklist-moves move))
-                node))
-             node*)))
+          (lambda (node)
+            (node-for-each-active-move
+             (lambda (move)
+               (worklist-add! worklist-moves move))
+             node)))
 
         (define freeze-moves!
           (lambda (node)
@@ -426,7 +434,8 @@
                                          x
                                          y))])
                    (worklist-add! frozen-moves move)
-                   (when (and (move-related? v)
+                   (when (and (not (precolored? v graph))
+                              (not (move-related? v))
                               (low-degree? v))
                      (worklist-add! simplify-worklist v)))))
              node)))
@@ -464,7 +473,7 @@
                    [(if (precolored? u graph)
                         (for-all (lambda (t)
                                    (ok? t u))
-                                 (node-adjacency-list u))
+                                 (node-adjacency-list v))
                         (conservative? (node-list-union (node-adjacency-list u)
                                                         (node-adjacency-list v))))
                     (worklist-add! coalesced-moves move)
@@ -478,7 +487,7 @@
             (when (and (not (precolored? node graph))
                        (not (move-related? node))
                        (low-degree? node))
-            (worklist-add! simplify-worklist node))))
+              (worklist-add! simplify-worklist node))))
 
         (define freeze!
           (lambda ()
@@ -526,6 +535,7 @@
                (worklist-add! colored-nodes node))
              coalesced-nodes)))
 
+        ;; docolor!
         (initialize-worklists!)
         (let loop! ()
           (cond
