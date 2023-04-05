@@ -87,3 +87,5 @@ the ~(srfi :244)~ library of SRFI 244.
 ** Worklists
 
 ** Unicode
+
+** The void value

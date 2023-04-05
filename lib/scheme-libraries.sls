@@ -72,6 +72,7 @@
     prepend!
 
     ;; (scheme-libraries lists)
+    make-list
     length+
     split-at
 
@@ -183,6 +184,9 @@
     unicode-scalar-value?
     unicode-width
 
+    ;; (scheme-libraries void)
+    void
+
     ;; (scheme-libraries worklists)
     element
     element?
@@ -226,5 +230,6 @@
     (scheme-libraries thread-parameters)
     (scheme-libraries trees)
     (scheme-libraries unicode)
+    (scheme-libraries void)
     (scheme-libraries with-implicit)
     (scheme-libraries worklists)))

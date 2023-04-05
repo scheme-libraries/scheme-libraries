@@ -4,13 +4,15 @@
 
 (library (scheme-libraries lists)
   (export
+    make-list
     length+
     split-at)
   (import
     (rnrs)
     (scheme-libraries define-who)
     (scheme-libraries exceptions)
-    (scheme-libraries numbers))
+    (scheme-libraries numbers)
+    (scheme-libraries void))
 
   (define length+
     (lambda (x)
@@ -42,4 +44,15 @@
           (let-values ([(ls1 ls2) (f (cdr ls) (fx- k 1))])
             (values (cons (car ls) ls1) ls2))]
          [else
-          (index-out-of-range-violation k)])))))
+          (index-out-of-range-violation k)]))))
+
+  (define/who make-list
+    (case-lambda
+      [(k fill)
+       (unless (nonnegative-fixnum? k)
+         (assertion-violation who "invalid length argument" k))
+       (do [(k k (fx- k 1))
+            (rv '() (cons fill rv))]
+           ((fxzero? k)
+            rv))]
+      [(k) (make-list k (void))])))
