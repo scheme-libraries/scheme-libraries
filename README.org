@@ -25,6 +25,8 @@ the ~(srfi :28)~ library of SRFI 28.
 
 ** Counters
 
+** Debugging tools
+
 ** Displayed conditions
 
 ** Exceptions
