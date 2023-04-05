@@ -176,6 +176,9 @@
     ;; (scheme-libraries record-writer)
     record-writer
 
+    ;; (scheme-libraries trees)
+    tree->list
+
     ;; (scheme-libraries unicode)
     unicode-scalar-value?
     unicode-width
@@ -221,6 +224,7 @@
     (scheme-libraries record-writer)
     (scheme-libraries parameters)
     (scheme-libraries thread-parameters)
+    (scheme-libraries trees)
     (scheme-libraries unicode)
     (scheme-libraries with-implicit)
     (scheme-libraries worklists)))

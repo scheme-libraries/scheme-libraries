@@ -80,6 +80,8 @@ the ~(srfi :244)~ library of SRFI 244.
 
 ** Testing
 
+** Trees
+
 ** Thread parameters
 
 ** Worklists
