@@ -35,6 +35,9 @@
         [(disp ,reg ,disp)
          (guard (register? reg) (number? disp))
          (format "~a(%~a)" disp reg)]
+        [(disp ,reg1 ,reg2)
+         (guard (register? reg1) (register? reg2))
+         (format "(%~a,%~a)" reg1 reg2)]
         [(disp ,reg1 ,reg2 ,disp)
          (guard (register? reg1) (register? reg2) (number? disp))
          (format "~a(%~a,%~a)" disp reg1 reg2)]

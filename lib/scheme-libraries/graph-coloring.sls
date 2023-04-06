@@ -38,7 +38,7 @@
     (nongenerative node-cf91f967-9404-4e76-b3de-39895da2db3d)
     (parent element)
     (fields
-      spill-cost
+      (mutable spill-cost)
       index
       (mutable adjacency-set)
       (mutable adjacency-list)
@@ -405,6 +405,8 @@
             (worklist-add! coalesced-nodes v)
             (node-alias-set! v u)
             (node-move-list-union! u v)
+            (node-spill-cost-set! u (max (node-spill-cost u)
+                                         (node-spill-cost v)))
             (enable-moves! v)
             (for-each
              (lambda (t)
@@ -531,8 +533,9 @@
              select-stack)
             (worklist-for-each
              (lambda (node)
-               (node-color-set! node (node-color (ref-alias node)))
-               (worklist-add! colored-nodes node))
+               (let ([color (node-color (ref-alias node))])
+                 (node-color-set! node color)
+                 (worklist-add! (if color colored-nodes spilled-nodes) node)))
              coalesced-nodes)))
 
         ;; docolor!

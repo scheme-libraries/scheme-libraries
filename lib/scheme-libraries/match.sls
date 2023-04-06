@@ -19,6 +19,11 @@
     (scheme-libraries lists)
     (scheme-libraries with-implicit))
 
+  ;; Changes to SRFI 241
+  ;; - Repeated pattern variables are allowed and compared with equal?
+  ;; - extend-backquote is provided
+  ;; - extended quasiquote is available in guard expressions
+
   (define-auxiliary-syntax ->)
 
   (define split
@@ -285,7 +290,7 @@
                 (matcher
                  (lambda ()
                    #`(let ([x u] ...)
-                       (if (and #,@pvar-guards #,guard-expr)
+                       (if (and #,@pvar-guards (extend-backquote #,k #,guard-expr))
                            (let ([tmp f] ...)
                              (let-values ([(y ...) e] ...)
                                (extend-backquote #,k
