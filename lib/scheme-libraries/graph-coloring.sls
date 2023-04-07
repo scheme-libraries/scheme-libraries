@@ -38,7 +38,7 @@
     (nongenerative node-cf91f967-9404-4e76-b3de-39895da2db3d)
     (parent element)
     (fields
-      (mutable spill-cost)
+      spill-cost
       index
       (mutable adjacency-set)
       (mutable adjacency-list)
@@ -69,7 +69,7 @@
                             color
                             #f
                             #f
-                            #f)])
+                            0.0)])
             (worklist-add! (if color
                                (graph-precolored graph)
                                (graph-initial graph))
@@ -405,8 +405,6 @@
             (worklist-add! coalesced-nodes v)
             (node-alias-set! v u)
             (node-move-list-union! u v)
-            (node-spill-cost-set! u (max (node-spill-cost u)
-                                         (node-spill-cost v)))
             (enable-moves! v)
             (for-each
              (lambda (t)
@@ -460,7 +458,9 @@
               (let ([x (ref-alias (move-use move))]
                     [y (ref-alias (move-def move))])
                 (let-values ([(u v)
-                              (if (precolored? y graph)
+                              (if (or (precolored? y graph)
+                                      (> (node-spill-priority y)
+                                         (node-spill-priority x)))
                                   (values y x)
                                   (values x y))])
                   (cond
@@ -478,12 +478,6 @@
                                  (node-adjacency-list v))
                         (conservative? (node-list-union (node-adjacency-list u)
                                                         (node-adjacency-list v))))
-                    ;; DEBUG
-                    (display "Coalesce: " (current-error-port))
-                    (display u (current-error-port))
-                    (display " " (current-error-port))
-                    (display v (current-error-port))
-                    (newline (current-error-port))
                     (worklist-add! coalesced-moves move)
                     (combine! u v)
                     (add-worklist! u)]
