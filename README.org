@@ -64,6 +64,8 @@ the ~(srfi :244)~ library of SRFI 244.
 
 ** Ports
 
+** Random numbers
+
 ** Reading
 
 *** Annotated datums

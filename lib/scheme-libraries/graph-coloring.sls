@@ -478,6 +478,12 @@
                                  (node-adjacency-list v))
                         (conservative? (node-list-union (node-adjacency-list u)
                                                         (node-adjacency-list v))))
+                    ;; DEBUG
+                    (display "Coalesce: " (current-error-port))
+                    (display u (current-error-port))
+                    (display " " (current-error-port))
+                    (display v (current-error-port))
+                    (newline (current-error-port))
                     (worklist-add! coalesced-moves move)
                     (combine! u v)
                     (add-worklist! u)]

@@ -99,6 +99,10 @@
     textual-input-port?
     textual-output-port?
 
+    ;; (scheme-libraries random-numbers)
+    random
+    random-seed
+
     ;; (scheme-libraries reading annotated-datums)
     annotated-datum?
     annotated-datum-source-location
@@ -223,6 +227,7 @@
     (scheme-libraries match)
     (scheme-libraries numbers)
     (scheme-libraries ports)
+    (scheme-libraries random-numbers)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading lexemes)
     (scheme-libraries reading positions)

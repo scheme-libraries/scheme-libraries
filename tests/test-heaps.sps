@@ -4,6 +4,7 @@
 
 (import (rnrs)
         (scheme-libraries heaps)
+        (scheme-libraries random-numbers)
         (scheme-libraries testing))
 
 (define heapify
@@ -39,5 +40,12 @@
 
 (test-equal '(1 2 3 4 5 6 7 8 9 10)
   (heap->list (heapify < '(5 8 9 1 3 4 10 2 7 6))))
+
+(define x* (do ([n 0 (fx+ n 1)]
+                [x* '() (cons (random 100) x*)])
+               ((fx=? n 100)
+                x*)))
+
+(test-equal (list-sort fx<=? x*) (heap->list (heapify fx<? x*)))
 
 (test-end "heaps")

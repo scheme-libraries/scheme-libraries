@@ -19,6 +19,9 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'make-parameter 'scheme-indent-function 1)
+          (put 'make-thread-parameter 'scheme-indent-function 1)
+          (put 'format 'scheme-indent-function 1)
           (put 'extend-backquote 'scheme-indent-function 1)
           (put 'export 'scheme-indent-function 0)
           (put 'import 'scheme-indent-function 0)
