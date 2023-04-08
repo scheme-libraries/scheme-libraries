@@ -4,6 +4,7 @@
 
 (library (scheme-libraries lists)
   (export
+    iota
     make-list
     length+
     split-at)
@@ -13,6 +14,23 @@
     (scheme-libraries exceptions)
     (scheme-libraries numbers)
     (scheme-libraries void))
+
+  (define/who iota
+    (case-lambda
+      [(count start step)
+       (unless (nonnegative-fixnum? count)
+         (assertion-violation who "invalid count argument" count))
+       (unless (number? start)
+         (assertion-violation who "invalid start argument" start))
+       (unless (number? step)
+         (assertion-violation who "invalid step argument" start))
+       (let f ([count count]
+               [start start])
+         (if (fxzero? count)
+             '()
+             (cons start (f (fx- count 1)
+                            (+ start step)))))]
+      [(count) (iota count 0 1)]))
 
   (define length+
     (lambda (x)

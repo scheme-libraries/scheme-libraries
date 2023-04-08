@@ -75,6 +75,7 @@
     prepend!
 
     ;; (scheme-libraries lists)
+    iota
     make-list
     length+
     split-at
