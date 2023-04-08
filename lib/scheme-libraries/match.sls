@@ -38,13 +38,13 @@
             (fail)))))
 
   (define-syntax/who match
+    (define-record-type pattern-variable
+      (nongenerative) (sealed #t) (opaque #t)
+      (fields (mutable identifier) expression level))
+    (define-record-type cata-binding
+      (nongenerative) (sealed #t) (opaque #t)
+      (fields proc-expr value-id* identifier))
     (lambda (stx)
-      (define-record-type pattern-variable
-        (nongenerative) (sealed #t) (opaque #t)
-        (fields (mutable identifier) expression level))
-      (define-record-type cata-binding
-        (nongenerative) (sealed #t) (opaque #t)
-        (fields proc-expr value-id* identifier))
       (define make-identifier-hashtable
 	(lambda ()
 	  (define identifier-hash
