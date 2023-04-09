@@ -7,12 +7,19 @@
     make-counter)
   (import
     (rnrs)
-    (scheme-libraries impure))
+    (scheme-libraries numbers)
+    (scheme-libraries parameters))
 
   (define make-counter
     (lambda ()
-      (let ([counter 0])
-        (lambda ()
-          (let ([count counter])
-            (increment! counter)
-            count))))))
+      (let ([counter
+             (make-parameter 0
+                             (lambda (x)
+                               (unless (exact-nonnegative-integer? x)
+                                 (assertion-violation #f "invalid counter argument" x))
+                               x))])
+        (values (lambda ()
+                  (let ([count (counter)])
+                    (counter (+ count 1))
+                    count))
+                counter)))))

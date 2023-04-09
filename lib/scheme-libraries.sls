@@ -44,6 +44,19 @@
     gensym-suffix
     gensym-marker
 
+    ;; (scheme-libraries graph-coloring)
+    color?
+    node
+    node?
+    node=?
+    node-color
+    make-graph
+    graph?
+    graph-colored?
+    graph-add-interference!
+    graph-add-move!
+    color-graph!
+
     ;; (scheme-libraries heaps)
     make-heap
     heap?
@@ -59,6 +72,8 @@
     prepend!
 
     ;; (scheme-libraries lists)
+    iota
+    make-list
     length+
     split-at
 
@@ -81,6 +96,10 @@
     ;; (scheme-libraries ports)
     textual-input-port?
     textual-output-port?
+
+    ;; (scheme-libraries random-numbers)
+    random
+    random-seed
 
     ;; (scheme-libraries reading annotated-datums)
     annotated-datum?
@@ -163,13 +182,33 @@
     ;; (scheme-libraries record-writer)
     record-writer
 
+    ;; (scheme-libraries trees)
+    tree->list
+
     ;; (scheme-libraries unicode)
     unicode-scalar-value?
-    unicode-width)
+    unicode-width
+
+    ;; (scheme-libraries void)
+    void
+
+    ;; (scheme-libraries worklists)
+    element
+    element?
+    element-worklist
+    make-worklist
+    worklist?
+    worklist-empty?
+    worklist-first
+    worklist-add!
+    worklist-for-each
+    element-remove!
+    worklist->list)
   (import
     (scheme-libraries atoms)
     (scheme-libraries basic-format-strings)
     (scheme-libraries counters)
+    (scheme-libraries debug)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries define-values)
@@ -178,6 +217,7 @@
     (scheme-libraries filenames)
     (scheme-libraries format-conditions)
     (scheme-libraries gensyms)
+    (scheme-libraries graph-coloring)
     (scheme-libraries heaps)
     (scheme-libraries helpers)
     (scheme-libraries impure)
@@ -185,6 +225,7 @@
     (scheme-libraries match)
     (scheme-libraries numbers)
     (scheme-libraries ports)
+    (scheme-libraries random-numbers)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading lexemes)
     (scheme-libraries reading positions)
@@ -194,5 +235,8 @@
     (scheme-libraries record-writer)
     (scheme-libraries parameters)
     (scheme-libraries thread-parameters)
+    (scheme-libraries trees)
     (scheme-libraries unicode)
-    (scheme-libraries with-implicit)))
+    (scheme-libraries void)
+    (scheme-libraries with-implicit)
+    (scheme-libraries worklists)))

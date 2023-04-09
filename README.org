@@ -31,6 +31,11 @@ the ~(srfi :28)~ library of SRFI 28.
 
 ** Format conditions
 
+** Graph coloring
+
+The ~(scheme-libraries graph-coloring)~ library exports procedure for
+coloring graphs, suitable in register allocators.
+
 ** Heaps
 
 ** Implicit identifiers
@@ -57,6 +62,8 @@ the ~(srfi :244)~ library of SRFI 244.
 
 ** Ports
 
+** Random numbers
+
 ** Reading
 
 *** Annotated datums
@@ -75,6 +82,12 @@ the ~(srfi :244)~ library of SRFI 244.
 
 ** Testing
 
+** Trees
+
 ** Thread parameters
 
+** Worklists
+
 ** Unicode
+
+** The void value

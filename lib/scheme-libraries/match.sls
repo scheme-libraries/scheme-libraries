@@ -9,12 +9,20 @@
     ...
     _
     ->
-    guard)
+    guard
+    extend-backquote)
   (import
     (rnrs)
     (scheme-libraries define-auxiliary-syntax)
+    (scheme-libraries define-who)
     (scheme-libraries helpers)
-    (scheme-libraries lists))
+    (scheme-libraries lists)
+    (scheme-libraries with-implicit))
+
+  ;; Changes to SRFI 241
+  ;; - Repeated pattern variables are allowed and compared with equal?
+  ;; - extend-backquote is provided
+  ;; - extended quasiquote is available in guard expressions
 
   (define-auxiliary-syntax ->)
 
@@ -29,15 +37,14 @@
               succ)
             (fail)))))
 
-  (define-syntax match
+  (define-syntax/who match
+    (define-record-type pattern-variable
+      (nongenerative) (sealed #t) (opaque #t)
+      (fields (mutable identifier) expression level))
+    (define-record-type cata-binding
+      (nongenerative) (sealed #t) (opaque #t)
+      (fields proc-expr value-id* identifier))
     (lambda (stx)
-      (define who 'match)
-      (define-record-type pattern-variable
-        (nongenerative) (sealed #t) (opaque #t)
-        (fields (mutable identifier) expression level))
-      (define-record-type cata-binding
-        (nongenerative) (sealed #t) (opaque #t)
-        (fields proc-expr value-id* identifier))
       (define make-identifier-hashtable
 	(lambda ()
 	  (define identifier-hash
@@ -256,9 +263,7 @@
                          (gen-matcher #'e pat)])
             (define pvar-guards (pattern-variable-guards pvars))
 	    (check-cata-bindings catas)
-            (with-syntax ([quasiquote
-                           (datum->syntax k 'quasiquote)]
-                          [(x ...)
+            (with-syntax ([(x ...)
                            (map pattern-variable-identifier pvars)]
                           [(u ...)
                            (map pattern-variable-expression pvars)]
@@ -285,10 +290,10 @@
                 (matcher
                  (lambda ()
                    #`(let ([x u] ...)
-                       (if (and #,@pvar-guards #,guard-expr)
+                       (if (and #,@pvar-guards (extend-backquote #,k #,guard-expr))
                            (let ([tmp f] ...)
                              (let-values ([(y ...) e] ...)
-                               (let-syntax ([quasiquote quasiquote-transformer])
+                               (extend-backquote #,k
                                  #,@body)))
                            (fail))))))))))
       (define gen-match
@@ -303,6 +308,16 @@
         [(k expr cl ...)
          #`(let loop ([e expr])
              #,(gen-match #'k #'(cl ...)))])))
+
+  (define-syntax/who extend-backquote
+    (lambda (x)
+      (syntax-case x ()
+        [(_ here e1 ... e2)
+         (identifier? #'here)
+         (with-implicit (here quasiquote)
+           #'(let-syntax ([quasiquote quasiquote-transformer])
+               e1 ... e2))]
+        [_ (syntax-violation who "invalid syntax" x)])))
 
   (define quasiquote-transformer
     (lambda (stx)

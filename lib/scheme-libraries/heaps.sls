@@ -15,12 +15,12 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
-    (scheme-libraries numbers))
+    (scheme-libraries numbers)
+    (scheme-libraries record-writer))
 
   (define-record-type heap
     (nongenerative heap-4d138d64-7e48-471e-9210-de5fc877be0b)
     (sealed #t)
-    (opaque #t)
     (fields
       ordering-predicate
       (mutable size)
@@ -125,6 +125,19 @@
     (lambda (i)
       (fx+ (fx* i 2) 2)))
 
+  ;; Record writers
 
-
+  (record-writer (record-type-descriptor heap)
+    (lambda (r p wr)
+      (put-string p "#<heap ")
+      (wr
+       (let ([size (heap-size r)]
+             [elements (heap-elements r)])
+         (let f ([i 0])
+           (if (fx<? i size)
+               (cons (vector-ref elements i)
+                     (f (fx+ i 1)))
+               '())))
+       p)
+      (put-string p ">")))
   )

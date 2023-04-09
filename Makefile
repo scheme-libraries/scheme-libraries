@@ -1,7 +1,8 @@
 # Makefile for scheme libraries.
 # Copyright © Marc Nieper-Wißkirchen (2023).
 
-scheme = scheme --libdirs lib
+libdirs = lib:x86_64-linux-gnu/lib
+scheme = scheme --libdirs $(libdirs)
 scheme-script = $(scheme) --program
 prove = prove --exec '$(scheme-script)' --ext '.sps' --failures
 

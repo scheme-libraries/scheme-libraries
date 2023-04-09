@@ -4,13 +4,53 @@
 
 (library (scheme-libraries lists)
   (export
+    iota
+    filter-map
+    make-list
     length+
     split-at)
   (import
     (rnrs)
     (scheme-libraries define-who)
     (scheme-libraries exceptions)
-    (scheme-libraries numbers))
+    (scheme-libraries numbers)
+    (scheme-libraries void))
+
+  (define/who iota
+    (case-lambda
+      [(count start step)
+       (unless (nonnegative-fixnum? count)
+         (assertion-violation who "invalid count argument" count))
+       (unless (number? start)
+         (assertion-violation who "invalid start argument" start))
+       (unless (number? step)
+         (assertion-violation who "invalid step argument" start))
+       (let f ([count count]
+               [start start])
+         (if (fxzero? count)
+             '()
+             (cons start (f (fx- count 1)
+                            (+ start step)))))]
+      [(count) (iota count 0 1)]))
+
+  (define/who filter-map
+    (lambda (proc . list*)
+      (unless (procedure? proc)
+        (assertion-violation who "invalid procedure argument" proc))
+      (for-each
+       (lambda (list)
+         (unless (list? list)
+           (assertion-violation who "invalid list argument" list)))
+       list*)
+      (reverse
+       (apply fold-left
+              (lambda (acc . el*)
+                (cond
+                 [(apply proc el*)
+                  => (lambda (el)
+                       (cons el acc))]
+                 [else acc]))
+              '() list*))))
 
   (define length+
     (lambda (x)
@@ -42,4 +82,15 @@
           (let-values ([(ls1 ls2) (f (cdr ls) (fx- k 1))])
             (values (cons (car ls) ls1) ls2))]
          [else
-          (index-out-of-range-violation k)])))))
+          (index-out-of-range-violation k)]))))
+
+  (define/who make-list
+    (case-lambda
+      [(k fill)
+       (unless (nonnegative-fixnum? k)
+         (assertion-violation who "invalid length argument" k))
+       (do [(k k (fx- k 1))
+            (rv '() (cons fill rv))]
+           ((fxzero? k)
+            rv))]
+      [(k) (make-list k (void))])))
