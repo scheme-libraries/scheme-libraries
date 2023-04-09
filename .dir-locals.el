@@ -4,6 +4,10 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'make-parameter 'scheme-indent-function 1)
+          (put 'make-thread-parameter 'scheme-indent-function 1)
+          (put 'format 'scheme-indent-function 1)
+          (put 'extend-backquote 'scheme-indent-function 1)
           (put 'export 'scheme-indent-function 0)
           (put 'import 'scheme-indent-function 0)
           (put 'fields 'scheme-indent-function 0)
@@ -18,6 +22,7 @@
 	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
+	     ("(\\(extend-backquote\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(fields\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(protocol\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(sealed\\)\\>" 1 font-lock-keyword-face)
@@ -26,6 +31,7 @@
 	     ("(\\(parent\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(mutable\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(immutable\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(assert\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(increment!\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(list-case\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(match\\)\\>" 1 font-lock-keyword-face)
