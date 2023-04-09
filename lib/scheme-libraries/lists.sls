@@ -5,6 +5,7 @@
 (library (scheme-libraries lists)
   (export
     iota
+    filter-map
     make-list
     length+
     split-at)
@@ -31,6 +32,25 @@
              (cons start (f (fx- count 1)
                             (+ start step)))))]
       [(count) (iota count 0 1)]))
+
+  (define/who filter-map
+    (lambda (proc . list*)
+      (unless (procedure? proc)
+        (assertion-violation who "invalid procedure argument" proc))
+      (for-each
+       (lambda (list)
+         (unless (list? list)
+           (assertion-violation who "invalid list argument" list)))
+       list*)
+      (reverse
+       (apply fold-left
+              (lambda (acc . el*)
+                (cond
+                 [(apply proc el*)
+                  => (lambda (el)
+                       (cons el acc))]
+                 [else acc]))
+              '() list*))))
 
   (define length+
     (lambda (x)
