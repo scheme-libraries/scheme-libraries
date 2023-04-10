@@ -17,6 +17,7 @@
           (put 'test-datums 'scheme-indent-function 'defun)
 	  (put 'with-implicit 'scheme-indent-function 1)
 	  (put 'with-syntax 'scheme-indent-function 1)
+          (put 'syntax-match 'scheme-indent-function 1)
 	  (font-lock-add-keywords
 	   nil
 	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
@@ -38,4 +39,6 @@
 	     ("(\\(loop\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(rec\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(syntax-case\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(syntax-match\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(with-syntax\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(test-datums\\)\\>" 1 font-lock-keyword-face))))))))
