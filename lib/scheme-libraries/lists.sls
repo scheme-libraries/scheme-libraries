@@ -10,7 +10,8 @@
     make-list
     length+
     split-at
-    take)
+    take
+    delete-duplicates)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -114,4 +115,21 @@
           (assertion-violation who "index out of range" x i)]
          [else
           (cons (car x) (f (cdr x) (fx- i 1)))]))))
-  )
+
+  (define/who delete-duplicates
+    (lambda (ls =?)
+      (unless (list? ls)
+        (assertion-violation who "invalid list argument" ls))
+      (unless (procedure? =?)
+        (assertion-violation who "invalid equivalence predicate argument" =?))
+      (let f ([ls ls] [rev-ls '()])
+	(if (null? ls)
+	    (reverse rev-ls)
+	    (let ([y (car ls)]
+		  [ls (cdr ls)])
+	      (if (exists
+		   (lambda (x)
+		     (=? x y))
+		   rev-ls)
+		  (f ls rev-ls)
+		  (f ls (cons y rev-ls)))))))))
