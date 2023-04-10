@@ -4,6 +4,7 @@
 
 (library (scheme-libraries reading annotated-datums)
   (export
+    datum->annotated-datum
     annotated-datum?
     annotated-datum-source-location
     annotated-datum-value
@@ -32,6 +33,10 @@
       expression
       source-location
       value))
+
+  (define datum->annotated-datum
+    (lambda (x)
+      (make-annotated-datum x #f x)))
 
   (define/who make-annotated-atom
     (lambda (value source-location)
@@ -173,8 +178,10 @@
   (define wrap
     (lambda (inner outer)
       (cond
-       [(annotated-datum-source-location inner) inner]
-       [(annotated-datum-source-location outer)
+       [(and (annotated-datum? inner)
+             (annotated-datum-source-location inner)) inner]
+       [(and (annotated-datum? outer)
+             (annotated-datum-source-location outer))
         => (lambda (source-location)
              (make-annotated-datum
               (annotated-datum-expression inner)
