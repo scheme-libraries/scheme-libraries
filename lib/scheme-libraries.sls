@@ -211,7 +211,6 @@
     (scheme-libraries atoms)
     (scheme-libraries basic-format-strings)
     (scheme-libraries counters)
-    (scheme-libraries debug)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries define-values)
