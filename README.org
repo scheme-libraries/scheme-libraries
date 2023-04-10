@@ -78,6 +78,11 @@ the ~(srfi :244)~ library of SRFI 244.
 
 *** Tokenizers
 
+** A special form for recursive evaluation
+
+The ~(scheme-libraries rec)~ library is a drop-in replacement for
+the ~(srfi :31)~ library of SRFI 31.
+
 ** Record writing
 
 ** Testing

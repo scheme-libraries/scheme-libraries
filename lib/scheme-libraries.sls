@@ -179,6 +179,9 @@
     make-lexical-error
     lexical-error?
 
+    ;; (scheme-libraries rec)
+    rec
+
     ;; (scheme-libraries record-writer)
     record-writer
 
@@ -232,6 +235,7 @@
     (scheme-libraries reading readers)
     (scheme-libraries reading source-locations)
     (scheme-libraries reading tokenizers)
+    (scheme-libraries rec)
     (scheme-libraries record-writer)
     (scheme-libraries parameters)
     (scheme-libraries thread-parameters)
