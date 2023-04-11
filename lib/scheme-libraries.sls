@@ -12,6 +12,7 @@
     ellipsis?
     make-parameter
     make-thread-parameter
+    parameterize
     symbolic-identifier=?
     with-implicit
 

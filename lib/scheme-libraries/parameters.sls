@@ -4,7 +4,8 @@
 
 (library (scheme-libraries parameters)
   (export
-    make-parameter)
+    make-parameter
+    parameterize)
   (import
     (rnrs)
     (scheme-libraries define-who))
@@ -20,5 +21,18 @@
            [(u) (set! v (guard u))]))]
       [(init)
        (make-parameter init values)]))
+
+  (define-syntax parameterize
+    (lambda (x)
+      (syntax-case x ()
+        [(_ () b1 ... b2) #'(begin b1 ... b2)]
+        [(_ ([x e] ...) b1 ... b2)
+         (with-syntax ([(p ...) (generate-temporaries #'(x ...))]
+                       [(y ...) (generate-temporaries #'(x ...))])
+           #'(let ([p x] ... [y e] ...)
+               (let ([swap (lambda ()
+                             (let ([t (p)]) (p y) (set! y t))
+                             ...)])
+                 (dynamic-wind swap (lambda () b1 ... b2) swap))))])))
 
   )
