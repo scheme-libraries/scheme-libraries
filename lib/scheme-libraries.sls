@@ -14,6 +14,7 @@
     make-thread-parameter
     parameterize
     symbolic-identifier=?
+    constant?
     with-implicit
 
     ;; (scheme-libraries atoms)

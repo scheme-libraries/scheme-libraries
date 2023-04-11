@@ -6,7 +6,8 @@
   (export
     construct-name
     ellipsis?
-    symbolic-identifier=?)
+    symbolic-identifier=?
+    constant?)
   (import
     (rnrs)
     (scheme-libraries define-who))
@@ -41,5 +42,13 @@
     (lambda (x)
       (and (identifier? x)
 	   (free-identifier=? x #'(... ...)))))
+
+  (define constant?
+    (lambda (x)
+      (or (boolean? x)
+          (bytevector? x)
+          (char? x)
+          (number? x)
+          (string? x))))
 
   )
