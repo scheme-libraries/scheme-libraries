@@ -20,6 +20,6 @@
 
 (test-eqv 'a
   (syntax-match ($syntax '(b c))
-    [(b ,a) 'a]))
+    [(,b ,a) 'a]))
 
 (test-end "syntax-match")
