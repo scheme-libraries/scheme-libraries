@@ -8,7 +8,8 @@
   (scheme-libraries reading annotated-datums)
   (scheme-libraries syntax syntax-objects))
 
-(define tmpl (annotated-datum->syntax-object (datum->annotated-datum 'tmpl)))
+(define tmpl (annotated-datum->syntax-object (datum->annotated-datum 'tmpl)
+                                             core-environment))
 
 (define-syntax $syntax
   (syntax-rules ()
