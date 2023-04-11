@@ -21,6 +21,12 @@
     ;; (scheme-libraries basic-format-strings)
     format
 
+    ;; (scheme-libraries boxes)
+    box
+    box?
+    unbox
+    set-box!
+
     ;; (scheme-libraries counters)
     make-counter
 
@@ -210,6 +216,7 @@
   (import
     (scheme-libraries atoms)
     (scheme-libraries basic-format-strings)
+    (scheme-libraries boxes)
     (scheme-libraries counters)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
