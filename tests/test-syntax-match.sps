@@ -19,7 +19,22 @@
 (test-begin "syntax-match")
 
 (test-eqv 'a
-  (syntax-match ($syntax '(b c))
+  (syntax-match ($syntax (b c))
     [(,b ,a) 'a]))
+
+(test-eqv 'a
+  (syntax-match ($syntax (b c))
+    [(,b ... ,a) 'a]))
+
+(test-eqv 'a
+  (let ([$b ($syntax b)])
+    (syntax-match ($syntax (b c))
+      [(b ,a) 'a])))
+
+(test-assert
+  (let ([$b ($syntax b)])
+    (syntax-match ($syntax ((b c) c))
+      [(b ,a) #f]
+      [,x #t])))
 
 (test-end "syntax-match")

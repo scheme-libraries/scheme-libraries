@@ -9,6 +9,7 @@
     syntax-object-source-location
     syntax-object->datum
     datum->syntax-object
+    syntax-atom?
     syntax-null?
     syntax-pair?
     syntax-car
@@ -21,6 +22,7 @@
   (import
     (rnrs)
     (rnrs mutable-pairs)
+    (scheme-libraries atoms)
     (scheme-libraries counters)
     (scheme-libraries define-values)
     (scheme-libraries define-who)
@@ -501,6 +503,10 @@
        [(vector? e)
         (vector-map syntax-object->datum e)]
        [else e])))
+
+  (define syntax-atom?
+    (lambda (stx)
+      (annotated-atom? (unwrap stx))))
 
   (define syntax-null?
     (lambda (stx)
