@@ -100,4 +100,6 @@ the ~(srfi :31)~ library of SRFI 31.
 
 ** Unicode
 
+** Union-find
+
 ** The void value

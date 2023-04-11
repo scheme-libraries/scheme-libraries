@@ -198,6 +198,9 @@
     unicode-scalar-value?
     unicode-width
 
+    ;; (scheme-libraries union-find)
+    union-find
+
     ;; (scheme-libraries void)
     void
 
@@ -247,6 +250,7 @@
     (scheme-libraries thread-parameters)
     (scheme-libraries trees)
     (scheme-libraries unicode)
+    (scheme-libraries union-find)
     (scheme-libraries void)
     (scheme-libraries with-implicit)
     (scheme-libraries worklists)))
