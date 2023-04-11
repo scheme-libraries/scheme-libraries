@@ -32,6 +32,8 @@ the ~(srfi :111)~ library of SRFI 111.
 
 ** Displayed conditions
 
+** Equality
+
 ** Exceptions
 
 ** Format conditions

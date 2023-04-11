@@ -33,6 +33,9 @@
     ;; (scheme-libraries display-condition)
     display-condition
 
+    ;; (scheme-libraries equality)
+    make-equal?
+
     ;; (scheme-libraries exceptions)
     assertion-violationf
     errorf
@@ -225,6 +228,7 @@
     (scheme-libraries define-who)
     (scheme-libraries define-values)
     (scheme-libraries display-condition)
+    (scheme-libraries equality)
     (scheme-libraries exceptions)
     (scheme-libraries filenames)
     (scheme-libraries format-conditions)
