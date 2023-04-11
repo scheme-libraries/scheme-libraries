@@ -15,6 +15,8 @@
     (rnrs)
     (scheme-libraries define-match)
     (prefix (only (rnrs)
+                  equal?
+                  quote
                   car
                   cdr
                   null?
