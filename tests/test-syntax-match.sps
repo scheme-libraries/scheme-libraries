@@ -9,8 +9,17 @@
   (scheme-libraries syntax syntax-objects)
   (scheme-libraries syntax syntax-match))
 
+(define tmpl (annotated-datum->syntax-object (datum->annotated-datum 'tmpl)))
+
+(define-syntax $syntax
+  (syntax-rules ()
+    [($syntax datum)
+     (datum->syntax-object tmpl 'datum)]))
+
 (test-begin "syntax-match")
 
-(test-assert 'dummy-test)
+(test-eqv 'a
+  (syntax-match ($syntax '(b c))
+    [(b ,a) 'a]))
 
 (test-end "syntax-match")

@@ -27,7 +27,9 @@
     (define generate-definition
       (lambda (k match extend-backquote)
         (with-syntax ([k k] [match match] [extend-backquote extend-backquote])
-          (with-implicit (k match-car
+          (with-implicit (k match-equal?
+                            match-quote
+                            match-car
                             match-cdr
                             match-null?
                             match-pair?
@@ -62,7 +64,7 @@
                                               [(new-id) (generate-temporaries #'(id))]
                                               [guards guards])
                                   (pattern-variable-identifier-set! pvar #'new-id)
-                                  #'((equal? id new-id) . guards))]
+                                  #'((match-equal? id new-id) . guards))]
                                [else
                                 (hashtable-set! ht id #t)
                                 guards])))
@@ -158,7 +160,7 @@
                            [_
                             (values
                              (lambda (k)
-                               #`(if (equal? #,expr '#,pat)
+                               #`(if (match-equal? #,expr (match-quote #,pat))
                                      #,(k)
                                      (fail)))
                              '() '())])))
