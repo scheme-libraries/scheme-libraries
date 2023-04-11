@@ -612,8 +612,6 @@
 	    (and l1 l2 (label=? l1 l2))
 	    (symbol=? (identifier->symbol id1) (identifier->symbol id2))))))
 
-
-
   ;; Record writers
 
   (define-values (mark-counter! mark-count) (make-counter))

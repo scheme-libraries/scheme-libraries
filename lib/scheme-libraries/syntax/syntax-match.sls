@@ -14,6 +14,7 @@
   (import
     (rnrs)
     (scheme-libraries define-match)
+    (scheme-libraries helpers)
     (scheme-libraries syntax syntax-objects)
     (rename (scheme-libraries syntax syntax-objects)
             (syntax-car match-car)
@@ -25,35 +26,26 @@
     ;; FIXME: Eventually remove this.
     (scheme-libraries reading annotated-datums))
 
-  (define syntax-equal?
+  (define match-equal?
     (lambda (x y)
-      (let f ([x x] [y y])
-        (let-values ([(x y)
-                      (if (syntax-object? y)
-                          (values y x)
-                          (values x y))])
-          ;; XXX
+      (unless (and ($identifier? x)
+                   ($identifier? y))
+        (assertion-violation 'syntax-match "attempt to compare non-identifier syntax objects" x y))
+      ($free-identifier=? x y)))
 
-          ))
-
-      )
-
-    )
-
-  (define-syntax syntax-quote
+  (define-syntax match-quote
     (lambda (x)
       (syntax-case x ()
-        [(_ e)
-         (let f ([e e])
+        [(k e)
+         (let f ([e #'e])
            (syntax-case e ()
              [(e1 . e2)
-              #`(cons (f #,e1) (f #,e2))]
+              #`(cons #,(f #'e1) #,(f #'e2))]
              [#(e ...)
-              (vector #,(map f #'(e ...)))]
+              #`(vector #,@(map f #'(e ...)))]
              [x
               (identifier? #'x)
-              ;; FIXME: Wrap it in substitutions for core library.
-              (annotated-datum->syntax-object (make-annotated-datum x #f))]
-             [e (syntax->datum #'e)]))])))
+              (construct-name #'k "$" #'x)]
+             [e #`',(syntax->datum #'e)]))])))
 
   (define-match (syntax-match syntax-extend-backquote)))

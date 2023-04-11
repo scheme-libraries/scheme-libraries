@@ -15,7 +15,7 @@
     _
     ->)
   (import
-    (rnrs)
+    (rnrs)  (only (chezscheme) print-gensym pretty-print)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries helpers)
@@ -304,10 +304,17 @@
                                 #,(gen-clause k cl)))
                           #'(assertion-violation 'match "expression does not match" e)
                           cl*)))
+                     (define logme
+                       (lambda (x)
+                         (print-gensym #f)
+                         (pretty-print (syntax->datum x))
+                         x))
+
                      (syntax-case stx ()
                        [(k expr cl ...)
-                        #`(let loop ([e expr])
-                            #,(gen-match #'k #'(cl ...)))])))
+                        (logme
+                         #`(let loop ([e expr])
+                             #,(gen-match #'k #'(cl ...))))])))
 
                  (define-syntax/who extend-backquote
                    (lambda (x)
@@ -470,7 +477,7 @@
                                   (values #`(list->vector #,out) vars)))]
                            ;; <constant>
                            [constant
-                            (values #''constant '())])))
+                            (values #'(match-quote constant) '())])))
                      (define gen-output*
                        (lambda (k tmpl* lvl ell?)
                          (let f ([tmpl* tmpl*] [out* '()] [vars* '()])
