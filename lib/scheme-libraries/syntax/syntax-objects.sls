@@ -2,18 +2,15 @@
 
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-  (define-condition-type &syntax-error &error
-    make-syntax-error syntax-error?
-    (form syntax-error-form)
-    (subform syntax-error-subform))
-
-
 (library (scheme-libraries syntax syntax-objects)
   (export
     metalevel?
     metalevel:syntax
     metalevel:run
-    core-environment
+    make-label
+    label?
+    label-kill!
+    make-environment
     environment?
     syntax-object?
     annotated-datum->syntax-object
@@ -30,6 +27,7 @@
     $identifier?
     $bound-identifier=?
     $free-identifier=?
+    identifier->symbol
     (rename (&syntax $&syntax))
     make-syntax-error
     syntax-error?
@@ -38,7 +36,9 @@
     make-constant-binding
     constant-binding?
     constant-binding-datum
-    )
+    make-variable-binding
+    variable-binding
+    variable-binding-symbol)
   (import
     (except (rnrs) &syntax)
     (rnrs mutable-pairs)
@@ -51,6 +51,7 @@
     (scheme-libraries numbers)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading source-locations)
+    (scheme-libraries syntax variables)
     (scheme-libraries rec)
     (scheme-libraries record-writer))
 
@@ -81,6 +82,32 @@
             (assertion-violation who "invalid constant argument" datum))
           ((pargs->new) datum)))))
 
+  (define-record-type expander-binding
+    (nongenerative expander-binding-788e9954-aa65-42d0-a43f-381ab32d326f)
+    (parent binding)
+    (sealed #t)
+    (fields proc)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-expander-binding)
+        (lambda (proc)
+          (unless (procedure? proc)
+            (assertion-violation who "invalid procedure argument" proc))
+          ((pargs->new) proc)))))
+
+  (define-record-type variable-binding
+    (nongenerative variable-binding-d1b200da-754e-43ec-86bf-d03cd03c0da1)
+    (parent binding)
+    (sealed #t)
+    (fields symbol)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-variable-binding)
+        (lambda (var)
+          (unless (variable? var)
+            (assertion-violation who "invalid variable argument" var))
+          ((pargs->new) var)))))
+
   ;; Metalevels
 
   (define metalevel?
@@ -106,7 +133,8 @@
         (define who 'make-label)
         (rec make
           (case-lambda
-            [(bdg) (make bdg (metalevel:run))]
+            [(bdg)
+             (make bdg (metalevel:run))]
             [(bdg ml)
              (unless (binding? bdg)
                (assertion-violation who "invalid label argument" bdg))
@@ -390,25 +418,36 @@
     (protocol
       (lambda (new)
         (define who 'make-ribcage)
-        (case-lambda
-          [() (new (list (make-rib)))]
-          [(rib) (new (list rib))]
-          [(n* m* lbl*)
-           (unless (and (list? n*)
-                        (for-all symbol? n*))
-             (assertion-violation who "invalid name list argument" n*))
-           (unless (and (list? m*)
-                        (for-all mark-list? m*))
-             (assertion-violation who "invalid list of mark lists argument" m*))
-           (unless (and (list? lbl*)
-                        (for-all label? lbl*))
-             (assertion-violation who "invalid label list argument" lbl*))
-           (let ([rib (make-rib)])
-             (for-each
-              (lambda (n m lbl)
-                (rib-set! rib n m (make-label/props lbl)))
-              n* m* lbl*)
-             (new (list rib)))]))))
+        (rec make
+          (case-lambda
+            [() (new (list (make-rib)))]
+            [(rib) (new (list rib))]
+            [(id* lbl*)
+             (unless (and (list? id*)
+                          (for-all symbol? id*))
+               (assertion-violation who "invalid identifier list argument" id*))
+             (unless (and (list? lbl*)
+                          (for-all label? lbl*))
+               (assertion-violation who "invalid label list argument" lbl*))
+             (make (map identifier->symbol id*)
+                   (map syntax-object-marks id*)
+                   lbl*)]
+            [(n* m* lbl*)
+             (unless (and (list? n*)
+                          (for-all symbol? n*))
+               (assertion-violation who "invalid name list argument" n*))
+             (unless (and (list? m*)
+                          (for-all mark-list? m*))
+               (assertion-violation who "invalid list of mark lists argument" m*))
+             (unless (and (list? lbl*)
+                          (for-all label? lbl*))
+               (assertion-violation who "invalid label list argument" lbl*))
+             (let ([rib (make-rib)])
+               (for-each
+                (lambda (n m lbl)
+                  (rib-set! rib n m (make-label/props lbl)))
+                n* m* lbl*)
+               (new (list rib)))])))))
 
   (define next-chunk
     (lambda (chunks)
@@ -664,17 +703,34 @@
 	    (and l1 l2 (label=? l1 l2))
 	    (symbol=? (identifier->symbol id1) (identifier->symbol id2))))))
 
+  (define/who identifier->symbol
+    (lambda (id)
+      (unless ($identifier? id)
+        (assertion-violation who "not an identifier" id))
+      (syntax-object->datum id)))
+
+
+  (define valid-bound-identifiers?
+    (lambda (stx*)
+      ;; TODO: The algorithm is currently quadratic, which may matter
+      ;; for generated code.
+      (let f ([stx* stx*]
+	      [id* '()])
+	(or (null? stx*)
+	    (let ([stx (car stx*)])
+	      (and ($identifier? stx)
+		   (not (find
+			 (lambda (id)
+			   ($bound-identifier=? id stx))
+			 id*))
+		   (f (cdr stx*) (cons stx id*))))))))
+
   ;; Conditions
 
   (define-condition-type &syntax &error
     make-syntax-error syntax-error?
     (form syntax-error-form)
     (subform syntax-error-subform))
-
-  ;; Core environment
-
-  (define core-environment
-    (make-environment (make-rib)))
 
   ;; Record writers
 
@@ -708,5 +764,4 @@
 
   (record-writer (record-type-descriptor environment)
     (lambda (r p wr)
-      (put-string p "#<environment>")))
-  )
+      (put-string p "#<environment>"))))

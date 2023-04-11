@@ -4,6 +4,7 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'make 'scheme-indent-function nil)
           (put 'make-parameter 'scheme-indent-function 1)
           (put 'make-thread-parameter 'scheme-indent-function 1)
           (put 'format 'scheme-indent-function 1)
