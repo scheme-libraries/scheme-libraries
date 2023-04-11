@@ -2,8 +2,19 @@
 
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
+  (define-condition-type &syntax-error &error
+    make-syntax-error syntax-error?
+    (form syntax-error-form)
+    (subform syntax-error-subform))
+
+
 (library (scheme-libraries syntax syntax-objects)
   (export
+    metalevel?
+    metalevel:syntax
+    metalevel:run
+    core-environment
+    environment?
     syntax-object?
     annotated-datum->syntax-object
     syntax-object-source-location
@@ -18,9 +29,14 @@
     syntax-vector->list
     $identifier?
     $bound-identifier=?
-    $free-identifier=?)
+    $free-identifier=?
+    (rename &syntax $&syntax)
+    make-syntax-error
+    syntax-error?
+    syntax-error-form
+    syntax-error-subform)
   (import
-    (rnrs)
+    (except (rnrs) &syntax)
     (rnrs mutable-pairs)
     (scheme-libraries atoms)
     (scheme-libraries counters)
@@ -340,6 +356,13 @@
     make-duplicate-definition-condition duplicate-definition-condition?
     (name duplicate-definition-name))
 
+  ;; Environments
+
+  (define-record-type environment
+    (nongenerative environment-3cd8d34b-252d-4240-8950-326edbf47a4f)
+    (sealed #t)
+    (fields rib))
+
   ;; Ribcages
 
   (define-record-type ribcage
@@ -351,6 +374,7 @@
         (define who 'make-ribcage)
         (case-lambda
           [() (new (list (make-rib)))]
+          [(rib) (new (list rib))]
           [(n* m* lbl*)
            (unless (and (list? n*)
                         (for-all symbol? n*))
@@ -450,10 +474,14 @@
            (new expr (make-wrap '() '()))]))))
 
   (define/who annotated-datum->syntax-object
-    (lambda (annotation)
+    (lambda (annotation env)
       (unless (annotated-datum? annotation)
         (assertion-violation who "invalid annotation argument" annotation))
-      (make-syntax-object annotation)))
+      (unless (environment? env)
+        (assertion-violation who "invalid environment" env))
+      (make-syntax-object annotation
+                          (make-wrap '()
+                                     (list (make-ribcage (environment-rib env)))))))
 
   (define/who syntax-object-source-location
     (lambda (stx)
@@ -618,6 +646,18 @@
 	    (and l1 l2 (label=? l1 l2))
 	    (symbol=? (identifier->symbol id1) (identifier->symbol id2))))))
 
+  ;; Conditions
+
+  (define-condition-type &syntax-error &error
+    make-syntax-error syntax-error?
+    (form syntax-error-form)
+    (subform syntax-error-subform))
+
+  ;; Core environment
+
+  (define core-environment
+    (make-environment (make-rib)))
+
   ;; Record writers
 
   (define-values (mark-counter! mark-count) (make-counter))
@@ -648,5 +688,7 @@
       (wr (syntax-object->datum r) p)
       (put-string p ">")))
 
-
+  (record-writer (record-type-descriptor environment)
+    (lambda (r p wr)
+      (put-string p "#<environment>")))
   )

@@ -8,14 +8,26 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
+    (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
-    (scheme-libraries record-writers)
+    (scheme-libraries syntax exceptions)
     (scheme-libraries syntax syntax-objects))
 
-  (define-record-type (environment make-environment $environment)
-    (nongenerative environment-3cd8d34b-252d-4240-8950-326edbf47a4f)
+  ;; Library collections
+
+  (define-record-type library-collection
+    (nongenerative library-collection-fa5e52df-c5a9-4d3b-ac3c-2f1c8cd9ad5a)
     (sealed #t)
-    (fields rib))
+    (fields ))
+
+  (define/who current-library-collection
+    (make-parameter (make-library-collection)
+      (lambda (x)
+        (unless (library-collection? x)
+          (assertion-violation who "invalid library collection" x))
+        x)))
+
+  ;; Expander
 
   (define/who expand
     (lambda (expr env)
@@ -23,14 +35,25 @@
         (assertion-violation who "invalid expression argument" expr))
       (unless ($environment? env)
         (assertion-violation who "invalid environment argument" env))
+      (expand-expression (annotated-datum->syntax-object expr env) metalevel:run)))
 
+  (define expand-expression
+    (lambda (x ml)
+      (let f ([x x])
+        (let-values ([(x type) (syntax-type x ml #f)])
+          (cond
+           [else
+            (syntax-error #f "invalid syntax in expression context" x)])))))
 
-      ;; FIXME
-      (assert #f)))
+  ;; Syntax-type
 
-  ;; Record writers
+  (define syntax-type
+    (lambda (x ml ribs)
+      (syntax-match x
+        [,x
+         (let ([e (syntax-object->datum x)])
+           (unless (constant? e)
+             (syntax-error #f "invalid expression syntax" x))
+           (values x (make-constant-binding e)))])))
 
-  (record-writer (record-type-descriptor environment)
-    (lambda (r p wr)
-      (put-string p "#<environment>")))
   )
