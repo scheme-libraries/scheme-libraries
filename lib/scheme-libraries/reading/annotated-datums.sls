@@ -18,7 +18,9 @@
     make-annotated-dotted-list
     make-annotated-vector
     annotated-vector?
-    annotated-vector-ref)
+    annotated-vector-ref
+    annotated-vector->list
+    invalid-datum-condition)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -34,9 +36,23 @@
       source-location
       value))
 
-  (define datum->annotated-datum
+  (define/who datum->annotated-datum
     (lambda (x)
-      (make-annotated-datum x #f x)))
+      (let ([seen (make-eq-hashtable)])
+        (let f ([x x])
+          (cond
+           [(hashtable-ref seen x #f)
+            (invalid-datum-condition)]
+           [(pair? x)
+            (hashtable-set! seen x #t)
+            (make-annotated-pair (f (car x)) (f (cdr x)) #f)]
+           [(vector? x)
+            (hashtable-set! seen x #t)
+            (make-annotated-vector (map f (vector->list x)) #f)]
+           [(atom? x)
+            (make-annotated-atom x #f)]
+           [else
+            (invalid-datum-condition)])))))
 
   (define/who make-annotated-atom
     (lambda (value source-location)
@@ -169,6 +185,17 @@
        [else
         (assertion-violation who "invalid annotation argument" annotation)])))
 
+  (define/who annotated-vector->list
+    (lambda (ann)
+      (cond
+       [(vector? ann)
+        (vector->list ann)]
+       [(annotated-vector? ann)
+        (make-annotated-list (vector->list (annotated-datum-expression ann))
+                             (annotated-datum-source-location ann))]
+       [else
+        (assertion-violation who "invalid annotation argument" ann)])))
+
   (define unwrap
     (lambda (obj)
       (if (annotated-datum? obj)
@@ -178,10 +205,8 @@
   (define wrap
     (lambda (inner outer)
       (cond
-       [(and (annotated-datum? inner)
-             (annotated-datum-source-location inner)) inner]
-       [(and (annotated-datum? outer)
-             (annotated-datum-source-location outer))
+       [(annotated-datum-source-location inner) inner]
+       [(annotated-datum-source-location outer)
         => (lambda (source-location)
              (make-annotated-datum
               (annotated-datum-expression inner)
@@ -189,5 +214,14 @@
               (annotated-datum-value inner)))]
        [else inner])))
 
+  ;; Conditions
+
+  (define invalid-datum-condition
+    (lambda ()
+      (raise (make-invalid-datum-condition))))
+
+  (define-condition-type &invalid-datum
+    &condition
+    make-invalid-datum-condition invalid-datum-condition?)
 
   )
