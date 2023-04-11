@@ -30,11 +30,15 @@
     $identifier?
     $bound-identifier=?
     $free-identifier=?
-    (rename &syntax $&syntax)
+    (rename (&syntax $&syntax))
     make-syntax-error
     syntax-error?
     syntax-error-form
-    syntax-error-subform)
+    syntax-error-subform
+    make-constant-binding
+    constant-binding?
+    constant-binding-datum
+    )
   (import
     (except (rnrs) &syntax)
     (rnrs mutable-pairs)
@@ -42,6 +46,7 @@
     (scheme-libraries counters)
     (scheme-libraries define-values)
     (scheme-libraries define-who)
+    (scheme-libraries helpers)
     (scheme-libraries lists)
     (scheme-libraries numbers)
     (scheme-libraries reading annotated-datums)
@@ -62,6 +67,19 @@
     (nongenerative out-of-phase-binding-9f0102df-6804-4d78-b919-27057da676bc)
     (parent binding)
     (sealed #t))
+
+  (define-record-type constant-binding
+    (nongenerative constant-binding-731a5c50-504c-494f-b791-e6819432b70c)
+    (parent binding)
+    (sealed #t)
+    (fields datum)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-constant-binding)
+        (lambda (datum)
+          (unless (constant? datum)
+            (assertion-violation who "invalid constant argument" datum))
+          ((pargs->new) datum)))))
 
   ;; Metalevels
 
@@ -648,7 +666,7 @@
 
   ;; Conditions
 
-  (define-condition-type &syntax-error &error
+  (define-condition-type &syntax &error
     make-syntax-error syntax-error?
     (form syntax-error-form)
     (subform syntax-error-subform))

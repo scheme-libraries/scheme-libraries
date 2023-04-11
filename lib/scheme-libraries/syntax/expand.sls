@@ -8,9 +8,11 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
+    (scheme-libraries helpers)
     (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax exceptions)
+    (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
   ;; Library collections
@@ -33,15 +35,17 @@
     (lambda (expr env)
       (unless (annotated-datum? expr)
         (assertion-violation who "invalid expression argument" expr))
-      (unless ($environment? env)
+      (unless (environment? env)
         (assertion-violation who "invalid environment argument" env))
       (expand-expression (annotated-datum->syntax-object expr env) metalevel:run)))
 
   (define expand-expression
     (lambda (x ml)
       (let f ([x x])
-        (let-values ([(x type) (syntax-type x ml #f)])
+        (let-values ([(x t) (syntax-type x ml #f)])
           (cond
+           [(constant-binding? t)
+            `(quote ,(constant-binding-datum t))]
            [else
             (syntax-error #f "invalid syntax in expression context" x)])))))
 
