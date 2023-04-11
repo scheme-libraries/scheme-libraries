@@ -2,16 +2,26 @@
 
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (scheme-libraries syntax syntax-objects)
+(library (scheme-libraries syntax syntax-match)
   (export
-    syntax-match)
+    syntax-match
+    syntax-extend-backquote
+    unquote
+    ...
+    _
+    ->
+    guard)
   (import
     (rnrs)
-    (scheme-libraries define-who)
-    (scheme-libraries syntax syntax-objects))
+    (scheme-libraries define-match)
+    (rename (scheme-libraries syntax syntax-objects)
+            (syntax-car match-car)
+            (syntax-cdr match-cdr)
+            (syntax-pair? match-pair?)
+            (syntax-null? match-null?)
+            (syntax-vector? match-vector?)
+            (syntax-vector->list match-syntax-vector->list)))
 
-  (define-syntax/who syntax-match
-    (lambda (stx)
-      ;; FIXME
-      (assert #f)))
-  )
+  ;; TODO: match-quote
+
+  (define-match (syntax-match syntax-extend-backquote)))

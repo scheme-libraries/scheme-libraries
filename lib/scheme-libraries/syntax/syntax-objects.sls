@@ -13,7 +13,8 @@
     syntax-pair?
     syntax-car
     syntax-cdr
-    syntax-length+
+    syntax-vector?
+    syntax-vector->list
     $identifier?
     $bound-identifier=?
     $free-identifier=?)
@@ -332,9 +333,9 @@
     (lambda (marks a)
       (remp (lambda (p) (marks=? (car p) marks)) a)))
 
-  (define-condition-type &duplicate-definition-condition
+  (define-condition-type &duplicate-definition
     &condition
-    make-duplicate-definition-condition duplicate-definition?
+    make-duplicate-definition-condition duplicate-definition-condition?
     (name duplicate-definition-name))
 
   ;; Ribcages
@@ -532,21 +533,20 @@
             (extend-wrap e w))
           (cdr stx))))
 
-  (define syntax-length+
+  (define syntax-vector?
     (lambda (stx)
       (let ([e (unwrap stx)])
-	(let f ([e e] [lag e] [len 0])
-	  (if (annotated-pair? e)
-	      (let ([e (unwrap (annotated-pair-cdr e))]
-		    [len (fx+ len 1)])
-		(if (annotated-pair? e)
-		    (let ([e (unwrap (annotated-pair-cdr e))]
-			  [lag (unwrap (annotated-pair-cdr lag))]
-			  [len (fx+ len 1)])
-		      (and (not (eq? e lag))
-			   (f e lag len)))
-		    len))
-	      len)))))
+        (or (vector? e)
+            (and (annotated-vector? e))))))
+
+  (define/who syntax-vector->list
+    (lambda (stx)
+      (unless (syntax-vector? stx)
+        (assertion-violation who "invalid syntax vector argument" stx))
+      (if (syntax-object? stx)
+          (make-syntax-object (annotated-vector->list  (syntax-object-expression stx))
+                              (syntax-object-wrap stx))
+          (annotated-vector->list stx))))
 
   ;; Identifiers
 
