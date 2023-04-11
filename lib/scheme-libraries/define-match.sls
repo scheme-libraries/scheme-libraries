@@ -15,7 +15,7 @@
     _
     ->)
   (import
-    (rnrs)  (only (chezscheme) print-gensym pretty-print)
+    (rnrs)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
     (scheme-libraries helpers)
@@ -304,17 +304,11 @@
                                 #,(gen-clause k cl)))
                           #'(assertion-violation 'match "expression does not match" e)
                           cl*)))
-                     (define logme
-                       (lambda (x)
-                         (print-gensym #f)
-                         (pretty-print (syntax->datum x))
-                         x))
 
                      (syntax-case stx ()
                        [(k expr cl ...)
-                        (logme
-                         #`(let loop ([e expr])
-                             #,(gen-match #'k #'(cl ...))))])))
+                        #`(let loop ([e expr])
+                            #,(gen-match #'k #'(cl ...)))])))
 
                  (define-syntax/who extend-backquote
                    (lambda (x)
@@ -509,31 +503,31 @@
                              succ)
                            (fail)))))
 
-                   (define length+
-                     (lambda (x)
-                       (let f ([x x] [y x] [n 0])
-                         (if (match-pair? x)
-                             (let ([x (match-cdr x)]
-                                   [n (fx+ n 1)])
-                               (if (pair? x)
-                                   (let ([x (match-cdr x)]
-                                         [y (match-cdr y)]
-                                         [n (fx+ n 1)])
-                                     (and (not (eq? x y))
-                                          (f x y n)))
-                                   n))
-                             n))))
+                 (define length+
+                   (lambda (x)
+                     (let f ([x x] [y x] [n 0])
+                       (if (match-pair? x)
+                           (let ([x (match-cdr x)]
+                                 [n (fx+ n 1)])
+                             (if (match-pair? x)
+                                 (let ([x (match-cdr x)]
+                                       [y (match-cdr y)]
+                                       [n (fx+ n 1)])
+                                   (and (not (eq? x y))
+                                        (f x y n)))
+                                 n))
+                           n))))
 
-                   (define/who split-at
-                     (lambda (ls k)
-                       (let f ([ls ls] [k k])
-                         (cond
-                          [(fxzero? k)
-                           (values '() ls)]
-                          [(match-pair? ls)
-                           (let-values ([(ls1 ls2) (f (match-cdr ls) (fx- k 1))])
-                             (values (cons (car ls) ls1) ls2))]
-                          [else (assert #f)]))))))))))
+                 (define/who split-at
+                   (lambda (ls k)
+                     (let f ([ls ls] [k k])
+                       (cond
+                        [(fxzero? k)
+                         (values '() ls)]
+                        [(match-pair? ls)
+                         (let-values ([(ls1 ls2) (f (match-cdr ls) (fx- k 1))])
+                           (values (cons (match-car ls) ls1) ls2))]
+                        [else (assert #f)]))))))))))
 
     (lambda (x)
       (syntax-case x ()

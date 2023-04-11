@@ -18,6 +18,7 @@
 
     ;; (scheme-libraries atoms)
     atom?
+    atom=?
 
     ;; (scheme-libraries basic-format-strings)
     format

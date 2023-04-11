@@ -13,6 +13,7 @@
     guard)
   (import
     (rnrs)
+    (scheme-libraries atoms)
     (scheme-libraries define-match)
     (scheme-libraries helpers)
     (scheme-libraries syntax syntax-objects)
@@ -22,16 +23,17 @@
             (syntax-pair? match-pair?)
             (syntax-null? match-null?)
             (syntax-vector? match-vector?)
-            (syntax-vector->list match-syntax-vector->list))
-    ;; FIXME: Eventually remove this.
-    (scheme-libraries reading annotated-datums))
+            (syntax-vector->list match-syntax-vector->list)))
 
   (define match-equal?
     (lambda (x y)
-      (unless (and ($identifier? x)
-                   ($identifier? y))
-        (assertion-violation 'syntax-match "attempt to compare non-identifier syntax objects" x y))
-      ($free-identifier=? x y)))
+      (and (syntax-atom? x)
+           (syntax-atom? y)
+           (if ($identifier? x)
+               (and ($identifier? y)
+                    ($free-identifier=? x y))
+               (atom=? (syntax-object->datum x)
+                       (syntax-object->datum y))))))
 
   (define-syntax match-quote
     (lambda (x)
@@ -45,7 +47,7 @@
               #`(vector #,@(map f #'(e ...)))]
              [x
               (identifier? #'x)
-              (construct-name #'k "$" #'x)]
-             [e #`',(syntax->datum #'e)]))])))
+              (construct-name #'x "$" #'x)]
+             [e #`'#,(syntax-object->datum #'e)]))])))
 
   (define-match (syntax-match syntax-extend-backquote)))
