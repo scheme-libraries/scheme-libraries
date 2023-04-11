@@ -4,7 +4,8 @@
 
 (library (scheme-libraries syntax expand)
   (export
-    expand)
+    expand
+    expand-body)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -37,22 +38,31 @@
         (assertion-violation who "invalid expression argument" expr))
       (unless (environment? env)
         (assertion-violation who "invalid environment argument" env))
-      (expand-expression (annotated-datum->syntax-object expr env) metalevel:run)))
+      (expand-expression (annotated-datum->syntax-object expr env))))
 
   (define expand-expression
-    (lambda (x ml)
+    (lambda (x)
       (let f ([x x])
-        (let-values ([(x t) (syntax-type x ml #f)])
+        (let-values ([(x t) (syntax-type x #f)])
           (cond
+           [(expander-binding? t)
+            (expand-core-form t ...)]
            [(constant-binding? t)
             `(quote ,(constant-binding-datum t))]
            [else
             (syntax-error #f "invalid syntax in expression context" x)])))))
 
+  (define expand-body
+    (lambda (x)
+      ;; FIXME
+      (syntax-match x
+        [(,x) (expand-expression x)])
+      ...))
+
   ;; Syntax-type
 
   (define syntax-type
-    (lambda (x ml ribs)
+    (lambda (x ribs)
       (syntax-match x
         [,x
          (let ([e (syntax-object->datum x)])
