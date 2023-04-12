@@ -214,6 +214,8 @@
 (test-equal '(a b c) (match '#(a b c)
                        [#(,x* ...) `(,x* ...)]))
 
+(test-equal '#(1 2 3) (extend-backquote here `#(1 2 3)))
+
 (test-end "match")
 
 ;; Local Variables:

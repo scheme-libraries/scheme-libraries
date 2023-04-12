@@ -378,6 +378,7 @@
                             (quasiquote? #'quasiquote)
                             (let-values ([(out vars) (gen-output k #'tmpl (fx+ lvl 1) ell?)])
                               (if (null? vars)
+                                  ;; check me
                                   (values #'`tmpl
                                           '())
                                   (values #`(list 'quasiquote #,out)
@@ -391,7 +392,7 @@
                             (let-values ([(out vars)
                                           (gen-output k #'tmpl (fx- lvl 1) ell?)])
                               (if (null? vars)
-                                  (values #'',tmpl '())
+                                  (values #'(match-quote ,tmpl) '())
                                   (values #`(list 'unquote #,out) vars)))]
                            ;; ((unquote-splicing <template> ...) <ellipsis> . <template>)
 	                   [((unquote-splicing expr ...) ell . tmpl2)
@@ -425,7 +426,7 @@
                                                 (gen-output* k #'(tmpl1 ...) (fx- lvl 1) ell?)])
                                     (if (and (null? vars)
                                              (null? vars*))
-                                        (values #''((unquote-splicing tmpl1 ...) . tmpl2)
+                                        (values #'(match-quote ((unquote-splicing tmpl1 ...) . tmpl2))
                                                 '())
                                         (values #`(cons (list 'unquote #,@out*) #,out)
                                                 (append vars* vars))))))]
@@ -446,7 +447,7 @@
                                                 (gen-output* k #'(tmpl1 ...) (fx- lvl 1) ell?)])
                                     (if (and (null? vars)
                                              (null? vars*))
-                                        (values #''((unquote-splicing tmpl1 ...) . tmpl2)
+                                        (values #'(match-quote ((unquote-splicing tmpl1 ...) . tmpl2))
                                                 '())
                                         (values #`(cons (list 'unquote-splicing #,@out*) #,out)
                                                 (append vars* vars))))))]
@@ -458,7 +459,7 @@
                                           (gen-output k #'el2 lvl ell?)])
                               (if (and (null? vars1)
                                        (null? vars2))
-                                  (values #''(el1 . el2)
+                                  (values #'(match-quote (el1 . el2))
                                           '())
                                   (values #`(cons #,out1 #,out2)
                                           (append vars1 vars2))))]
@@ -467,7 +468,7 @@
                             (let-values ([(out vars)
                                           (gen-output k #'(el ...) lvl ell?)])
                               (if (null? vars)
-                                  (values #'#(el ...) '())
+                                  (values #'(match-quote #(el ...)) '())
                                   (values #`(list->vector #,out) vars)))]
                            ;; <constant>
                            [constant

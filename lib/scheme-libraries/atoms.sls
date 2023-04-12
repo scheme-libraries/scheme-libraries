@@ -25,7 +25,7 @@
       (unless (atom? x)
         (assertion-violation who "invalid first atom argument" x))
       (unless (atom? y)
-        (assertion-violation who "invalid first atom argument" y))
+        (assertion-violation who "invalid second atom argument" y))
       (or (eqv? x y)
           (cond
            [(string? x)
