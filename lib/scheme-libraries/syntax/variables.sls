@@ -19,4 +19,5 @@
 
   (define variable?
     (lambda (x)
-      (symbol? x))))
+      (and (symbol? x)
+           (gensym? x)))))

@@ -5,6 +5,7 @@
 (library (scheme-libraries gensyms)
   (export
     gensym
+    gensym?
     gensym-count
     gensym-prefix
     gensym-suffix
@@ -55,6 +56,12 @@
               (let ([k (fx+ k 1)])
                 (and (fx<? k n)
                      (substring s k n))))))))
+
+  (define/who gensym?
+    (lambda (x)
+      (unless (symbol? x)
+        (assertion-violation who "invalid argument" x))
+      (and (gensym-suffix x) #t)))
 
   (define/who gensym-marker
     (lambda (sym)
