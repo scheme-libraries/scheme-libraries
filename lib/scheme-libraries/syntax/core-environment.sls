@@ -9,13 +9,16 @@
     (rnrs)
     (scheme-libraries helpers)
     (scheme-libraries match)
+    (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
+    (scheme-libraries syntax libraries)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects)
-    (scheme-libraries syntax variables))
+    (scheme-libraries syntax variables)
+    (scheme-libraries thread-parameters))
 
   ;; Core environment
 
@@ -38,6 +41,37 @@
       [(declare-expander-syntax name proc)
        (declare-syntax name (make-expander-binding proc))]))
 
+  (define-syntax declare-definition-syntax
+    (syntax-rules ()
+      [(declare-expander-syntax name proc)
+       (declare-syntax name (make-definition-binding proc))]))
+
+  ;; Definitions
+
+  (declare-definition-syntax define
+    (lambda (x ribs)
+      (let-values ([(x e) (parse-define x)])
+        (let* ([var (make-variable (identifier->symbol x))]
+               [bdg (make-variable-binding var)]
+               [lbl (ribcage-add! ribs x bdg)])
+          (unless lbl
+            (identifier-error 'define x "trying to redefine the local keyword ~a"))
+          (values (list (lambda ()
+                          (make-definition var (expand-expression e)))))))))
+
+  (define parse-define
+    (lambda (x)
+      (define who 'define)
+      (syntax-match x
+        [(,k ,x ,e)
+         (guard ($identifier? x))
+	 (values x e)]
+	[(,k (,x . ,formals) ,e)
+	 (guard ($identifier? x))
+	 (values x `(lambda ,formals ,e))]
+        [,x
+         (syntax-error who "invalid syntax" x)])))
+
   ;; Expanders
 
   (declare-expander-syntax lambda
@@ -53,7 +87,9 @@
                 [lbl* (map make-label bdg*)]
                 [ribs (make-ribcage id* lbl*)]
                 [form* (add-substitutions* ribs `(,body* ... ,body))]
-                [e (expand-body form*)])
+                [e (parameterize ([current-who who]
+                                  [current-form x])
+                     (expand-body form*))])
            (for-each label-kill! lbl*)
            (build
              (lambda ,vars ,e)))]

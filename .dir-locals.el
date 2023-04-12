@@ -4,9 +4,13 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'condition 'scheme-indent-function 'defun)
+          (put 'with-syntax-error-context 'scheme-indent-function 2)
           (put 'build 'scheme-indent-function 0)
+          (put 'build-begin 'scheme-indent-function 0)
           (put 'test-expand 'scheme-indent-function 'defun)
           (put 'declare-syntax 'scheme-indent-function 1)
+          (put 'declare-definition-syntax 'scheme-indent-function 1)
           (put 'declare-expander-syntax 'scheme-indent-function 1)
           (put 'make 'scheme-indent-function nil)
           (put 'make-parameter 'scheme-indent-function 1)
@@ -28,11 +32,11 @@
 	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
-             ("(\\(declare-syntax\\|declare-expander-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
+             ("(\\(declare-syntax\\|declare-expander-syntax\\|declare-definition-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
 	     ("(\\(extend-backquote\\)\\>" 1 font-lock-keyword-face)
-	     ("(\\(build\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(build\\(-begin\\)?\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(fields\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(protocol\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(sealed\\)\\>" 1 font-lock-keyword-face)
@@ -50,4 +54,5 @@
 	     ("(\\(syntax-case\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(syntax-match\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(with-syntax\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(with-syntax-error-context\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(test-datums\\)\\>" 1 font-lock-keyword-face))))))))
