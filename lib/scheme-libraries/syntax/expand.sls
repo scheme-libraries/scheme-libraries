@@ -13,6 +13,7 @@
     (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax exceptions)
+    (scheme-libraries syntax expressions)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
@@ -48,7 +49,7 @@
            [(expander-binding? t)
             ((expander-binding-proc t) x)]
            [(constant-type? t)
-            `(quote ,(constant-type-datum t))]
+            (build (quote ,(constant-type-datum t)))]
            [else
             (syntax-error #f "invalid syntax in expression context" x)])))))
 

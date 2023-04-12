@@ -7,20 +7,25 @@
   (scheme-libraries testing)
   (scheme-libraries reading annotated-datums)
   (scheme-libraries syntax core-environment)
-  (scheme-libraries syntax syntax-objects)
-  (scheme-libraries syntax expand))
+  (scheme-libraries syntax expressions)
+  (scheme-libraries syntax expand)
+  (scheme-libraries syntax syntax-objects))
 
 (define expand-datum
   (lambda (x)
     (expand (datum->annotated-datum x)
             (core-environment))))
 
+(define-syntax test-expand
+  (syntax-rules ()
+    [(test-expand expected source)
+     (test-assert (expression=? `expected (expand-datum `source)))]))
+
 (test-begin "expand")
 
-(test-equal ''10 (expand-datum 10))
+(test-expand (quote 10) 10)
 
-;;; TODO: expression=? und with-expression-builder (o.ä.)
-(test-equal '(lambda (x0) '10)
-  (expand-datum '(lambda (x) 10)))
+(test-expand (lambda (x0) '10)
+  (lambda (x) 10))
 
 (test-end "expand")

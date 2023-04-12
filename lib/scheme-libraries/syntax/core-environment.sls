@@ -12,6 +12,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax expand)
+    (scheme-libraries syntax expressions)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variables))
@@ -54,8 +55,8 @@
                 [form* (add-substitutions* ribs `(,body* ... ,body))]
                 [e (expand-body form*)])
            (for-each label-kill! lbl*)
-           (extend-backquote here
-             `(lambda ,vars ,e)))]
+           (build
+             (lambda ,vars ,e)))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   ;; Helpers

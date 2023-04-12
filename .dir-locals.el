@@ -4,6 +4,8 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'build 'scheme-indent-function 0)
+          (put 'test-expand 'scheme-indent-function 'defun)
           (put 'declare-syntax 'scheme-indent-function 1)
           (put 'declare-expander-syntax 'scheme-indent-function 1)
           (put 'make 'scheme-indent-function nil)
@@ -30,6 +32,7 @@
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
 	     ("(\\(extend-backquote\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(build\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(fields\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(protocol\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(sealed\\)\\>" 1 font-lock-keyword-face)
