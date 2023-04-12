@@ -7,14 +7,20 @@
     metalevel?
     metalevel:syntax
     metalevel:run
+    current-metalevel
     make-label
     label?
     label-kill!
+    label->binding
     make-environment
     environment?
+    make-ribcage
+    ribcage?
     syntax-object?
     annotated-datum->syntax-object
     syntax-object-source-location
+    add-substitutions
+    add-substitutions*
     syntax-object->datum
     datum->syntax-object
     syntax-atom?
@@ -28,17 +34,25 @@
     $bound-identifier=?
     $free-identifier=?
     identifier->symbol
+    identifier->label
     (rename (&syntax $&syntax))
     make-syntax-error
     syntax-error?
     syntax-error-form
     syntax-error-subform
-    make-constant-binding
-    constant-binding?
-    constant-binding-datum
+    make-other-type
+    other-type?
+    make-application-type
+    application-type?
+    make-constant-type
+    constant-type?
+    constant-type-datum
     make-variable-binding
-    variable-binding
-    variable-binding-symbol)
+    variable-binding?
+    variable-binding-symbol
+    make-expander-binding
+    expander-binding?
+    expander-binding-proc)
   (import
     (except (rnrs) &syntax)
     (rnrs mutable-pairs)
@@ -52,13 +66,18 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading source-locations)
     (scheme-libraries syntax variables)
+    (scheme-libraries parameters)
     (scheme-libraries rec)
     (scheme-libraries record-writer))
 
-  ;; Bindings
+  ;; Bindings and syntax types
+
+  (define-record-type syntax-type
+    (nongenerative syntax-type-5076a7a5-0cce-49cb-9928-256ffdfa7aee))
 
   (define-record-type binding
-    (nongenerative binding-749b4948-3923-484f-b466-3e8a9048a931))
+    (nongenerative binding-749b4948-3923-484f-b466-3e8a9048a931)
+    (parent syntax-type))
 
   (define-record-type displaced-binding
     (nongenerative displaced-binding-ac5ee8c9-fc00-4e4d-919e-90373972d283)
@@ -69,9 +88,17 @@
     (parent binding)
     (sealed #t))
 
-  (define-record-type constant-binding
+  (define-record-type other-type
+    (nongenerative other-binding-5da819c4-d149-4c12-b13f-949a991ca3f4)
+    (parent syntax-type) (sealed #t))
+
+  (define-record-type application-type
+    (nongenerative application-binding-5faa5a54-ef82-4a84-b402-01f6b91a96a4)
+    (parent syntax-type) (sealed #t))
+
+  (define-record-type constant-type
     (nongenerative constant-binding-731a5c50-504c-494f-b791-e6819432b70c)
-    (parent binding)
+    (parent syntax-type)
     (sealed #t)
     (fields datum)
     (protocol
@@ -120,6 +147,13 @@
   (define metalevel:run
     (lambda () 0))
 
+  (define/who current-metalevel
+    (make-parameter (metalevel:run)
+      (lambda (x)
+        (unless (metalevel? x)
+          (assertion-violation who "invalid metalevel" x))
+        x)))
+
   ;; Labels
 
   (define-record-type label
@@ -134,7 +168,7 @@
         (rec make
           (case-lambda
             [(bdg)
-             (make bdg (metalevel:run))]
+             (make bdg (current-metalevel))]
             [(bdg ml)
              (unless (binding? bdg)
                (assertion-violation who "invalid label argument" bdg))
@@ -157,14 +191,13 @@
       (label-binding-set! lbl (make-displaced-binding))))
 
   (define/who label->binding
-    (lambda (lbl cml)
+    (lambda (lbl)
       (unless (or (not lbl) (label? lbl))
         (assertion-violation who "invalid labels argument" lbl))
-      (unless (metalevel? cml)
-        (assertion-violation who "invalid current metalevel argument" cml))
       (and lbl
 	   (let ([bdg (label-binding lbl)])
-             (if (in-phase? (label-metalevel lbl) cml)
+             (if (in-phase? (label-metalevel lbl)
+                            (current-metalevel))
                  bdg
                  (make-out-of-phase-binding))))))
 
@@ -407,7 +440,11 @@
   (define-record-type environment
     (nongenerative environment-3cd8d34b-252d-4240-8950-326edbf47a4f)
     (sealed #t)
-    (fields rib))
+    (fields rib)
+    (protocol
+      (lambda (new)
+        (lambda ()
+          (new (make-rib))))))
 
   ;; Ribcages
 
@@ -550,6 +587,20 @@
       (and (annotated-datum? expr)
            (annotated-datum-source-location expr))))
 
+  (define/who add-substitutions
+    (lambda (s x)
+      (unless (substitution? s)
+        (assertion-violation who "invalid substitutions argument" s))
+      (extend-wrap x (make-wrap '() (list s)))))
+
+  (define/who add-substitutions*
+    (lambda (s x*)
+      (unless (substitution? s)
+        (assertion-violation who "invalid substitutions argument" s))
+      (unless (list? x*)
+        (assertion-violation who "invalid syntax list argument" x*))
+      (map (lambda (x) (add-substitutions s x)) x*)))
+
   (define/who syntax-object-marks
     (lambda (stx)
       (unless (syntax-object? stx)
@@ -646,12 +697,6 @@
       (and (syntax-object? obj)
            (symbol? (syntax-object->datum obj)))))
 
-  (define/who identifier->symbol
-    (lambda (id)
-      (unless ($identifier? id)
-        (assertion-violation who "not an identifier" id))
-      (syntax-object->datum id)))
-
   (define identifier-marks
     (lambda (id)
       (assert ($identifier? id))
@@ -708,22 +753,6 @@
       (unless ($identifier? id)
         (assertion-violation who "not an identifier" id))
       (syntax-object->datum id)))
-
-
-  (define valid-bound-identifiers?
-    (lambda (stx*)
-      ;; TODO: The algorithm is currently quadratic, which may matter
-      ;; for generated code.
-      (let f ([stx* stx*]
-	      [id* '()])
-	(or (null? stx*)
-	    (let ([stx (car stx*)])
-	      (and ($identifier? stx)
-		   (not (find
-			 (lambda (id)
-			   ($bound-identifier=? id stx))
-			 id*))
-		   (f (cdr stx*) (cons stx id*))))))))
 
   ;; Conditions
 

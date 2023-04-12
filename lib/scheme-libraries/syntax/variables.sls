@@ -9,7 +9,7 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
-    (scheme-libraries gensym))
+    (scheme-libraries gensyms))
 
   (define/who make-variable
     (lambda (name)
