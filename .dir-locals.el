@@ -12,6 +12,7 @@
           (put 'declare-syntax 'scheme-indent-function 1)
           (put 'declare-definition-syntax 'scheme-indent-function 1)
           (put 'declare-expander-syntax 'scheme-indent-function 1)
+          (put 'declare-prim-syntax 'scheme-indent-function 1)
           (put 'make 'scheme-indent-function nil)
           (put 'make-parameter 'scheme-indent-function 1)
           (put 'make-thread-parameter 'scheme-indent-function 1)
@@ -27,12 +28,13 @@
 	  (put 'with-implicit 'scheme-indent-function 1)
 	  (put 'with-syntax 'scheme-indent-function 1)
           (put 'syntax-match 'scheme-indent-function 1)
+          (put 'syntax-error 'scheme-indent-function 'defun)
 	  (font-lock-add-keywords
 	   nil
 	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
-             ("(\\(declare-syntax\\|declare-expander-syntax\\|declare-definition-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
+             ("(\\(declare-syntax\\|declare-\\(expander\\|definition\\|prim\\)-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
 	     ("(\\(extend-backquote\\)\\>" 1 font-lock-keyword-face)

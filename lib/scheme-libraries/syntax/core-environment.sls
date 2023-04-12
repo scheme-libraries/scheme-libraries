@@ -46,6 +46,11 @@
       [(declare-expander-syntax name proc)
        (declare-syntax name (make-definition-binding proc))]))
 
+  (define-syntax declare-prim-syntax
+    (syntax-rules ()
+      [(declare-expander-syntax name arity)
+       (declare-syntax name (make-prim-binding 'name arity))]))
+
   ;; Definitions
 
   (declare-definition-syntax define
@@ -66,6 +71,9 @@
         [(,k ,x ,e)
          (guard ($identifier? x))
 	 (values x e)]
+        [(,k ,x)
+         (guard ($identifier? x))
+         (values x `(void))]
 	[(,k (,x . ,formals) ,e)
 	 (guard ($identifier? x))
 	 (values x `(lambda ,formals ,e))]
@@ -94,6 +102,10 @@
            (build
              (lambda ,vars ,e)))]
         [,x (syntax-error who "invalid syntax" x)])))
+
+  ;; Prims
+
+  (declare-prim-syntax void 0)
 
   ;; Helpers
 

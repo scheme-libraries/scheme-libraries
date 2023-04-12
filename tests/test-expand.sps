@@ -4,6 +4,8 @@
 
 (import
   (rnrs)
+  ;; XXX
+  (only (chezscheme) trace-define)
   (scheme-libraries testing)
   (scheme-libraries reading annotated-datums)
   (scheme-libraries syntax core-environment)
@@ -36,5 +38,15 @@
   (lambda (x)
     (define y x)
     y))
+
+(test-expand (void)
+  (void))
+
+(test-expand (lambda ()
+               (letrec* ([a.0 (void)])
+                 '1))
+  (lambda ()
+    (define a)
+    1))
 
 (test-end "expand")

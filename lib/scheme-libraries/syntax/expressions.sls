@@ -96,5 +96,8 @@
                                 (and (f (vector-ref x k)
                                         (vector-ref y k))
                                      (g k))))))))]
-           [else (atom=? x y)])))))
+
+           [(atom? y)
+            (atom=? x y)]
+           [else #f])))))
   )

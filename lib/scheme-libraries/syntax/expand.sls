@@ -55,6 +55,8 @@
             ((expander-binding-proc t) x)]
            [(constant-type? t)
             (build (quote ,(constant-type-datum t)))]
+           [(prim-binding? t)
+            (expand-primop t x)]
            [(variable-binding? t)
             (build ,(variable-binding-symbol t))]
            [else
@@ -66,6 +68,22 @@
         [(,[expand-expression -> e] ,[expand-expression -> e*] ...)
          (build (,e ,e* ...))]
         [,x (syntax-error #f "invalid application syntax" x)])))
+
+  (define expand-primop
+    (lambda (t x)
+      (syntax-match x
+        [(,k ,[expand-expression -> e*] ...)
+         (let ([arity (prim-binding-arity t)]
+               [name (prim-binding-name t)]
+               [n (length e*)])
+           (if (fxnegative? arity)
+               (unless (fx>=? n (fxnot arity))
+                 (syntax-error name
+                   "insufficient number of arguments" e*))
+               (unless (fx=? n arity)
+                 (syntax-error name
+                   "wrong number of arguments" e*)))
+           (build (,name ,e* ...)))])))
 
   (define expand-body
     (lambda (x*)
@@ -115,7 +133,8 @@
                 [bdg (label->binding lbl)])
            (cond
             [(or (expander-binding? bdg)
-                 (definition-binding? bdg))
+                 (definition-binding? bdg)
+                 (prim-binding? bdg))
              (values x bdg)]
             [else
              (values x (make-application-type))]))]
