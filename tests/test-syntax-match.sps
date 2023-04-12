@@ -6,6 +6,7 @@
   (rnrs)
   (scheme-libraries testing)
   (scheme-libraries reading annotated-datums)
+  (scheme-libraries syntax core-environment)
   (scheme-libraries syntax syntax-objects)
   (scheme-libraries syntax syntax-match))
 

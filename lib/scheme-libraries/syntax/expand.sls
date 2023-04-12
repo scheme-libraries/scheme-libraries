@@ -44,11 +44,13 @@
     (lambda (x)
       (let f ([x x])
         (let-values ([(x t) (syntax-type x #f)])
+          (display x) (newline)
+          (display t) (newline)
           (cond
            [(expander-binding? t)
-            (expand-core-form t ...)]
-           [(constant-binding? t)
-            `(quote ,(constant-binding-datum t))]
+            ((expander-binding-proc t) x)]
+           [(constant-type? t)
+            `(quote ,(constant-type-datum t))]
            [else
             (syntax-error #f "invalid syntax in expression context" x)])))))
 
@@ -56,18 +58,41 @@
     (lambda (x)
       ;; FIXME
       (syntax-match x
-        [(,x) (expand-expression x)])
-      ...))
+        [(,x) (expand-expression x)])))
 
   ;; Syntax-type
 
   (define syntax-type
     (lambda (x ribs)
       (syntax-match x
+        [(,k . ,x*)
+         (guard ($identifier? k))
+         (let* ([lbl (identifier->label k)]
+                [bdg (label->binding lbl)])
+           (cond
+            ;; TODO
+            [(or (expander-binding? bdg))
+             (values x bdg)]
+            [else
+             (values x (make-application-type))]))]
+        [(,f . ,x*)
+         (values x (make-application-type))]
+        [,x
+         (guard ($identifier? x))
+         (cond
+          [(identifier->label x)
+           => (lambda (lbl)
+                (let ([bdg (label->binding lbl)])
+                  (cond
+                   [(variable-binding? bdg)
+                    (values x bdg)]
+                   ;; TODO
+                   [else
+                    (values x (make-other-type))])))])]
         [,x
          (let ([e (syntax-object->datum x)])
            (unless (constant? e)
              (syntax-error #f "invalid expression syntax" x))
-           (values x (make-constant-binding e)))])))
+           (values x (make-constant-type e)))])))
 
   )
