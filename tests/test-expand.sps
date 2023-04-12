@@ -25,7 +25,16 @@
 
 (test-expand (quote 10) 10)
 
-(test-expand (lambda (x1) x1)
+(test-expand (lambda (x.0)
+               (letrec* ()
+                 x.0))
   (lambda (x) x))
+
+(test-expand (lambda (x.0)
+               (letrec* ([y.1 x.0])
+                 y.1))
+  (lambda (x)
+    (define y x)
+    y))
 
 (test-end "expand")

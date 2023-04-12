@@ -5,6 +5,7 @@
 (library (scheme-libraries syntax expressions)
   (export
     build
+    build-begin
     expression?
     expression=?)
   (import
@@ -22,6 +23,25 @@
          (with-implicit (k quasiquote)
            #'(extend-backquote k `tmpl))]
         [_ (syntax-violation who "invalid syntax" x)])))
+
+  (define-syntax/who build-begin
+    (lambda (x)
+      (syntax-case x ()
+        [(_ e*)
+         #'(make-begin (build e*))]
+        [,_ (syntax-violation who "invalid syntax" x)])))
+
+  (define/who make-begin
+    (define strip-begin
+      (lambda (expr*)
+        (match `(begin ,@expr*)
+          [(begin ,[expr*] ...)
+           `(,expr* ... ...)]
+          [,expr (list expr)])))
+    (lambda (expr*)
+      (match (strip-begin expr*)
+        [(,x) x]
+        [(,x ,x* ...) `(begin ,x ,x* ...)])))
 
   (define expression?
     (lambda (x)

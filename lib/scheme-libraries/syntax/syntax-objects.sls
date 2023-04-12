@@ -18,6 +18,7 @@
     environment-set!
     make-ribcage
     ribcage?
+    ribcage-add!
     syntax-object?
     annotated-datum->syntax-object
     syntax-object-source-location
@@ -38,6 +39,7 @@
     identifier->symbol
     identifier->label
     (rename (&syntax $&syntax))
+    (rename (&undefined $&undefined))
     make-syntax-error
     syntax-error?
     syntax-error-form
@@ -54,9 +56,12 @@
     variable-binding-symbol
     make-expander-binding
     expander-binding?
-    expander-binding-proc)
+    expander-binding-proc
+    make-definition-binding
+    definition-binding?
+    definition-binding-proc)
   (import
-    (except (rnrs) &syntax)
+    (except (rnrs) &syntax &undefined)
     (rnrs mutable-pairs)
     (scheme-libraries atoms)
     (scheme-libraries counters)
@@ -137,7 +142,19 @@
             (assertion-violation who "invalid variable argument" var))
           ((pargs->new) var)))))
 
-  ;; Metalevels
+  (define-record-type definition-binding
+    (nongenerative definition-binding-549adafc-af54-45da-b1a8-fa63c6e2ce19)
+    (parent binding) (sealed #t)
+    (fields proc)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-definition-binding)
+        (lambda (proc)
+          (unless (procedure? proc)
+            (assertion-violation who "invalid procedure argument" proc))
+          ((pargs->new) proc)))))
+
+    ;; Metalevels
 
   (define metalevel?
     (lambda (obj)
@@ -379,6 +396,22 @@
 		   [(rib-ref table n m) => succeed]
 		   [else
 		    (f barrier chunks)]])))]))))
+
+  (define/who ribcage-add!
+    (lambda (ribs id bdg)
+      (unless (ribcage? ribs)
+        (assertion-violation who "invalid ribcage argument" ribs))
+      (unless ($identifier? id)
+        (assertion-violation who "invalid identifier argument" id))
+      (unless (binding? bdg)
+        (assertion-violation who "invalid binding argument" bdg))
+      (let ([lbl (make-label bdg)])
+        (ribcage-set! ribs
+                      (identifier->symbol id)
+                      (syntax-object-marks id)
+                      (make-label/props lbl))
+        (and (label=? lbl (identifier->label id))
+             lbl))))
 
   (define rib-set!
     (lambda (r n m l/p)
@@ -772,6 +805,9 @@
     make-syntax-error syntax-error?
     (form syntax-error-form)
     (subform syntax-error-subform))
+
+  (define-condition-type &undefined &error
+    make-undefined-error undefined-error?)
 
   ;; Record writers
 
