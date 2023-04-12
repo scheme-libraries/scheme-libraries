@@ -25,7 +25,7 @@
 
 (test-expand (quote 10) 10)
 
-(test-expand (lambda (x0) '10)
-  (lambda (x) 10))
+(test-expand (lambda (x1) x1)
+  (lambda (x) x))
 
 (test-end "expand")

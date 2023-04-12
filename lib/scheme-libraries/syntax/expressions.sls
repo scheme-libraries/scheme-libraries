@@ -47,17 +47,20 @@
         (assertion-violation who "invalid expression argument" x))
       (unless (expression? y)
         (assertion-violation who "invalid expression argument" y))
-      (let ([ht (make-eq-hashtable)])
+      (let ([htx (make-eq-hashtable)]
+            [hty (make-eq-hashtable)])
         (let f ([x x] [y y])
           (cond
            [(variable? x)
             (and (variable? y)
                  (cond
-                  [(hashtable-ref ht x #f)
+                  [(hashtable-ref htx x #f)
                    => (lambda (x)
                         (eq? x y))]
+                  [(hashtable-ref hty y #f) #f]
                   [else
-                   (hashtable-set! ht x y)
+                   (hashtable-set! htx x y)
+                   (hashtable-set! hty y x)
                    #t]))]
            [(pair? x)
             (and (pair? y)

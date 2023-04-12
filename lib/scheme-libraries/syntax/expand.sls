@@ -50,6 +50,8 @@
             ((expander-binding-proc t) x)]
            [(constant-type? t)
             (build (quote ,(constant-type-datum t)))]
+           [(variable-binding? t)
+            (build ,(variable-binding-symbol t))]
            [else
             (syntax-error #f "invalid syntax in expression context" x)])))))
 
