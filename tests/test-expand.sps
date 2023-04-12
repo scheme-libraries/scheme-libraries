@@ -13,13 +13,14 @@
 (define expand-datum
   (lambda (x)
     (expand (datum->annotated-datum x)
-            core-environment)))
+            (core-environment))))
 
 (test-begin "expand")
 
 (test-equal ''10 (expand-datum 10))
 
-(test-equal '(lambda (x.0) 10)
+;;; TODO: expression=? und with-expression-builder (o.ä.)
+(test-equal '(lambda (x0) '10)
   (expand-datum '(lambda (x) 10)))
 
 (test-end "expand")

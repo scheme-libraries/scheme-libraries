@@ -44,8 +44,6 @@
     (lambda (x)
       (let f ([x x])
         (let-values ([(x t) (syntax-type x #f)])
-          (display x) (newline)
-          (display t) (newline)
           (cond
            [(expander-binding? t)
             ((expander-binding-proc t) x)]

@@ -10,7 +10,7 @@
   (scheme-libraries syntax syntax-objects))
 
 (define tmpl (annotated-datum->syntax-object (datum->annotated-datum 'tmpl)
-                                             core-environment))
+                                             (core-environment)))
 
 (define-syntax $syntax
   (syntax-rules ()
