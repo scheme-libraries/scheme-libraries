@@ -12,8 +12,10 @@
     label?
     label-kill!
     label->binding
+    make-label/props
     make-environment
     environment?
+    environment-set!
     make-ribcage
     ribcage?
     syntax-object?
@@ -446,6 +448,16 @@
         (lambda ()
           (new (make-rib))))))
 
+  (define/who environment-set!
+    (lambda (env name l/p)
+      (unless (environment? env)
+        (assertion-violation who "invalid environment argument" env))
+      (unless (symbol? name)
+        (assertion-violation who "invalid name argument" name))
+      (unless (label/props? l/p)
+        (assertion-violation who "invalid label/props argument" name))
+      (rib-set! (environment-rib env) name '() l/p)))
+
   ;; Ribcages
 
   (define-record-type ribcage
@@ -461,7 +473,7 @@
             [(rib) (new (list rib))]
             [(id* lbl*)
              (unless (and (list? id*)
-                          (for-all symbol? id*))
+                          (for-all $identifier? id*))
                (assertion-violation who "invalid identifier list argument" id*))
              (unless (and (list? lbl*)
                           (for-all label? lbl*))

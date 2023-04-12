@@ -7,32 +7,58 @@
     core-environment)
   (import
     (rnrs)
+    (scheme-libraries helpers)
     (scheme-libraries match)
+    (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variables))
 
+  ;; Core environment
+
+  (define core-environment
+    (let ([env (make-environment)])
+      (lambda () env)))
+
+  (define-syntax declare-syntax
+    (lambda (stx)
+      (syntax-case stx ()
+          [(_ name bdg)
+           #`(define #,(construct-name #'name "$" #'name)
+               (let ([l/p (make-label/props (make-label bdg (metalevel:syntax)))])
+                 (environment-set! (core-environment) 'name l/p)
+                 (annotated-datum->syntax-object (make-annotated-atom 'name #f)
+                                                 (core-environment))))])))
+
+  (define-syntax declare-expander-syntax
+    (syntax-rules ()
+      [(declare-expander-syntax name proc)
+       (declare-syntax name (make-expander-binding proc))]))
+
   ;; Expanders
 
-  (define expand-lambda
+  (declare-expander-syntax lambda
     (lambda (x)
+      (define who 'lambda)
       (syntax-match x
         [(,k ,formals ,body* ... ,body)
-         (let* ([formals (parse-formals formals)]
+         (let* ([formals (parse-formals who x formals)]
                 [names (formals-map identifier->symbol formals)]
                 [vars (formals-map make-variable names)]
                 [id* (formals->list formals)]
                 [bdg* (map make-variable-binding (formals->list vars))]
                 [lbl* (map make-label bdg*)]
                 [ribs (make-ribcage id* lbl*)]
-                [form* (add-substitutions* `(,body* ... ,body))]
+                [form* (add-substitutions* ribs `(,body* ... ,body))]
                 [e (expand-body form*)])
            (for-each label-kill! lbl*)
            (extend-backquote here
              `(lambda ,vars ,e)))]
-        [,x (syntax-error 'lambda "invalid syntax" x)])))
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  ;; Helpers
 
   (define parse-formals
     (lambda (who form x)
@@ -74,11 +100,6 @@
 			 id*))
 		   (f (cdr stx*) (cons stx id*))))))))
 
-  ;; Core environment
 
-  (define core-environment
-    (make-environment))
-
-  ;; TODO: Add bindings like an expander for expand-lambda.
 
   )
