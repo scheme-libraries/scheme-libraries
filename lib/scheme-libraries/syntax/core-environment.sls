@@ -265,6 +265,28 @@
                    [,cl (syntax-error who "invalid clause" x cl)]))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
+  (declare-expander-syntax case
+    (lambda (x)
+      (define who 'case)
+      (syntax-match x
+        [(,k ,[expand-expression -> e] ,cl ,cl* ...)
+         (let ([k (make-variable 't)])
+           (build-let ([,k ,e])
+             ,(let f ([cl cl] [cl* cl*])
+                (if (null? cl*)
+                    (syntax-match cl
+                      [[else ,[expand-expression -> e] ,[expand-expression -> e*] ...]
+                       (build-begin ,e ,e*)]
+                      [[(,[syntax-object->datum -> d] ...) ,[expand-expression -> e] ,[expand-expression -> e*] ...]
+                       (build (if (memv ,k '(,d ...)) ,(build-begin ,e ,e* ...) (values)))]
+                      [,cl (syntax-error who "invalid clause" x cl)])
+                    (let ([rest (f (car cl*) (cdr cl*))])
+                      (syntax-match cl
+                        [[(,[syntax-object->datum -> d] ...) ,[expand-expression -> e] ,[expand-expression -> e*] ...]
+                         (build (if (memv ,k '(,d ...)) ,(build-begin ,e ,e* ...) ,rest))]
+                        [,cl (syntax-error who "invalid clause" x cl)]))))))]
+        [,x (syntax-error who "invalid sytnax" x)])))
+
   ;; Prims
 
   (declare-prim-syntax void 0)
