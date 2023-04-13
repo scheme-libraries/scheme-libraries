@@ -219,20 +219,26 @@
     (sealed #t)
     (fields
       (mutable binding)
-      metalevel)
+      metalevel
+      (mutable name))
     (protocol
       (lambda (new)
         (define who 'make-label)
         (rec make
           (case-lambda
             [(bdg)
-             (make bdg (current-metalevel))]
+             (make bdg (current-metalevel) #f)]
             [(bdg ml)
+             (make bdg ml #f)]
+            [(bdg ml name)
              (unless (binding? bdg)
                (assertion-violation who "invalid label argument" bdg))
              (unless (metalevel? ml)
                (assertion-violation who "invalid metalevel argument" ml))
-             (new bdg ml)])))))
+             (unless (or (not name)
+                         (symbol? name))
+               (assertion-violation who "invalid symbol argument" name))
+             (new bdg ml name)])))))
 
   (define/who label=?
     (lambda (l1 l2)
