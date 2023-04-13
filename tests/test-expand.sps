@@ -89,4 +89,17 @@
 (test-expand ((lambda (t.0) (if t.0 ('b t.0) 'c)) 'a)
   (cond ['a => 'b] [else 'c]))
 
+(test-expand ((lambda (k.0) (if (memv k.0 '(3 4)) '#t (values))) '1)
+  (case '1
+    [(3 4) #t]
+    [else #f]))
+
+#;
+(test-expand (lambda () '#f)
+  (lambda ()
+    (define-syntax foo
+      (lambda (stx)
+        #f))
+    foo))
+
 (test-end "expand")

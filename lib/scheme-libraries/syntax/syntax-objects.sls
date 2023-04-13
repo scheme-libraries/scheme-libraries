@@ -7,7 +7,9 @@
     metalevel?
     metalevel:syntax
     metalevel:run
+    metalevel-for-syntax
     current-metalevel
+    current-metalevel-for-syntax
     make-label
     label?
     label-kill!
@@ -54,6 +56,9 @@
     make-variable-binding
     variable-binding?
     variable-binding-symbol
+    make-keyword-binding
+    keyword-binding?
+    keyword-binding-transformer
     make-expander-binding
     expander-binding?
     expander-binding-proc
@@ -151,6 +156,19 @@
             (assertion-violation who "invalid variable argument" var))
           ((pargs->new) var)))))
 
+  (define-record-type keyword-binding
+    (nongenerative keyword-binding-032ff78b-c673-47cd-9140-fc52de498e1a)
+    (parent binding)
+    (sealed #t)
+    (fields transformer)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-keyword-binding)
+        (lambda (proc)
+          (unless (procedure? proc)
+            (assertion-violation who "invalid procedure argument" proc))
+          ((pargs->new) proc)))))
+
   (define-record-type definition-binding
     (nongenerative definition-binding-549adafc-af54-45da-b1a8-fa63c6e2ce19)
     (parent binding) (sealed #t)
@@ -199,6 +217,10 @@
     (lambda (obj)
       (exact-integer? obj)))
 
+  (define metalevel-for-syntax
+    (lambda (ml)
+      (fxnot ml)))
+
   (define metalevel:syntax
     (lambda () -1))
 
@@ -211,6 +233,10 @@
         (unless (metalevel? x)
           (assertion-violation who "invalid metalevel" x))
         x)))
+
+  (define current-metalevel-for-syntax
+    (lambda ()
+      (metalevel-for-syntax (current-metalevel))))
 
   ;; Labels
 
@@ -443,20 +469,23 @@
 		    (f barrier chunks)]])))]))))
 
   (define/who ribcage-add!
-    (lambda (ribs id bdg)
-      (unless (ribcage? ribs)
-        (assertion-violation who "invalid ribcage argument" ribs))
-      (unless ($identifier? id)
-        (assertion-violation who "invalid identifier argument" id))
-      (unless (binding? bdg)
-        (assertion-violation who "invalid binding argument" bdg))
-      (let ([lbl (make-label bdg)])
-        (ribcage-set! ribs
-                      (identifier->symbol id)
-                      (syntax-object-marks id)
-                      (make-label/props lbl))
-        (and (label=? lbl (identifier->label id))
-             lbl))))
+    (case-lambda
+      [(ribs id bdg ml)
+       (unless (ribcage? ribs)
+         (assertion-violation who "invalid ribcage argument" ribs))
+       (unless ($identifier? id)
+         (assertion-violation who "invalid identifier argument" id))
+       (unless (binding? bdg)
+         (assertion-violation who "invalid binding argument" bdg))
+       (let ([lbl (make-label bdg ml)])
+         (ribcage-set! ribs
+                       (identifier->symbol id)
+                       (syntax-object-marks id)
+                       (make-label/props lbl))
+         (and (label=? lbl (identifier->label id))
+              lbl))]
+      [(ribs id bdg)
+       (ribcage-add! ribs id bdg (current-metalevel))]))
 
   (define rib-set!
     (lambda (r n m l/p)

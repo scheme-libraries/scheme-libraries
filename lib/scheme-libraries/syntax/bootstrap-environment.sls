@@ -65,6 +65,15 @@
         [,x
          (syntax-error who "invalid syntax" x)])))
 
+  (define parse-define-syntax
+    (lambda (x)
+      (define who 'define-syntax)
+      (syntax-match x
+        [(,k ,x ,e)
+         (guard ($identifier? x))
+         (values x e)]
+        [,x (syntax-error who "invalid syntax" x)])))
+
   (define parse-formals
     (lambda (who form x)
       (syntax-match x
@@ -127,10 +136,17 @@
                (build (,who ([,var* ,e*] ...) ,e)))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
+  ;; Transformer evaluation
+
+  (define eval-transformer
+    (lambda (x)
+      (assert #f)))
+
   ;; Bootstrap environment
 
   (define bootstrap-environment
     (lambda ()
+      ;; TODO: Copy the system environment.
       (system-environment)))
 
   ;; Syntax
@@ -153,8 +169,18 @@
                [lbl (ribcage-add! ribs x bdg)])
           (unless lbl
             (identifier-error 'define x "trying to redefine the local keyword ~a"))
-          (values (list (lambda ()
-                          (make-definition var (expand-expression e)))))))))
+          (list (lambda ()
+                  (make-definition var (expand-expression e))))))))
+
+  (declare-definition-syntax define-syntax
+    (lambda (x ribs)
+      (let-values ([(x e) (parse-define-syntax x)])
+        (let* ([proc (eval-transformer e)]
+               [bdg (make-keyword-binding proc)]
+               [lbl (ribcage-add! ribs x bdg (current-metalevel-for-syntax))])
+          (unless lbl
+            (identifier-error 'define-syntax x "trying to redefine the local keyword ~a"))
+          '()))))
 
   ;; Expanders
 
@@ -286,7 +312,7 @@
                   (let ([x (make-variable 't)])
                     (build-let ([,x ,t])
                       (if ,x ,x (values))))]
-                 [(,[expand-expression -> t] ,[expand-expression -> e*])
+                 [(,[expand-expression -> t] ,[expand-expression -> e*] ...)
                   (build (if ,t ,(build-begin ,e* ...) (values)))]
                  [,cl (syntax-error who "invalid clause" x cl)])
                (let ([rest (f (car cl*) (cdr cl*))])
@@ -299,7 +325,7 @@
                     (let ([x (make-variable 't)])
                       (build-let ([,x ,t])
                         (if ,x ,x ,rest)))]
-                   [(,[expand-expression -> t] ,[expand-expression -> e*])
+                   [(,[expand-expression -> t] ,[expand-expression -> e*] ...)
                     (build (if ,t ,(build-begin ,e* ...) ,rest))]
                    [,cl (syntax-error who "invalid clause" x cl)]))))]
         [,x (syntax-error who "invalid syntax" x)])))
@@ -308,26 +334,28 @@
     (lambda (x)
       (define who 'case)
       (syntax-match x
-        [(,k ,[expand-expression -> e] ,cl ,cl* ...)
-         (let ([k (make-variable 't)])
-           (build-let ([,k ,e])
-             ,(let f ([cl cl] [cl* cl*])
-                (if (null? cl*)
-                    (syntax-match cl
-                      [[else ,[expand-expression -> e] ,[expand-expression -> e*] ...]
-                       (build-begin ,e ,e*)]
-                      [[(,[syntax-object->datum -> d] ...) ,[expand-expression -> e] ,[expand-expression -> e*] ...]
-                       (build (if (memv ,k '(,d ...)) ,(build-begin ,e ,e* ...) (values)))]
-                      [,cl (syntax-error who "invalid clause" x cl)])
+        [(,k ,e ,cl ,cl* ...)
+         (expand-expression
+          `(let ([k ,e])
+             (cond
+              ,(let f ([cl cl] [cl* cl*])
+                 (if (null? cl*)
+                     (syntax-match cl
+                       [[else ,e ,e* ...]
+                        `[else ,e ,e* ...]]
+                       [[(,d ...) ,e ,e* ...]
+                        `[(memv k '(,d ...)) ,e ,e* ...]]
+                       [,cl (syntax-error who "invalid clause" x cl)])
                     (let ([rest (f (car cl*) (cdr cl*))])
                       (syntax-match cl
-                        [[(,[syntax-object->datum -> d] ...) ,[expand-expression -> e] ,[expand-expression -> e*] ...]
-                         (build (if (memv ,k '(,d ...)) ,(build-begin ,e ,e* ...) ,rest))]
-                        [,cl (syntax-error who "invalid clause" x cl)]))))))]
+                        [[(,d ...) ,e ,e* ...]
+                         `[(memv k '(,d ...)) ,e ,e* ...]]
+                        [,cl (syntax-error who "invalid clause" x cl)])))))))]
         [,x (syntax-error who "invalid sytnax" x)])))
 
   ;; Prims
 
   (declare-prim-syntax void 0)
+  (declare-prim-syntax memv 2)
 
   )
