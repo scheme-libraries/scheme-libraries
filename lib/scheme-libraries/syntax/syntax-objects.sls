@@ -57,6 +57,8 @@
     make-expander-binding
     expander-binding?
     expander-binding-proc
+    make-begin-binding
+    begin-binding?
     make-definition-binding
     definition-binding?
     definition-binding-proc
@@ -158,19 +160,23 @@
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) proc)))))
 
+  (define-record-type begin-binding
+    (nongenerative begin-binding-bd5e8fd6-f0ec-4626-a19d-cba8937b566e)
+    (parent binding) (sealed #t))
+
   (define-record-type prim-binding
     (nongenerative prim-binding-676291b2-9e1c-4044-b1be-7c27030ddb0f)
     (parent binding) (sealed #t)
     (fields name arity)
     (protocol
-     (lambda (pargs->new)
-       (define who 'make-prim-binding)
-       (lambda (name arity)
-         (unless (symbol? name)
-           (assertion-violation who "invalid primitive argument" name))
-         (unless (fixnum? arity)
-           (assertion-violation who "invalid arity argument" arity))
-         ((pargs->new) name arity)))))
+      (lambda (pargs->new)
+        (define who 'make-prim-binding)
+        (lambda (name arity)
+          (unless (symbol? name)
+            (assertion-violation who "invalid primitive argument" name))
+          (unless (fixnum? arity)
+            (assertion-violation who "invalid arity argument" arity))
+          ((pargs->new) name arity)))))
 
   ;; Metalevels
 

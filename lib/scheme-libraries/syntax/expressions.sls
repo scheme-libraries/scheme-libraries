@@ -6,6 +6,7 @@
   (export
     build
     build-begin
+    build-let
     expression?
     expression=?)
   (import
@@ -27,8 +28,20 @@
   (define-syntax/who build-begin
     (lambda (x)
       (syntax-case x ()
-        [(_ e*)
-         #'(make-begin (build e*))]
+        [(_ e ...)
+         #'(make-begin (build (e ...)))]
+        [,_ (syntax-violation who "invalid syntax" x)])))
+
+  (define-syntax/who build-let
+    (lambda (x)
+      (syntax-case x ()
+        [(k b e1 ... e2)
+         (with-implicit (k quasiquote)
+           #'(extend-backquote k
+               (match `b
+                 [([,x* ,e*] (... ...))
+                  (build ((lambda ,x* ,(build-begin e1 ... e2)) ,e* (... ...)))]
+                 [,x (assertion-violation 'who "invalid bindings" x)])))]
         [,_ (syntax-violation who "invalid syntax" x)])))
 
   (define/who make-begin
