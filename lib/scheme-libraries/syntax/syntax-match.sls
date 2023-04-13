@@ -16,7 +16,6 @@
     (rnrs)
     (scheme-libraries atoms)
     (scheme-libraries define-match)
-    (scheme-libraries helpers)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax syntax-objects)
     (rename (scheme-libraries syntax syntax-objects)
