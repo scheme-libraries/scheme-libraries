@@ -94,7 +94,6 @@
     [(3 4) #t]
     [else #f]))
 
-#;
 (test-expand (lambda () '#f)
   (lambda ()
     (define-syntax foo

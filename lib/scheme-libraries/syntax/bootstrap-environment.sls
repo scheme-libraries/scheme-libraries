@@ -136,11 +136,36 @@
                (build (,who ([,var* ,e*] ...) ,e)))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
-  ;; Transformer evaluation
+  ;; Macros
 
   (define eval-transformer
     (lambda (x)
-      (assert #f)))
+      (let ([e (meta-expand x)])
+        (let ([f (execute-transformer e)])
+          ;; TODO: variable transformer
+          (unless (procedure? f)
+            (assertion-violation 'define-syntax "invalid transformer" f))
+          f))))
+
+  (define meta-expand
+    (lambda (x)
+      ;; TODO: Switch context and collect information about visited
+      ;; symbols.
+      (let ([e (parameterize ([current-metalevel
+                               (fx+ (current-metalevel) 1)])
+                 (expand-expression x))])
+        e)))
+
+  (define execute-transformer
+    (lambda (e)
+      ;; TODO Wrap e with code so that the runtime globals coming from
+      ;; the expansion of e (in the meta-context) are set.  (The
+      ;; values are also delivered in a vector.)
+      (execute e)))
+
+  (define execute
+    (lambda (e)
+      ((expression-compile e))))
 
   ;; Bootstrap environment
 
