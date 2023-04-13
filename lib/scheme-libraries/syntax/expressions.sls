@@ -8,9 +8,11 @@
     build-begin
     build-let
     expression?
-    expression=?)
+    expression=?
+    expression-compile)
   (import
     (rnrs)
+    (rnrs eval)
     (scheme-libraries atoms)
     (scheme-libraries define-who)
     (scheme-libraries match)
@@ -113,4 +115,9 @@
            [(atom? y)
             (atom=? x y)]
            [else #f])))))
+
+  (define expression-compile
+    (lambda (e)
+      (eval `(lambda () ,e) (environment '(rnrs)))))
+
   )

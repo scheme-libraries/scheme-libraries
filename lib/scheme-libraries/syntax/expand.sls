@@ -142,10 +142,25 @@
     (lambda (def*)
       (map (lambda (thunk) (thunk)) def*)))
 
-  ;; Syntax-type
+  ;; Transformations
+
+  (define transform
+    (lambda (f x ribs)
+      ;; TODO: Handle variable transformers.
+      ... ;; see code in egg2 and rebuild transformer.
+
+
+      ))
+
+  ;; syntax-type
 
   (define syntax-type
     (lambda (x ribs)
+      (define keyword-binding
+        (lambda (bdg)
+          (syntax-type (transform (keyword-binding-transformers bdg)
+                                  x
+                                  ribs))))
       (syntax-match x
         [(,k . ,x*)
          (guard ($identifier? k))
@@ -157,6 +172,8 @@
                  (definition-binding? bdg)
                  (prim-binding? bdg))
              (values x bdg)]
+            [(keyword-binding? bdg)
+             (keyword-type bdg)]
             [else
              (values x (make-application-type))]))]
         [(,f . ,x*)
@@ -170,6 +187,8 @@
                   (cond
                    [(variable-binding? bdg)
                     (values x bdg)]
+                   [(keyword-binding? bdg)
+                    (keyword-type bdg)]
                    [(auxiliary-binding? bdg)
                     (syntax-error (auxiliary-binding-who bdg) "invalid use of auxiliary syntax" x)]
                    ;; TODO
