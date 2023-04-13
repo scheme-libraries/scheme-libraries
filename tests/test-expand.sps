@@ -8,7 +8,7 @@
   (only (chezscheme) trace-define)
   (scheme-libraries testing)
   (scheme-libraries reading annotated-datums)
-  (scheme-libraries syntax core-environment)
+  (scheme-libraries syntax bootstrap-environment)
   (scheme-libraries syntax expressions)
   (scheme-libraries syntax expand)
   (scheme-libraries syntax syntax-objects))
@@ -16,7 +16,7 @@
 (define expand-datum
   (lambda (x)
     (expand (datum->annotated-datum x)
-            (core-environment))))
+            (bootstrap-environment))))
 
 (define-syntax test-expand
   (syntax-rules ()
@@ -85,5 +85,8 @@
 
 (test-expand (lambda () (letrec* ([x.0 '1] [y.1 '2]) x.0))
   (lambda () (begin (define x 1) (define y 2) x)))
+
+(test-expand ((lambda (t.0) (if t.0 ('b t.0) 'c)) 'a)
+  (cond ['a => 'b] [else 'c]))
 
 (test-end "expand")

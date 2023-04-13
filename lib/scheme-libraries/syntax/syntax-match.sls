@@ -10,12 +10,14 @@
     ...
     _
     ->
-    guard)
+    guard
+    system-environment)
   (import
     (rnrs)
     (scheme-libraries atoms)
     (scheme-libraries define-match)
     (scheme-libraries helpers)
+    (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax syntax-objects)
     (rename (scheme-libraries syntax syntax-objects)
             (syntax-car match-car)
@@ -24,6 +26,19 @@
             (syntax-null? match-null?)
             (syntax-vector? match-vector?)
             (syntax-vector->list match-syntax-vector->list)))
+
+  ;; System environment
+
+  (define system-environment
+    (let ([env (make-environment)])
+      (lambda () env)))
+
+  (define construct-identifier
+    (lambda (name)
+      (annotated-datum->syntax-object (make-annotated-atom name #f)
+                                      (system-environment))))
+
+  ;; Matcher primitives
 
   (define match-equal?
     (lambda (x y)
@@ -47,7 +62,7 @@
               #`(vector #,@(map f #'(e ...)))]
              [x
               (identifier? #'x)
-              (construct-name #'x "$" #'x)]
+              #'(construct-identifier 'x)]
              [e #`'#,(syntax-object->datum #'e)]))])))
 
   (define-match (syntax-match syntax-extend-backquote)))

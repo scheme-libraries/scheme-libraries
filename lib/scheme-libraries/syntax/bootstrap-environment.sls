@@ -2,9 +2,9 @@
 
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (scheme-libraries syntax core-environment)
+(library (scheme-libraries syntax bootstrap-environment)
   (export
-    core-environment)
+    bootstrap-environment)
   (import
     (rnrs)
     (scheme-libraries helpers)
@@ -20,21 +20,12 @@
     (scheme-libraries syntax variables)
     (scheme-libraries thread-parameters))
 
-  ;; Core environment
-
-  (define core-environment
-    (let ([env (make-environment)])
-      (lambda () env)))
-
   (define-syntax declare-syntax
     (lambda (stx)
       (syntax-case stx ()
           [(_ name bdg)
-           #`(define #,(construct-name #'name "$" #'name)
-               (let ([l/p (make-label/props (make-label bdg (metalevel:syntax)))])
-                 (environment-set! (core-environment) 'name l/p)
-                 (annotated-datum->syntax-object (make-annotated-atom 'name #f)
-                                                 (core-environment))))])))
+           #`(let ([l/p (make-label/props (make-label bdg (metalevel:syntax) 'name))])
+               (environment-set! (system-environment) 'name l/p))])))
 
   (define-syntax declare-expander-syntax
     (syntax-rules ()
@@ -55,6 +46,92 @@
     (syntax-rules ()
       [(declare-expander-syntax name arity)
        (declare-syntax name (make-prim-binding 'name arity))]))
+
+  ;; Helpers
+
+  (define parse-define
+    (lambda (x)
+      (define who 'define)
+      (syntax-match x
+        [(,k ,x ,e)
+         (guard ($identifier? x))
+	 (values x e)]
+        [(,k ,x)
+         (guard ($identifier? x))
+         (values x `(void))]
+	[(,k (,x . ,formals) ,e)
+	 (guard ($identifier? x))
+	 (values x `(lambda ,formals ,e))]
+        [,x
+         (syntax-error who "invalid syntax" x)])))
+
+  (define parse-formals
+    (lambda (who form x)
+      (syntax-match x
+        [(,x* ...)
+         (guard (valid-bound-identifiers? x*))
+         x*]
+        [(,x* ... . ,x)
+         (guard (valid-bound-identifiers? (cons x x*)))
+         `(,x* ... . ,x)]
+        [,x (syntax-error who "invalid syntax")])))
+
+  (define formals-map
+    (lambda (proc formals)
+      (match formals
+        [() '()]
+        [(,x . ,[x*]) `(,(proc x) . ,x*)]
+        [,x (proc x)])))
+
+  (define formals->list
+    (lambda (formals)
+      (match formals
+        [() '()]
+        [(,x . ,[x*]) `(,x . ,x*)]
+        [,x `(,x)])))
+
+  (define valid-bound-identifiers?
+    (lambda (stx*)
+      ;; TODO: The algorithm is currently quadratic, which may matter
+      ;; for generated code.
+      (let f ([stx* stx*]
+	      [id* '()])
+	(or (null? stx*)
+	    (let ([stx (car stx*)])
+	      (and ($identifier? stx)
+		   (not (find
+			 (lambda (id)
+			   ($bound-identifier=? id stx))
+			 id*))
+		   (f (cdr stx*) (cons stx id*))))))))
+
+  (define expand-letrec
+    (lambda (x who)
+      (syntax-match x
+        [(,k ([,x* ,e*] ...) ,b* ... ,b)
+         (guard (for-all $identifier? x*))
+         (unless (valid-bound-identifiers? x*)
+           (syntax-error who "invalid syntax" x))
+         (let* ([name* (map identifier->symbol x*)]
+                [var* (map make-variable name*)]
+                [bdg* (map make-variable-binding var*)]
+                [lbl* (map make-label bdg*)]
+                [ribs (make-ribcage x* lbl*)]
+                [e* (add-substitutions* ribs e*)]
+                [form* (add-substitutions* ribs `(,b* ... ,b))])
+           (parameterize ([current-who who]
+                          [current-form x])
+             (let ([e* (map expand-expression e*)]
+                   [e (expand-body form*)])
+               (for-each label-kill! lbl*)
+               (build (,who ([,var* ,e*] ...) ,e)))))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  ;; Bootstrap environment
+
+  (define bootstrap-environment
+    (lambda ()
+      (system-environment)))
 
   ;; Syntax
 
@@ -78,22 +155,6 @@
             (identifier-error 'define x "trying to redefine the local keyword ~a"))
           (values (list (lambda ()
                           (make-definition var (expand-expression e)))))))))
-
-  (define parse-define
-    (lambda (x)
-      (define who 'define)
-      (syntax-match x
-        [(,k ,x ,e)
-         (guard ($identifier? x))
-	 (values x e)]
-        [(,k ,x)
-         (guard ($identifier? x))
-         (values x `(void))]
-	[(,k (,x . ,formals) ,e)
-	 (guard ($identifier? x))
-	 (values x `(lambda ,formals ,e))]
-        [,x
-         (syntax-error who "invalid syntax" x)])))
 
   ;; Expanders
 
@@ -191,28 +252,6 @@
     (lambda (x)
       (expand-letrec x 'letrec*)))
 
-  (define expand-letrec
-    (lambda (x who)
-      (syntax-match x
-        [(,k ([,x* ,e*] ...) ,b* ... ,b)
-         (guard (for-all $identifier? x*))
-         (unless (valid-bound-identifiers? x*)
-           (syntax-error who "invalid syntax" x))
-         (let* ([name* (map identifier->symbol x*)]
-                [var* (map make-variable name*)]
-                [bdg* (map make-variable-binding var*)]
-                [lbl* (map make-label bdg*)]
-                [ribs (make-ribcage x* lbl*)]
-                [e* (add-substitutions* ribs e*)]
-                [form* (add-substitutions* ribs `(,b* ... ,b))])
-           (parameterize ([current-who who]
-                          [current-form x])
-             (let ([e* (map expand-expression e*)]
-                   [e (expand-body form*)])
-               (for-each label-kill! lbl*)
-               (build (,who ([,var* ,e*] ...) ,e)))))]
-        [,x (syntax-error who "invalid syntax" x)])))
-
   (declare-expander-syntax let*
     (lambda (x)
       (define who 'let*)
@@ -290,49 +329,5 @@
   ;; Prims
 
   (declare-prim-syntax void 0)
-
-  ;; Helpers
-
-  (define parse-formals
-    (lambda (who form x)
-      (syntax-match x
-        [(,x* ...)
-         (guard (valid-bound-identifiers? x*))
-         x*]
-        [(,x* ... . ,x)
-         (guard (valid-bound-identifiers? (cons x x*)))
-         `(,x* ... . ,x)]
-        [,x (syntax-error who "invalid syntax")])))
-
-  (define formals-map
-    (lambda (proc formals)
-      (match formals
-        [() '()]
-        [(,x . ,[x*]) `(,(proc x) . ,x*)]
-        [,x (proc x)])))
-
-  (define formals->list
-    (lambda (formals)
-      (match formals
-        [() '()]
-        [(,x . ,[x*]) `(,x . ,x*)]
-        [,x `(,x)])))
-
-  (define valid-bound-identifiers?
-    (lambda (stx*)
-      ;; TODO: The algorithm is currently quadratic, which may matter
-      ;; for generated code.
-      (let f ([stx* stx*]
-	      [id* '()])
-	(or (null? stx*)
-	    (let ([stx (car stx*)])
-	      (and ($identifier? stx)
-		   (not (find
-			 (lambda (id)
-			   ($bound-identifier=? id stx))
-			 id*))
-		   (f (cdr stx*) (cons stx id*))))))))
-
-
 
   )

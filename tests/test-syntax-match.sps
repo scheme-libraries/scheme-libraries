@@ -6,12 +6,12 @@
   (rnrs)
   (scheme-libraries testing)
   (scheme-libraries reading annotated-datums)
-  (scheme-libraries syntax core-environment)
+  (scheme-libraries syntax bootstrap-environment)
   (scheme-libraries syntax syntax-objects)
   (scheme-libraries syntax syntax-match))
 
 (define tmpl (annotated-datum->syntax-object (datum->annotated-datum 'tmpl)
-                                             (core-environment)))
+                                             (bootstrap-environment)))
 
 (define-syntax $syntax
   (syntax-rules ()
@@ -34,9 +34,8 @@
       [(b ,a) 'a])))
 
 (test-assert
-  (let ([$b ($syntax b)])
-    (syntax-match ($syntax ((b c) c))
-      [(b ,a) #f]
-      [,x #t])))
+  (syntax-match ($syntax ((b c) c))
+    [(b ,a) #f]
+    [,x #t]))
 
 (test-end "syntax-match")
