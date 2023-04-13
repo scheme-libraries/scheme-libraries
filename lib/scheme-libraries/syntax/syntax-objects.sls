@@ -59,6 +59,9 @@
     expander-binding-proc
     make-begin-binding
     begin-binding?
+    make-auxiliary-binding
+    auxiliary-binding?
+    auxiliary-binding-who
     make-definition-binding
     definition-binding?
     definition-binding-proc
@@ -163,6 +166,18 @@
   (define-record-type begin-binding
     (nongenerative begin-binding-bd5e8fd6-f0ec-4626-a19d-cba8937b566e)
     (parent binding) (sealed #t))
+
+  (define-record-type auxiliary-binding
+    (nongenerative auxiliary-binding-90472bac-e875-4218-bc1c-f856e1587073)
+    (parent binding) (sealed #t)
+    (fields who)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-auxiliary-binding)
+        (lambda (name)
+          (unless (symbol? name)
+            (assertion-violation who "invalid who argument" name))
+          ((pargs->new) name)))))
 
   (define-record-type prim-binding
     (nongenerative prim-binding-676291b2-9e1c-4044-b1be-7c27030ddb0f)

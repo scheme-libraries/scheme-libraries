@@ -46,6 +46,11 @@
       [(declare-expander-syntax name proc)
        (declare-syntax name (make-definition-binding proc))]))
 
+  (define-syntax declare-auxiliary-syntax
+    (syntax-rules ()
+      [(declare-expander-syntax name)
+       (declare-syntax name (make-auxiliary-binding 'name))]))
+
   (define-syntax declare-prim-syntax
     (syntax-rules ()
       [(declare-expander-syntax name arity)
@@ -55,6 +60,11 @@
 
   (declare-syntax begin
     (make-begin-binding))
+
+  ;; Auxiliary syntax
+
+  (declare-auxiliary-syntax =>)
+  (declare-auxiliary-syntax else)
 
   ;; Definitions
 
@@ -217,6 +227,42 @@
                (expand `(let ([,x ,e])
                           ,(f (car x*) (cdr x*)
                               (car e*) (cdr e*))))))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax cond
+    (lambda (x)
+      (define who 'cond)
+      (syntax-match x
+        [(,k ,cl ,cl* ...)
+         (let f ([cl cl] [cl* cl*])
+           (if (null? cl*)
+               (syntax-match cl
+                 [(else ,[expand-expression -> e] ,[expand-expression -> e*] ...)
+                  (build-begin ,e ,e* ...)]
+                 [(,[expand-expression -> t] => ,[expand-expression -> e])
+                  (let ([x (make-variable 't)])
+                    (build-let ([,x ,t])
+                      (if ,x (,e ,x) (values))))]
+                 [(,[expand-expression -> t])
+                  (let ([x (make-variable 't)])
+                    (build-let ([,x ,t])
+                      (if ,x ,x (values))))]
+                 [(,[expand-expression -> t] ,[expand-expression -> e*])
+                  (build (if ,t ,(build-begin ,e* ...) (values)))]
+                 [,cl (syntax-error who "invalid clause" x cl)])
+               (let ([rest (f (car cl*) (cdr cl*))])
+                 (syntax-match cl
+                   [(,[expand-expression -> t] => ,[expand-expression -> e])
+                    (let ([x (make-variable 't)])
+                      (build-let ([,x ,t])
+                        (if ,x (,e ,x) ,rest)))]
+                   [(,[expand-expression -> t])
+                    (let ([x (make-variable 't)])
+                      (build-let ([,x ,t])
+                        (if ,x ,x ,rest)))]
+                   [(,[expand-expression -> t] ,[expand-expression -> e*])
+                    (build (if ,t ,(build-begin ,e* ...) ,rest))]
+                   [,cl (syntax-error who "invalid clause" x cl)]))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   ;; Prims
