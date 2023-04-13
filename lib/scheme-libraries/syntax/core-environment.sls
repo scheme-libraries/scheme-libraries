@@ -51,6 +51,11 @@
       [(declare-expander-syntax name arity)
        (declare-syntax name (make-prim-binding 'name arity))]))
 
+  ;; Syntax
+
+  (declare-syntax begin
+    (make-begin-binding))
+
   ;; Definitions
 
   (declare-definition-syntax define
@@ -101,6 +106,117 @@
            (for-each label-kill! lbl*)
            (build
              (lambda ,vars ,e)))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax if
+    (lambda (x)
+      (define who 'if)
+      (syntax-match x
+        [(,k ,[expand-expression -> e0] ,[expand-expression -> e1] ,[expand-expression -> e2])
+         (build (if ,e0 ,e1 ,e2))]
+        [(,k ,[expand-expression -> e0] ,[expand-expression -> e1])
+         (build (if ,e0 ,e1 (values)))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax quote
+    (lambda (x)
+      (define who 'quote)
+      (syntax-match x
+        [(,k ,d)
+         (build (quote ,(syntax-object->datum d)))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax set!
+    (lambda (x)
+      (define who 'set!)
+      (syntax-match x
+        [(,k ,x ,[expand-expression -> e])
+         (guard ($identifier? x))
+         ;; TODO: Variable transformers.
+         `(set! ,x ,e)]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax and
+    (lambda (x)
+      (define who 'and)
+      (syntax-match x
+        [(,k) (build (quote #t))]
+        [(,k ,[expand-expression -> e] ,[expand-expression -> e*] ...)
+         (let f ([e e] [e* e*])
+           (if (null? e*)
+               e
+               (build `(if ,e ,(f (car e*) (cdr e*)) '#f))))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax or
+    (lambda (x)
+      (define who 'or)
+      (syntax-match x
+        [(,k) (build (quote #f))]
+        [(,k ,[expand-expression -> e] ,[expand-expression -> e*] ...)
+         (let f ([e e] [e* e*])
+           (if (null? e*)
+               e
+               (let ([t (make-variable 't)])
+                 (build-let ([,t ,e]) (if ,t ,t ,(f (car e*) (cdr e*)))))))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax let
+    (lambda (x)
+      (define who 'let)
+      (syntax-match x
+        [(,k ([,x* ,e*] ...) ,b* ... ,b)
+         (guard (for-all $identifier? x*))
+         (expand-expression `((lambda ,x* ,b* ... ,b) ,e* ...))]
+        [(,k ,f ([,x* ,e*] ...) ,b* ... ,b)
+         (guard ($identifier? f) (for-all $identifier? x*))
+         (expand-expression `(letrec ([,f (lambda ,x* ,b* ... ,b)]) (,f ,e* ...)))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax letrec
+    (lambda (x)
+      (expand-letrec x 'letrec)))
+
+  (declare-expander-syntax letrec*
+    (lambda (x)
+      (expand-letrec x 'letrec*)))
+
+  (define expand-letrec
+    (lambda (x who)
+      (syntax-match x
+        [(,k ([,x* ,e*] ...) ,b* ... ,b)
+         (guard (for-all $identifier? x*))
+         (unless (valid-bound-identifiers? x*)
+           (syntax-error who "invalid syntax" x))
+         (let* ([name* (map identifier->symbol x*)]
+                [var* (map make-variable name*)]
+                [bdg* (map make-variable-binding var*)]
+                [lbl* (map make-label bdg*)]
+                [ribs (make-ribcage x* lbl*)]
+                [e* (add-substitutions* ribs e*)]
+                [form* (add-substitutions* ribs `(,b* ... ,b))])
+           (parameterize ([current-who who]
+                          [current-form x])
+             (let ([e* (map expand-expression e*)]
+                   [e (expand-body form*)])
+               (for-each label-kill! lbl*)
+               (build (,who ([,var* ,e*] ...) ,e)))))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax let*
+    (lambda (x)
+      (define who 'let*)
+      (syntax-match x
+        [(,k () ,b* ... ,b)
+         (expand-body `(,b* ... ,b))]
+        [(,k ([,x ,e] [,x* ,e*] ...) ,b* ... ,b)
+         (guard (for-all $identifier? x*))
+         (let f ([x x] [x* x*] [e e] [e* e*])
+           (if (null? x*)
+               (expand `(let ([,x ,e]) ,b* ... ,b))
+               (expand `(let ([,x ,e])
+                          ,(f (car x*) (cdr x*)
+                              (car e*) (cdr e*))))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   ;; Prims

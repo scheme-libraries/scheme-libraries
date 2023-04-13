@@ -51,6 +51,8 @@
           (cond
            [(application-type? t)
             (expand-application x)]
+           [(begin-binding? t)
+            (expand-begin-expression x)]
            [(expander-binding? t)
             ((expander-binding-proc t) x)]
            [(constant-type? t)
@@ -68,6 +70,13 @@
         [(,[expand-expression -> e] ,[expand-expression -> e*] ...)
          (build (,e ,e* ...))]
         [,x (syntax-error #f "invalid application syntax" x)])))
+
+  (define expand-begin-expression
+    (lambda (x)
+      (syntax-match x
+        [(,k ,[expand-expression -> e*] ... ,[expand-expression -> e])
+         (build-begin ,e* ... ,e)]
+        [,x (syntax-error 'begin "invalid syntax" x)])))
 
   (define expand-primop
     (lambda (t x)
@@ -89,9 +98,11 @@
     (lambda (x*)
       (let-values ([(def* e)
                     (expand-internal x* (make-ribcage))])
-        (let ([x* (map definition-var def*)]
-              [e* (map definition-expr def*)])
-          (build (letrec* `([,x* ,e*] ...) ,e))))))
+        (if (null? def*)
+            e
+            (let ([x* (map definition-var def*)]
+                  [e* (map definition-expr def*)])
+              (build (letrec* `([,x* ,e*] ...) ,e)))))))
 
   (define expand-internal
     (lambda (x* ribs)
@@ -113,10 +124,19 @@
          [(definition-binding? t)
           (let ([def* ((definition-binding-proc t) x ribs)])
             (expand-form* x* ribs (append (reverse def*) rdef*)))]
+         [(begin-binding? t)
+          (expand-begin x x* ribs rdef*)]
          [else
           (let ([e* (map expand-expression (cons x x*))])
             (values (expand-definitions (reverse rdef*))
-                    (build-begin ,e*)))]))))
+                    (build-begin ,e* ...)))]))))
+
+  (define expand-begin
+    (lambda (x x* ribs rdef*)
+      (syntax-match x
+        [(,k ,e* ...)
+         (expand-form* `(,e* ... . ,x*) ribs rdef*)]
+        [,x (syntax-error 'begin "invalid syntax" x)])))
 
   (define expand-definitions
     (lambda (def*)
@@ -132,7 +152,8 @@
          (let* ([lbl (identifier->label k)]
                 [bdg (label->binding lbl)])
            (cond
-            [(or (expander-binding? bdg)
+            [(or (begin-binding? bdg)
+                 (expander-binding? bdg)
                  (definition-binding? bdg)
                  (prim-binding? bdg))
              (values x bdg)]
@@ -158,6 +179,4 @@
          (let ([e (syntax-object->datum x)])
            (unless (constant? e)
              (syntax-error #f "invalid expression syntax" x))
-           (values x (make-constant-type e)))])))
-
-  )
+           (values x (make-constant-type e)))]))))
