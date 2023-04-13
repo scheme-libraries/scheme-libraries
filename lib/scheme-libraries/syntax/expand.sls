@@ -170,6 +170,8 @@
                   (cond
                    [(variable-binding? bdg)
                     (values x bdg)]
+                   [(auxiliary-binding? bdg)
+                    (syntax-error (auxiliary-binding-who bdg) "invalid use of auxiliary syntax" x)]
                    ;; TODO
                    [else
                     (values x (make-other-type))])))]
