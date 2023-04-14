@@ -9,13 +9,14 @@
     build-let
     expression?
     expression=?
-    expression-compile)
+    compile-to-thunk)
   (import
     (rnrs)
     (rnrs eval)
     (scheme-libraries atoms)
     (scheme-libraries define-who)
     (scheme-libraries match)
+    (scheme-libraries syntax expressions $compile-to-thunk)
     (scheme-libraries syntax variables)
     (scheme-libraries with-implicit))
 
@@ -116,8 +117,6 @@
             (atom=? x y)]
            [else #f])))))
 
-  (define expression-compile
-    (lambda (e)
-      (eval `(lambda () ,e) (environment '(rnrs)))))
+
 
   )

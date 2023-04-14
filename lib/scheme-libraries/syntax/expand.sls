@@ -9,6 +9,7 @@
     expand-expression)
   (import
     (rnrs)
+    (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries helpers)
     (scheme-libraries match)
@@ -146,21 +147,26 @@
 
   (define transform
     (lambda (f x ribs)
-      ;; TODO: Handle variable transformers.
-      ... ;; see code in egg2 and rebuild transformer.
+      (apply-transformer f (apply-anti-mark x) ribs)))
 
-
-      ))
+  (define apply-transformer
+    (lambda (f x ribs)
+      (guard (c
+              [(invalid-syntax-object-condition? c)
+               (syntax-error #f (format "encountered invalid object ~s in output of macro"
+                                  (invalid-syntax-object-irritant c)))])
+        (wrap-syntax-object (f x) (make-mark) ribs))))
 
   ;; syntax-type
 
   (define syntax-type
     (lambda (x ribs)
-      (define keyword-binding
+      (define keyword-type
         (lambda (bdg)
-          (syntax-type (transform (keyword-binding-transformers bdg)
+          (syntax-type (transform (keyword-binding-transformer bdg)
                                   x
-                                  ribs))))
+                                  ribs)
+                       ribs)))
       (syntax-match x
         [(,k . ,x*)
          (guard ($identifier? k))
