@@ -12,6 +12,7 @@
     current-metalevel-for-syntax
     make-label
     label?
+    label-bind!
     label-kill!
     label->binding
     make-label/props
@@ -55,6 +56,10 @@
     invalid-syntax-object-irritant
     make-other-type
     other-type?
+    make-displaced-binding
+    displaced-binding?
+    make-out-of-phase-binding
+    out-of-phase-binding?
     make-application-type
     application-type?
     make-constant-type
@@ -69,8 +74,9 @@
     make-expander-binding
     expander-binding?
     expander-binding-proc
-    make-begin-binding
-    begin-binding?
+    make-splicing-binding
+    splicing-binding?
+    splicing-binding-proc
     make-auxiliary-binding
     auxiliary-binding?
     auxiliary-binding-who
@@ -150,6 +156,19 @@
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) proc)))))
 
+  (define-record-type splicing-binding
+    (nongenerative splicing-binding-76a8d6ec-6395-4e48-9800-ca8a48ff9f87)
+    (parent binding)
+    (sealed #t)
+    (fields proc)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-splicing-binding)
+        (lambda (proc)
+          (unless (procedure? proc)
+            (assertion-violation who "invalid procedure argument" proc))
+          ((pargs->new) proc)))))
+
   (define-record-type variable-binding
     (nongenerative variable-binding-d1b200da-754e-43ec-86bf-d03cd03c0da1)
     (parent binding)
@@ -188,6 +207,7 @@
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) proc)))))
 
+  #;
   (define-record-type begin-binding
     (nongenerative begin-binding-bd5e8fd6-f0ec-4626-a19d-cba8937b566e)
     (parent binding) (sealed #t))
@@ -245,7 +265,7 @@
     (lambda ()
       (metalevel-for-syntax (current-metalevel))))
 
-  ;; Labels
+  ;; Label
 
   (define-record-type label
     (nongenerative label-a39e36ea-e0e4-4a27-9274-b982710361d8)
@@ -259,19 +279,22 @@
         (define who 'make-label)
         (rec make
           (case-lambda
+            [()
+             (make #f (current-metalevel) #f)]
             [(bdg)
              (make bdg (current-metalevel) #f)]
             [(bdg ml)
              (make bdg ml #f)]
             [(bdg ml name)
-             (unless (binding? bdg)
-               (assertion-violation who "invalid label argument" bdg))
-             (unless (metalevel? ml)
-               (assertion-violation who "invalid metalevel argument" ml))
-             (unless (or (not name)
-                         (symbol? name))
-               (assertion-violation who "invalid symbol argument" name))
-             (new bdg ml name)])))))
+             (let ([bdg (or bdg (make-displaced-binding))])
+               (unless (binding? bdg)
+                 (assertion-violation who "invalid label argument" bdg))
+               (unless (metalevel? ml)
+                 (assertion-violation who "invalid metalevel argument" ml))
+               (unless (or (not name)
+                           (symbol? name))
+                 (assertion-violation who "invalid symbol argument" name))
+               (new bdg ml name))])))))
 
   (define/who label=?
     (lambda (l1 l2)
@@ -280,6 +303,14 @@
       (unless (label? l2)
         (assertion-violation who "invalid second label argument" l2))
       (eq? l1 l2)))
+
+  (define/who label-bind!
+    (lambda (lbl bdg)
+      (unless (label? lbl)
+        (assertion-violation who "invalid label argument" lbl))
+      (unless (binding? bdg)
+        (assertion-violation who "invalid binding argument" bdg))
+      (label-binding-set! lbl bdg)))
 
   (define/who label-kill!
     (lambda (lbl)

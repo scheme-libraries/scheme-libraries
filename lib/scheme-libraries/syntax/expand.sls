@@ -52,8 +52,8 @@
           (cond
            [(application-type? t)
             (expand-application x)]
-           [(begin-binding? t)
-            (expand-begin-expression x)]
+           [(splicing-binding? t)
+            (expand-splicing-expression x t)]
            [(expander-binding? t)
             ((expander-binding-proc t) x)]
            [(constant-type? t)
@@ -63,6 +63,8 @@
            [(variable-binding? t)
             (build ,(variable-binding-symbol t))]
            [else
+            (display t) (newline)
+            (display x) (newline)
             (syntax-error #f "invalid syntax in expression context" x)])))))
 
   (define expand-application
@@ -71,6 +73,13 @@
         [(,[expand-expression -> e] ,[expand-expression -> e*] ...)
          (build (,e ,e* ...))]
         [,x (syntax-error #f "invalid application syntax" x)])))
+
+  (define expand-splicing-expression
+    (lambda (x t)
+      (let ([x* ((splicing-binding-proc t) x)])
+        (if (null? x*)
+            (syntax-error #f "empty body" x)
+            (build-begin ,(map expand-expression x*) ...)))))
 
   (define expand-begin-expression
     (lambda (x)
@@ -125,19 +134,17 @@
          [(definition-binding? t)
           (let ([def* ((definition-binding-proc t) x ribs)])
             (expand-form* x* ribs (append (reverse def*) rdef*)))]
-         [(begin-binding? t)
-          (expand-begin x x* ribs rdef*)]
+         [(splicing-binding? t)
+          (expand-splicing x t x* ribs rdef*)]
          [else
           (let ([e* (map expand-expression (cons x x*))])
             (values (expand-definitions (reverse rdef*))
                     (build-begin ,e* ...)))]))))
 
-  (define expand-begin
-    (lambda (x x* ribs rdef*)
-      (syntax-match x
-        [(,k ,e* ...)
-         (expand-form* `(,e* ... . ,x*) ribs rdef*)]
-        [,x (syntax-error 'begin "invalid syntax" x)])))
+  (define expand-splicing
+    (lambda (x t x* ribs rdef*)
+      (let ([e* ((splicing-binding-proc t) x)])
+        (expand-form* (append e* x*) ribs rdef*))))
 
   (define expand-definitions
     (lambda (def*)
@@ -173,7 +180,7 @@
          (let* ([lbl (identifier->label k)]
                 [bdg (label->binding lbl)])
            (cond
-            [(or (begin-binding? bdg)
+            [(or (splicing-binding? bdg)
                  (expander-binding? bdg)
                  (definition-binding? bdg)
                  (prim-binding? bdg))
@@ -197,7 +204,10 @@
                     (keyword-type bdg)]
                    [(auxiliary-binding? bdg)
                     (syntax-error (auxiliary-binding-who bdg) "invalid use of auxiliary syntax" x)]
-                   ;; TODO
+                   [(out-of-phase-binding? bdg)
+                    (syntax-error #f "identifier referenced out of phase" x)]
+                   [(displaced-binding? bdg)
+                    (syntax-error #f "identifier referenced out of context" x)]
                    [else
                     (values x (make-other-type))])))]
           [else

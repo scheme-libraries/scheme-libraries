@@ -32,6 +32,11 @@
       [(declare-expander-syntax name proc)
        (declare-syntax name (make-expander-binding proc))]))
 
+  (define-syntax declare-splicing-syntax
+    (syntax-rules ()
+      [(declare-splicing-syntax name proc)
+       (declare-syntax name (make-splicing-binding proc))]))
+
   (define-syntax declare-definition-syntax
     (syntax-rules ()
       [(declare-expander-syntax name proc)
@@ -136,15 +141,42 @@
                (build (,who ([,var* ,e*] ...) ,e)))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
+  (define expand-let-syntax
+    (lambda (x who)
+      (syntax-match x
+        [(,k ([,x* ,e*] ...) ,b* ...)
+         (guard (for-all $identifier? x*))
+         (let* ([lbl* (map
+                        (lambda (x)
+                          (make-label #f (current-metalevel-for-syntax)))
+                        x*)]
+                [ribs (make-ribcage x* lbl*)]
+                [bdg*
+                 (map
+                   (lambda (x lbl e)
+                     (display x) (newline)
+                     (let* ([e (case who
+                                 [(let-syntax) e]
+                                 [(letrec-syntax)
+                                  (add-substitutions ribs e)]
+                                 [else #f])]
+                            [proc (eval-transformer e who)])
+                       (make-keyword-binding proc)))
+                   x* lbl* e*)])
+           (for-each label-bind! lbl* bdg*)
+           (display "done\n")
+           (add-substitutions* ribs b*))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
   ;; Macros
 
   (define eval-transformer
-    (lambda (x)
+    (lambda (x who)
       (let ([e (meta-expand x)])
         (let ([f (execute-transformer e)])
           ;; TODO: variable transformer
           (unless (procedure? f)
-            (assertion-violation 'define-syntax "invalid transformer" f))
+            (assertion-violation who "invalid transformer" f))
           f))))
 
   (define meta-expand
@@ -176,9 +208,6 @@
 
   ;; Syntax
 
-  (declare-syntax begin
-    (make-begin-binding))
-
   ;; Auxiliary syntax
 
   (declare-auxiliary-syntax =>)
@@ -199,13 +228,32 @@
 
   (declare-definition-syntax define-syntax
     (lambda (x ribs)
+      (define who 'define-syntax)
       (let-values ([(x e) (parse-define-syntax x)])
-        (let* ([proc (eval-transformer e)]
+        (let* ([proc (eval-transformer e who)]
                [bdg (make-keyword-binding proc)]
                [lbl (ribcage-add! ribs x bdg (current-metalevel-for-syntax))])
           (unless lbl
             (identifier-error 'define-syntax x "trying to redefine the local keyword ~a"))
           '()))))
+
+  ;; Splicing syntax
+
+  (declare-splicing-syntax begin
+    (lambda (x)
+      (define who 'begin)
+      (syntax-match x
+        [(,k ,x* ...)
+         x*]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-splicing-syntax let-syntax
+    (lambda (x)
+      (expand-let-syntax x 'let-syntax)))
+
+  (declare-splicing-syntax letrec-syntax
+    (lambda (x)
+      (expand-let-syntax x 'letrec-syntax)))
 
   ;; Expanders
 
