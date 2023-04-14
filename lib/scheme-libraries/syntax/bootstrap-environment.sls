@@ -165,7 +165,7 @@
 
   (define execute
     (lambda (e)
-      ((expression-compile e))))
+      ((compile-to-thunk e))))
 
   ;; Bootstrap environment
 

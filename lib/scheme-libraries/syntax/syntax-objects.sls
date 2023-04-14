@@ -35,6 +35,9 @@
     syntax-cdr
     syntax-vector?
     syntax-vector->list
+    make-mark
+    apply-anti-mark
+    wrap-syntax-object
     $identifier?
     $bound-identifier=?
     $free-identifier=?
@@ -46,6 +49,10 @@
     syntax-error?
     syntax-error-form
     syntax-error-subform
+    &invalid-syntax-object
+    make-invalid-syntax-object-condition
+    invalid-syntax-object-condition?
+    invalid-syntax-object-irritant
     make-other-type
     other-type?
     make-application-type
@@ -539,11 +546,6 @@
     (lambda (marks a)
       (remp (lambda (p) (marks=? (car p) marks)) a)))
 
-  (define-condition-type &duplicate-definition
-    &condition
-    make-duplicate-definition-condition duplicate-definition-condition?
-    (name duplicate-definition-name))
-
   ;; Environments
 
   (define-record-type environment
@@ -726,6 +728,25 @@
         (assertion-violation who "invalid syntax object argument" stx))
       (wrap-marks (syntax-object-wrap stx))))
 
+  (define apply-anti-mark
+    (lambda (x)
+      (extend-wrap x (make-wrap (list (anti-mark)) (list (make-shift))))))
+
+  (define apply-wrap
+    (lambda (x mark ribs)
+      (let ([w (let* ([w (syntax-object-wrap x)]
+                      [m* (wrap-marks w)]
+                      [s* (wrap-substitutions w)])
+                 (if (and (pair? m*)
+                          (anti-mark? (car m*)))
+                     (make-wrap (cdr m*)
+                                (cdr s*))
+                     (make-wrap (cons mark m*)
+                                (if ribs
+                                    (cons* ribs (make-shift) s*)
+                                    (cons (make-shift) s*)))))])
+        (make-syntax-object (syntax-object-expression x) w))))
+
   (define unwrap
     (lambda (stx)
       (if (syntax-object? stx)
@@ -809,6 +830,32 @@
                               (syntax-object-wrap stx))
           (annotated-vector->list stx))))
 
+  (define wrap-syntax-object
+    (lambda (x mark ribs)
+      (let ([x (build-syntax-object x mark ribs)])
+        (if (syntax-object? x)
+            x
+            (make-syntax-object x)))))
+
+  (define build-syntax-object
+    (lambda (x mark ribs)
+      (let ([ht (make-eq-hashtable)])
+        (let f ([x x])
+          (cond
+           [(hashtable-ref ht x #f)
+            (invalid-syntax-object-condition x)]
+           [(pair? x)
+            (cons (f (car x)) (f (cdr x)))]
+           [(vector? x)
+            (vector-map f x)]
+           [(symbol? x)
+            (invalid-syntax-object-condition x)]
+           [(syntax-object? x)
+            (apply-wrap x mark ribs)]
+           [(atom? x) x]
+           [else
+            (invalid-syntax-object-condition x)])))))
+
   ;; Identifiers
 
   (define $identifier?
@@ -882,6 +929,22 @@
 
   (define-condition-type &undefined &error
     make-undefined-error undefined-error?)
+
+  (define-condition-type &duplicate-definition
+    &condition
+    make-duplicate-definition-condition duplicate-definition-condition?
+    (name duplicate-definition-name))
+
+  (define-condition-type &invalid-syntax-object
+    &condition
+    make-invalid-syntax-object-condition invalid-syntax-object-condition?
+    (irritant invalid-syntax-object-irritant))
+
+  ;; Exceptions
+
+  (define invalid-syntax-object-condition
+    (lambda (x)
+      (raise (make-invalid-syntax-object-condition x))))
 
   ;; Record writers
 
