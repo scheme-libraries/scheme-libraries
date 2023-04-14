@@ -63,8 +63,6 @@
            [(variable-binding? t)
             (build ,(variable-binding-symbol t))]
            [else
-            (display t) (newline)
-            (display x) (newline)
             (syntax-error #f "invalid syntax in expression context" x)])))))
 
   (define expand-application
