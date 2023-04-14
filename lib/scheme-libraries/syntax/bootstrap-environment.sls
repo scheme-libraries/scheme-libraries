@@ -200,18 +200,58 @@
   ;; Syntax-case
 
   (define syntax-case-expander
-    (syntax-extend-backquote here
-      (lambda (x)
-        (let-values ([(e lit* cl*) (parse-syntax-case x)])
-          (define literal?
-            (lambda (id)
-              (exists (lambda (lit) ($bound-identifier=? id lit)) lit*)))
-          (define gen-clause
-            (lambda (cl e f)
-              ;; TODO
-              (assert #f)
-              ))
-          (expand-expression
+    (lambda (x)
+
+      (define who 'syntax-case)
+
+      (let-values ([(e lit* cl*) (parse-syntax-case x)])
+
+        (define literal?
+          (lambda (id)
+            (exists (lambda (lit) ($bound-identifier=? id lit)) lit*)))
+
+        (define gen-clause
+          (lambda (cl e f)
+
+            (define gen-matcher
+              (lambda (pat e)
+                (syntax-match pat
+                  ;; TODO: Other clauses.
+                  [,pat
+                   (let ([d (syntax-object->datum pat)])
+                     (values
+                       (lambda (k)
+                         `(if (equal? ',d (syntax->datum ,e))
+                              ,(k)
+                              ,(f)))
+                   '()))])))
+
+            (let*-values ([(pat fend out) (parse-clause cl)]
+                          [(mat pvar*) (gen-matcher pat e)])
+
+              ;; TODO: Add pattern variables.  Q: How to add pattern
+              ;; variables without ribs?  We can take the output of
+              ;; the production of syntax-extend-backquote below!
+
+              (mat
+               (lambda ()
+                 (syntax-extend-backquote here
+                   (if fend
+                       `(if ,fend ,out ,(f))
+                       ,out)))))))
+
+        (define parse-clause
+          (lambda (cl)
+            (syntax-match cl
+              [(,pat ,fend ,out)
+               (values pat fend out)]
+              [(,pat ,out)
+               (values pat #f out)]
+              [,cl (syntax-error who "invalid clause" x cl)])))
+
+        ;; syntax-case-expander
+        (expand-expression
+         (syntax-extend-backquote here
            `(let ([e ,e])
               ,(fold-right
                  (lambda (cl rest)
@@ -510,7 +550,9 @@
 
   ;; prims
 
+  (declare-prim-syntax equal? 2)
   (declare-prim-syntax void 0)
   (declare-prim-syntax memv 2)
+  (declare-prim-syntax syntax->datum 1)
   (declare-prim-syntax syntax-violation (fxnot 3))
   )
