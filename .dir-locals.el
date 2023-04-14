@@ -4,6 +4,7 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'values 'scheme-indent-function 0)
           (put 'for-each 'scheme-indent-function 'defun)
           (put 'map 'scheme-indent-function 'defun)
           (put 'fold-left 'scheme-indent-function 'defun)
@@ -55,7 +56,7 @@
 	     ("(\\(immutable\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(assert\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(increment!\\)\\>" 1 font-lock-keyword-face)
-	     ("(\\(list-case\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(prepend!\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(match\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(loop\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(rec\\)\\>" 1 font-lock-keyword-face)
