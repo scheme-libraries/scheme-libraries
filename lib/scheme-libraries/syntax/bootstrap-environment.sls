@@ -200,9 +200,37 @@
   ;; Syntax-case
 
   (define syntax-case-expander
+    (syntax-extend-backquote here
+      (lambda (x)
+        (let-values ([(e lit* cl*) (parse-syntax-case x)])
+          (define literal?
+            (lambda (id)
+              (exists (lambda (lit) ($bound-identifier=? id lit)) lit*)))
+          (define gen-clause
+            (lambda (cl e f)
+              ;; TODO
+              (assert #f)
+              ))
+          (expand-expression
+           `(let ([e ,e])
+              ,(fold-right
+                 (lambda (cl rest)
+                   `(let ([f (lambda () ,rest)])
+                      ,(gen-clause cl `e (lambda () `(f)))))
+                 `(syntax-violation #f "invalid syntax" e)
+                 cl*)))))))
+
+  (define parse-syntax-case
     (lambda (x)
-      ;; FIXME
-      (assert #f)))
+      (syntax-match x
+        [(,k ,e (,lit* ...) ,cl* ...)
+         (guard (for-all
+                 (lambda (x)
+                   (and ($identifier? x)
+                        (not ($free-identifier=? x `...))
+                        (not ($free-identifier=? x `_))))
+                 lit*))
+         (values e lit* cl*)])))
 
   (define syntax-expander
     (lambda (depth)
@@ -247,6 +275,12 @@
 
   (declare-auxiliary-syntax =>)
   (declare-auxiliary-syntax else)
+  (declare-auxiliary-syntax ...)
+  (declare-auxiliary-syntax _)
+  (declare-auxiliary-syntax unquote)
+  (declare-auxiliary-syntax unquote-splicing)
+  (declare-auxiliary-syntax unsyntax)
+  (declare-auxiliary-syntax unsyntax-splicing)
 
   ;; Definitions
 
@@ -478,5 +512,5 @@
 
   (declare-prim-syntax void 0)
   (declare-prim-syntax memv 2)
-
+  (declare-prim-syntax syntax-violation (fxnot 3))
   )
