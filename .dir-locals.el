@@ -4,6 +4,10 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'for-each 'scheme-indent-function 'defun)
+          (put 'map 'scheme-indent-function 'defun)
+          (put 'fold-left 'scheme-indent-function 'defun)
+          (put 'fold-right 'scheme-indent-function 'defun)
           (put 'condition 'scheme-indent-function 'defun)
           (put 'with-syntax-error-context 'scheme-indent-function 2)
           (put 'build 'scheme-indent-function 0)
@@ -14,6 +18,7 @@
           (put 'declare-definition-syntax 'scheme-indent-function 1)
           (put 'declare-expander-syntax 'scheme-indent-function 1)
           (put 'declare-prim-syntax 'scheme-indent-function 1)
+          (put 'declare-splicing-syntax 'scheme-indent-function 1)
           (put 'make 'scheme-indent-function nil)
           (put 'make-parameter 'scheme-indent-function 1)
           (put 'make-thread-parameter 'scheme-indent-function 1)
@@ -35,7 +40,7 @@
 	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
-             ("(\\(declare-syntax\\|declare-\\(expander\\|definition\\|prim\\)-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
+             ("(\\(declare-syntax\\|declare-\\(expander\\|definition\\|prim\\|splicing\\)-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
 	     ("(\\(extend-backquote\\)\\>" 1 font-lock-keyword-face)
