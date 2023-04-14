@@ -7,11 +7,34 @@
     compile-to-thunk)
   (import
     (rnrs)
-    (rnrs eval))
+    (rnrs eval)
+    (scheme-libraries atoms)
+    (scheme-libraries impure)
+    (scheme-libraries match))
 
   (define compile-to-thunk
     (lambda (e)
-      (eval `(lambda () ,e) (runtime-environment))))
+      (let-values ([(e vals) (parse e)])
+        ((eval `(lambda (vals) (lambda () ,e)) (runtime-environment))
+         vals))))
+
+  (define (parse e)
+    (let ([n 0]
+          [val* '()])
+      (let f ([e e])
+        (match e
+          [(,[e1] . ,[e2])
+           `(,e1 . ,e2)]
+          [#(,[e*] ...)
+           `#(,e* ...)]
+          [,x
+           (guard (atom? x))
+           x]
+          [,x
+           (let ([e `(vector-ref vals ,n)])
+             (increment! n)
+             (prepend! x val*))]))
+      (values e (list->vector (reverse val*)))))
 
   (define runtime-environment
     (let ([env #f])

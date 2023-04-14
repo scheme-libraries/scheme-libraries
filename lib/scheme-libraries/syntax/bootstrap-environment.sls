@@ -154,7 +154,6 @@
                 [bdg*
                  (map
                    (lambda (x lbl e)
-                     (display x) (newline)
                      (let* ([e (case who
                                  [(let-syntax) e]
                                  [(letrec-syntax)
@@ -164,7 +163,6 @@
                        (make-keyword-binding proc)))
                    x* lbl* e*)])
            (for-each label-bind! lbl* bdg*)
-           (display "done\n")
            (add-substitutions* ribs b*))]
         [,x (syntax-error who "invalid syntax" x)])))
 
@@ -198,6 +196,43 @@
   (define execute
     (lambda (e)
       ((compile-to-thunk e))))
+
+  ;; Syntax-case
+
+  (define syntax-case-expander
+    (lambda (x)
+      ;; FIXME
+      (assert #f)))
+
+  (define syntax-expander
+    (lambda (depth)
+      (lambda (x)
+        (define gen-template
+          (lambda (tmpl depth)
+            (let f ([tmpl tmpl] [depth depth] [env* '()] [tail? #f])
+              (syntax-match tmpl
+                ;; <identifier>
+                [,tmpl
+                 (guard ($identifier? tmpl))
+                 (cond
+                  ;; FIXME: Handle pattern variables
+                  [else
+                   (values `($syntax ,tmpl) env* #f)])]
+                ;; <constant>
+                [,tmpl
+                 (values
+                   (if (and tail? (syntax-null? tmpl))
+                       `(quote ())
+                       `($syntax ,tmpl))
+                   env*
+                   #f)]))))
+        (syntax-match x
+          [(,k ,tmpl)
+           (let-values ([(out env* var?)
+                         (gen-template tmpl depth)])
+             (expand-expression out))]
+          [,x
+           (syntax-error #f "invalid syntax" x)]))))
 
   ;; Bootstrap environment
 
@@ -426,7 +461,20 @@
                         [,cl (syntax-error who "invalid clause" x cl)])))))))]
         [,x (syntax-error who "invalid sytnax" x)])))
 
-  ;; Prims
+  (declare-expander-syntax syntax-case
+    syntax-case-expander)
+
+  (declare-expander-syntax syntax
+    (syntax-expander #f))
+
+  (declare-expander-syntax $syntax
+    (lambda (x)
+      (define who '$syntax)
+      (syntax-match x
+        [(,k ,e) (build `(quote ,e))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  ;; prims
 
   (declare-prim-syntax void 0)
   (declare-prim-syntax memv 2)
