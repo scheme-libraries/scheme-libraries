@@ -32,5 +32,6 @@
             (and (string? y) (string=? x y))]
            [(bytevector? x)
             (and (bytevector? y)
-                 (bytevector=? x y))]))))
+                 (bytevector=? x y))]
+           [else #f]))))
   )
