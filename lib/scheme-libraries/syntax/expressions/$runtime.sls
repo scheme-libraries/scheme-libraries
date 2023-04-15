@@ -6,6 +6,7 @@
   (export
     ;; Keywords
     begin
+    cons
     lambda
     letrec
     letrec*
