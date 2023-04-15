@@ -35,6 +35,8 @@
     syntax-pair?
     syntax-car
     syntax-cdr
+    syntax-length+
+    syntax-split
     syntax-vector?
     syntax-vector->list
     make-mark
@@ -864,6 +866,35 @@
                 [e (annotated-pair-cdr (syntax-object-expression stx))])
             (extend-wrap e w))
           (cdr stx))))
+
+  (define/who syntax-length+
+    (lambda (stx)
+      (let f ([stx stx] [n 0])
+        (cond
+         [(syntax-pair? stx)
+          (f (syntax-cdr stx)
+             (fx+ n 1))]
+         [else n]))))
+
+  (define syntax-split
+    (lambda (x k succ fail)
+      (let ([n (syntax-length+ x)])
+        (if (fx<=? k n)
+            (call-with-values
+                (lambda ()
+                  (syntax-split-at x (fx- n k)))
+              succ)
+            (fail)))))
+
+  (define syntax-split-at
+    (lambda (x k)
+      (let f ([x x] [k k])
+        (cond
+         [(fxzero? k) (values '() x)]
+         [(syntax-pair? x)
+          (let-values ([(x1 x2) (f (syntax-cdr x) (fx- k 1))])
+            (values (cons (syntax-car x) x1) x2))]
+         [else (assert #f)]))))
 
   (define syntax-vector?
     (lambda (stx)

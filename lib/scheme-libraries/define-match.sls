@@ -6,6 +6,7 @@
 ;; - Repeated pattern variables are allowed and compared with equal?
 ;; - extend-backquote is provided
 ;; - extended quasiquote is available in guard expressions
+;; - fix ellipses-escaping
 
 (library (scheme-libraries define-match)
   (export
@@ -360,7 +361,8 @@
 						                      tmp** ...)
 					                ...
                                                         #,out2)
-                                              (append (apply append vars*) vars2))))]))))
+                                              (append (apply append vars*)
+                                                      (or vars2 '())))))]))))
 	                 (define gen-unquote*
 	                   (lambda (expr*)
                              (with-syntax ([(tmp* ...) (generate-temporaries expr*)])
@@ -372,15 +374,16 @@
                            ;; (<ellipsis> <template>)
                            [(ell tmpl)
                             (ell? #'ell)
-                            (gen-output k #'tmpl lvl (lambda (x) #f))]
+                            (let-values ([(out vars)
+                                          (gen-output k #'tmpl lvl (lambda (x) #f))])
+                              (values out (or vars '())))]
                            ;; (quasiquote <template>)
                            [`tmpl
                             (quasiquote? #'quasiquote)
                             (let-values ([(out vars) (gen-output k #'tmpl (fx+ lvl 1) ell?)])
-                              (if (null? vars)
-                                  ;; check me
+                              (if (not vars)
                                   (values #'`tmpl
-                                          '())
+                                          #f)
                                   (values #`(list 'quasiquote #,out)
                                           vars)))]
                            ;; (unquote <template>)
@@ -391,8 +394,8 @@
                            [,tmpl
                             (let-values ([(out vars)
                                           (gen-output k #'tmpl (fx- lvl 1) ell?)])
-                              (if (null? vars)
-                                  (values #'(match-quote ,tmpl) '())
+                              (if (not vars)
+                                  (values #'(match-quote ,tmpl) #f)
                                   (values #`(list 'unquote #,out) vars)))]
                            ;; ((unquote-splicing <template> ...) <ellipsis> . <template>)
 	                   [((unquote-splicing expr ...) ell . tmpl2)
@@ -421,16 +424,16 @@
                                     (values #`(cons* tmp ... #,out)
                                             (append
                                              (map make-template-variable #'(tmp ...) #'(tmpl1 ...))
-                                             vars)))
+                                             (or vars '()))))
                                   (let-values ([(out* vars*)
                                                 (gen-output* k #'(tmpl1 ...) (fx- lvl 1) ell?)])
-                                    (if (and (null? vars)
-                                             (null? vars*))
+                                    (if (and (not vars)
+                                             (not vars*))
                                         (values #'(match-quote ((unquote-splicing tmpl1 ...) . tmpl2))
-                                                '())
+                                                #f)
                                         (values #`(cons (list 'unquote #,@out*) #,out)
-                                                (append vars* vars))))))]
-
+                                                (append (or vars* '())
+                                                        (or vars '())))))))]
                            ;; ((unquote-splicing <template> ...) . <template>)
                            [((unquote-splicing tmpl1 ...) . tmpl2)
                             ;; TODO: Use gen-ellipsis.
@@ -445,51 +448,57 @@
                                              vars)))
                                   (let-values ([(out* vars*)
                                                 (gen-output* k #'(tmpl1 ...) (fx- lvl 1) ell?)])
-                                    (if (and (null? vars)
-                                             (null? vars*))
+                                    (if (and (not vars)
+                                             (not vars*))
                                         (values #'(match-quote ((unquote-splicing tmpl1 ...) . tmpl2))
                                                 '())
                                         (values #`(cons (list 'unquote-splicing #,@out*) #,out)
-                                                (append vars* vars))))))]
+                                                (append (or vars* '())
+                                                        (or vars '())))))))]
                            ;; (<element> . <element>)
                            [(el1 . el2)
                             (let-values ([(out1 vars1)
                                           (gen-output k #'el1 lvl ell?)]
                                          [(out2 vars2)
                                           (gen-output k #'el2 lvl ell?)])
-                              (if (and (null? vars1)
-                                       (null? vars2))
+                              (if (and (not vars1)
+                                       (not vars2))
                                   (values #'(match-quote (el1 . el2))
                                           '())
                                   (values #`(cons #,out1 #,out2)
-                                          (append vars1 vars2))))]
+                                          (append (or vars1 '()) (or vars2 '())))))]
                            ;; #(<element> ...)
                            [#(el ...)
                             (let-values ([(out vars)
                                           (gen-output k #'(el ...) lvl ell?)])
-                              (if (null? vars)
-                                  (values #'(match-quote #(el ...)) '())
+                              (if (not vars)
+                                  (values #'(match-quote #(el ...)) #f)
                                   (values #`(list->vector #,out) vars)))]
                            ;; <constant>
                            [constant
-                            (values #'(match-quote constant) '())])))
+                            (values #'(match-quote constant) #f)])))
                      (define gen-output*
                        (lambda (k tmpl* lvl ell?)
-                         (let f ([tmpl* tmpl*] [out* '()] [vars* '()])
+                         (let f ([tmpl* tmpl*] [out* '()] [vars* #f])
                            (if (null? tmpl*)
                                (values (reverse out*) vars*)
                                (let ([tmpl (car tmpl*)]
                                      [tmpl* (cdr tmpl*)])
                                  (let-values ([(out vars) (gen-output k tmpl lvl ell?)])
-                                   (f tmpl* (cons out out*) (append vars vars*))))))))
+                                   (f tmpl* (cons out out*)
+                                      (if vars
+                                          (append vars (or vars* '()))
+                                          vars*))))))))
                      (syntax-case stx ()
                        [(k tmpl)
                         (let-values ([(out vars)
-                                      (gen-output #'k #'tmpl 0 ellipsis?)])
-                          (with-syntax ([(x ...) (map template-variable-identifier vars)]
-                                        [(e ...) (map template-variable-expression vars)])
-                            #`(let ([x e] ...)
-                                #,out)))]
+                                      (gen-output #'k #'tmpl 0
+                                                  ellipsis?)])
+                          (let ([vars (or vars '())])
+                            (with-syntax ([(x ...) (map template-variable-identifier vars)]
+                                          [(e ...) (map template-variable-expression vars)])
+                              #`(let ([x e] ...)
+                                  #,out))))]
                        [_
                         (syntax-violation who "invalid syntax" stx)])))
 
