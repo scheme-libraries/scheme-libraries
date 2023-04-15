@@ -427,7 +427,11 @@
       (lambda (x)
         (define gen-template
           (lambda (tmpl depth)
-            (let f ([tmpl tmpl] [depth depth] [env* '()] [tail? #f])
+            (let f ([tmpl tmpl]
+                    [depth depth]
+                    [env* '()]
+                    [ell? (lambda (x) ($ellipsis? x))]
+                    [tail? #f])
               (define update-envs
                 (lambda (in out lvl env*)
                   (let f ([in in]
@@ -448,8 +452,62 @@
                                  (fx- lvl 1)
                                  (cdr env*))))]))))
               (syntax-match tmpl
-                ;; FIXME: Repeated variables.
-
+                ;; (<ellipsis> <template>)
+                [(,ell ,tmpl)
+                 (guard (ell? ell))
+                 (let-values ([(out env* var?)
+                               (f tmpl depth env* (lambda (x) #f) tail?)])
+                   (values out env* #t))]
+                ;; (<template> <ellipsis> ... . <template>)
+                [(,tmpl1 ,ell . ,tmpl2)
+                 (guard (ell? ell))
+                 (let g ([tmpl2 tmpl2] [lvl 1])
+                   (define pop-env
+                     ;; TODO: Use descriptive record types for env.
+                     (lambda (env*)
+                       (let ([env (car env*)])
+                         (when (null? env)
+                           (syntax-error who "too many ellipses following syntax template" x tmpl1))
+                         (values
+                           (map car env)
+                           (map
+                             (lambda (bdg)
+                               (let ([out (cdr bdg)])
+                                 out))
+                             env)
+                           (cdr env*)))))
+                   (syntax-match tmpl2
+                     [(,ell . ,tmpl2)
+                      (guard (ell? ell))
+                      (g tmpl2 (fx+ lvl 1))]
+                     [,tmpl2
+                      (let*-values ([(out2 env* var?) (f tmpl2 depth env*  ell? #t)]
+                                    [(out1 env* var?) (f tmpl1 depth (extend-envs lvl env*)
+                                                         ell? #f)]
+                                    [(out env*)
+                                     (let f ([lvl lvl])
+                                       (if (fx=? lvl 1)
+                                           (let-values ([(var* init* env*)
+                                                         (pop-env env*)])
+                                             (values
+                                               `(map
+                                                  (lambda (,var* ...)
+                                                    ,out1)
+                                                  ,init* ...)
+                                               env*))
+                                           (let*-values ([(out env*)
+                                                          (f (fx- lvl 1))]
+                                                         [(var* init* env*)
+                                                          (pop-env env*)])
+                                             (values
+                                               `(append-map
+                                                 (lambda (,var* ...)
+                                                   ,out)
+                                                 ,init* ...)
+                                               env*))))])
+                        (values `(append ,out ,out2)
+                                env*
+                                #t))]))]
                 ;; <identifier>
                 [,tmpl
                  (guard ($identifier? tmpl))
@@ -767,12 +825,14 @@
 
   ;; prims
 
+  (declare-prim-syntax append (fxnot 0))
   (declare-prim-syntax car 1)
   (declare-prim-syntax cdr 1)
   (declare-prim-syntax cons 2)
   (declare-prim-syntax eq? 2)
   (declare-prim-syntax equal? 2)
   (declare-prim-syntax void 0)
+  (declare-prim-syntax map (fxnot 1))
   (declare-prim-syntax memv 2)
   (declare-prim-syntax identifier? 1)
   (declare-prim-syntax free-identifier=? 2)
