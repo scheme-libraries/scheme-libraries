@@ -13,7 +13,7 @@
   (scheme-libraries syntax expand)
   (scheme-libraries syntax syntax-objects))
 
-(define expand-datum
+(trace-define expand-datum
   (lambda (x)
     (expand (datum->annotated-datum x)
             (bootstrap-environment))))
@@ -48,10 +48,10 @@
     (define a)
     1))
 
-(test-expand (if '#t '2 '3)
+(test-expand (if '#f '2 '3)
   (if #f 2 3))
 
-(test-expand (if '#t '2 (values))
+(test-expand (if '#f '2 (values))
   (if #f 2))
 
 (test-expand (quote #(1 2 3))
@@ -108,5 +108,15 @@
   (letrec-syntax ([foo (lambda (x) #'bar)]
                   [bar (lambda (x) 2)])
     foo))
+
+;;; Syntax-case
+
+(test-expand '#t
+  (let-syntax
+      ([m (lambda (x)
+            (syntax-case 3 ()
+              [2 #f]
+              [3 #t]))])
+    m))
 
 (test-end "expand")

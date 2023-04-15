@@ -195,6 +195,7 @@
 
   (define execute
     (lambda (e)
+      ;; TODO: Install a continuation barrier.
       ((compile-to-thunk e))))
 
   ;; Syntax-case
@@ -238,7 +239,7 @@
                  (syntax-extend-backquote here
                    (if fend
                        `(if ,fend ,out ,(f))
-                       ,out)))))))
+                       out)))))))
 
         (define parse-clause
           (lambda (cl)
