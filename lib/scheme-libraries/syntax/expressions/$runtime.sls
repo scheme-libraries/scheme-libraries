@@ -14,12 +14,17 @@
     quote
     set!
     ;; Procedures
+    car
+    cdr
+    eq?
     equal?
     memv
+    reverse
     syntax-car
     syntax-cdr
     syntax-null?
     syntax-pair?
+    syntax-split
     void
     (rename ($identifier? identifier?)
             ($free-identifier=? free-identifier=?)

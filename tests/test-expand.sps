@@ -150,4 +150,12 @@
               [(_ a) #'a]))])
     (m #t)))
 
+(test-expand '#t
+  (let-syntax
+      ([m (lambda (x)
+            (syntax-case x ()
+              [(_ a) #f]
+              [(_ a ...) #t]))])
+    (m 1 2)))
+
 (test-end "expand")

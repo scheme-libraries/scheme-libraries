@@ -221,10 +221,26 @@
 
         (define gen-clause
           (lambda (cl e f)
-
             (define gen-matcher
               (lambda (pat e)
                 (syntax-match pat
+                  ;; (<pattern> <ellipsis> . <pattern>)
+                  [(,pat1 ,ell . ,pat2)
+                   (guard ($ellipsis? ell))
+                   (let ([l (syntax-length+ pat2)]
+                         [e1 (generate-temporary)]
+                         [e2 (generate-temporary)]
+                         [n (generate-temporary)])
+                     (let*-values ([(mat1 pvar1*) (gen-map pat1 e1)]
+                                   [(mat2 pvar2*) (gen-matcher* pat2 e2)])
+                       (values
+                         (lambda (k)
+                           `(syntax-split ,e ,l
+                              (lambda (,e1 ,e2)
+                                ,(mat1 (lambda () (mat2 k))))
+                              ,(f)))
+                         (append pvar1* pvar2*))))]
+                  ;; FIXME: Other patterns, like vector pattern.
                   ;; (<pattern> . <patter>)
                   [(,pat1 . ,pat2)
                    (let ([e1 (generate-temporary)]
@@ -270,7 +286,65 @@
                               ,(k)
                               ,(f)))
                    '()))])))
-            ;; gen-matcher
+
+            (define gen-map
+              (lambda (pat e)
+                (let ([g (generate-temporary)]
+                      [h (generate-temporary)]
+                      [l (generate-temporary)])
+                  (let-values ([(mat pvar*) (gen-matcher pat g)])
+                    (let ([g* (map (lambda (pvar) (generate-temporary)) pvar*)])
+                      (values
+                        (lambda (k)
+                          (syntax-extend-backquote here
+                            `(let ,l ([,h (reverse ,e)]
+                                      [,g* ,(map (lambda (g) `'()) g*)]
+                                      ...)
+                                  (if (eq? ,h '())
+                                      ,(k)
+                                      (let ([,g (car ,h)])
+                                        ,(mat
+                                          (lambda ()
+                                            `(,l (cdr ,h)
+                                                 ,(map
+                                                    (lambda (pvar g)
+                                                      `(cons ,(pattern-variable-identifier pvar)
+                                                             ,g))
+                                                    pvar* g*)
+                                                 ...))))))))
+                        (map
+                          (lambda (pvar g)
+                            (make-pattern-variable
+                             (pattern-variable-pattern pvar)
+                             g
+                             (fx+ (pattern-variable-level pvar) 1)))
+                          pvar* g*)))))))
+
+            (define gen-matcher*
+              (lambda (pat e)
+                (syntax-match pat
+                  [(,pat1 . ,pat2)
+                   (let ([e1 (generate-temporary)]
+                         [e2 (generate-temporary)])
+                     (let*-values ([(mat1 pvar1*) (gen-matcher pat1 e1)]
+                                   [(mat2 pvar2*) (gen-matcher pat2 e2)])
+                       (values
+                         (lambda (k)
+                           `(if (syntax-pair? ,e)
+                                (let ([,e1 (syntax-car ,e)]
+                                      [,e2 (syntax-cdr ,e)])
+                                  ,(mat1 (lambda () (mat2 k))))
+                                ,(f)))
+                         (append pvar1* pvar2*))))]
+                  [()
+                   (values
+                     (lambda (k)
+                       `(if (syntax-null? ,e) ,(k) ,(f)))
+                     '())]
+                  [,pat
+                   (gen-matcher pat e)])))
+
+            ;; gen-clause
             (let*-values ([(pat fend out) (parse-clause cl)]
                           [(mat pvar*) (gen-matcher pat e)])
               (let ([pat* (map pattern-variable-pattern pvar*)])
@@ -282,7 +356,7 @@
                                   (let f ([n (pattern-variable-level pvar)])
                                     (if (fxzero? n)
                                         (pattern-variable-pattern pvar)
-                                        `(,f (fx- n 1) (... ...)))))
+                                        `(,(f (fx- n 1)) (... ...)))))
                                 pvar*)]
                         [id* (map pattern-variable-identifier pvar*)])
                     (dlog
@@ -303,13 +377,14 @@
 
         ;; syntax-case-expander
         (expand-expression
-         (let ([t (generate-temporary)])
+         (let ([t (generate-temporary)]
+               [f (generate-temporary)])
            (syntax-extend-backquote here
              `(let ([,t ,e])
                 ,(fold-right
                    (lambda (cl rest)
-                     `(let ([f (lambda () ,rest)])
-                        ,(gen-clause cl t (lambda () `(f)))))
+                     `(let ([,f (lambda () ,rest)])
+                        ,(gen-clause cl t (lambda () `(,f)))))
                    `(syntax-violation #f "invalid syntax" ,t)
                    cl*))))))))
 
@@ -330,6 +405,7 @@
          (values e lit* cl*)])))
 
   (define/who syntax-expander
+    ;; XXX: Handle the case of constant tail and (...)!
     (define lookup-pattern-variable
       (lambda (x)
         (let ([bdg (label->binding (identifier->label x))])
@@ -656,16 +732,21 @@
 
   ;; prims
 
+  (declare-prim-syntax car 1)
+  (declare-prim-syntax cdr 1)
+  (declare-prim-syntax eq? 2)
   (declare-prim-syntax equal? 2)
   (declare-prim-syntax void 0)
   (declare-prim-syntax memv 2)
   (declare-prim-syntax identifier? 1)
   (declare-prim-syntax free-identifier=? 2)
+  (declare-prim-syntax reverse 1)
   (declare-prim-syntax syntax-car 1)
   (declare-prim-syntax syntax-cdr 1)
   (declare-prim-syntax syntax-null? 1)
   (declare-prim-syntax syntax-pair? 1)
   (declare-prim-syntax syntax->datum 1)
+  (declare-prim-syntax syntax-split 4)
   (declare-prim-syntax syntax-violation (fxnot 3))
 
   ;; DEBUG

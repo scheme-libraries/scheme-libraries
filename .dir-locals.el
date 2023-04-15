@@ -5,6 +5,8 @@
      (eval
       . (progn
           (put '$with-syntax 'scheme-indent-function 1)
+          (put 'split 'scheme-indent-function 'defun)
+          (put 'syntax-split 'scheme-indent-function 'defun)
           (put 'values 'scheme-indent-function 0)
           (put 'for-each 'scheme-indent-function 'defun)
           (put 'map 'scheme-indent-function 0)
