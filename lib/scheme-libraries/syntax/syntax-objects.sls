@@ -840,7 +840,7 @@
     (lambda (stx)
       (define expr (unwrap stx))
       (or (null? expr)
-          (and (annotated-atom? expr)
+          (and (annotated-datum? expr)
                (null? (annotated-datum-value expr))))))
 
   (define syntax-pair?

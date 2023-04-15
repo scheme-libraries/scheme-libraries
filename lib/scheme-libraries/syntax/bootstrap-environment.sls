@@ -7,6 +7,9 @@
     bootstrap-environment)
   (import
     (rnrs)
+    ;; DEBUG
+    (only (chezscheme) pretty-print)
+
     (scheme-libraries define-who)
     (scheme-libraries helpers)
     (scheme-libraries match)
@@ -238,7 +241,7 @@
                            `(syntax-split ,e ,l
                               (lambda (,e1 ,e2)
                                 ,(mat1 (lambda () (mat2 k))))
-                              ,(f)))
+                              (lambda () ,(f))))
                          (append pvar1* pvar2*))))]
                   ;; FIXME: Other patterns, like vector pattern.
                   ;; (<pattern> . <patter>)
@@ -379,18 +382,21 @@
         (expand-expression
          (let ([t (generate-temporary)]
                [f (generate-temporary)])
-           (syntax-extend-backquote here
-             `(let ([,t ,e])
-                ,(fold-right
-                   (lambda (cl rest)
-                     `(let ([,f (lambda () ,rest)])
-                        ,(gen-clause cl t (lambda () `(,f)))))
-                   `(syntax-violation #f "invalid syntax" ,t)
-                   cl*))))))))
+           (dlog
+            (syntax-extend-backquote here
+              `(let ([,t ,e])
+                 ,(fold-right
+                    (lambda (cl rest)
+                      `(let ([,f (lambda () ,rest)])
+                         ,(gen-clause cl t (lambda () `(,f)))))
+                    `(syntax-violation #f "invalid syntax" ,t)
+                    cl*)))))))))
 
   ;; FIXME: DEBUG: XXX: LOG
   (define dlog (lambda (x)
-                (display (syntax-object->datum x)) (newline) x))
+                (pretty-print (syntax-object->datum x)
+                              )
+                x))
 
   (define parse-syntax-case
     (lambda (x)
@@ -734,6 +740,7 @@
 
   (declare-prim-syntax car 1)
   (declare-prim-syntax cdr 1)
+  (declare-prim-syntax cons 2)
   (declare-prim-syntax eq? 2)
   (declare-prim-syntax equal? 2)
   (declare-prim-syntax void 0)
