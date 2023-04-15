@@ -347,12 +347,13 @@
                                                 (gen-output k #'tmpl2 0 ell?)])
 		                    (for-each
 		                     (lambda (tmpl vars)
-			               (when (null? vars)
-			                 (quasiquote-syntax-violation tmpl "no substitutions to repeat here")))
+			               (when (or (not vars) (null? vars))
+			                 (quasiquote-syntax-violation tmpl
+                                           "no substitutions to repeat here")))
 		                     tmpl* vars*)
                                     (with-syntax ([((tmp** ...) ...)
                                                    (map (lambda (vars)
-					                  (map template-variable-identifier vars))
+                                                          (map template-variable-identifier vars))
 					                vars*)]
 				                  [(out1 ...) out*])
                                       (values #`(append (append-n-map #,depth
@@ -445,7 +446,7 @@
                                     (values #`(append tmp ... #,out)
                                             (append
                                              (map make-template-variable #'(tmp ...) #'(tmpl1 ...))
-                                             vars)))
+                                             (or vars '()))))
                                   (let-values ([(out* vars*)
                                                 (gen-output* k #'(tmpl1 ...) (fx- lvl 1) ell?)])
                                     (if (and (not vars)
