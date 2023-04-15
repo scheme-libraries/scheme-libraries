@@ -110,7 +110,7 @@
             e
             (let ([x* (map definition-var def*)]
                   [e* (map definition-expr def*)])
-              (build (letrec* `([,x* ,e*] ...) ,e)))))))
+              (build (letrec* ([,x* ,e*] ...) ,e)))))))
 
   (define expand-internal
     (lambda (x* ribs)
