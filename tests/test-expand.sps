@@ -13,7 +13,7 @@
   (scheme-libraries syntax expand)
   (scheme-libraries syntax syntax-objects))
 
-(define expand-datum
+(trace-define expand-datum
   (lambda (x)
     (expand (datum->annotated-datum x)
             (bootstrap-environment))))
@@ -158,7 +158,7 @@
               [(_ a ...) #t]))])
     (m 1 2)))
 
-(test-expand '#t
+(test-expand ('1 '2)
   (let-syntax
       ([m (lambda (x)
             (syntax-case x ()

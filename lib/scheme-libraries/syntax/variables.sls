@@ -15,7 +15,9 @@
     (lambda (name)
       (unless (symbol? name)
         (assertion-violation "invalid name argument" name))
-      (gensym (symbol->string name))))
+      (if (gensym? name)
+          (gensym "g" ".")
+          (gensym (symbol->string name) "."))))
 
   (define variable?
     (lambda (x)

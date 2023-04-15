@@ -15,10 +15,12 @@
     quote
     set!
     ;; Procedures
+    append
     car
     cdr
     eq?
     equal?
+    map
     memv
     reverse
     syntax-car
