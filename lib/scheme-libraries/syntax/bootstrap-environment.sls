@@ -244,7 +244,7 @@
                               (lambda () ,(f))))
                          (append pvar1* pvar2*))))]
                   ;; FIXME: Other patterns, like vector pattern.
-                  ;; (<pattern> . <patter>)
+                  ;; (<pattern> . <pattern>)
                   [(,pat1 . ,pat2)
                    (let ([e1 (generate-temporary)]
                          [e2 (generate-temporary)])
@@ -275,11 +275,9 @@
                                 ,(f)))
                          '())
                        ;; <pattern variable>
-                       (begin
-                         (display e) (newline)
-                         (values
-                           (lambda (k) (k))
-                           (list (make-pattern-variable pat e 0)))))]
+                       (values
+                         (lambda (k) (k))
+                         (list (make-pattern-variable pat e 0))))]
                   ;; <constant>
                   [,pat
                    (let ([d (syntax-object->datum pat)])
@@ -362,12 +360,11 @@
                                         `(,(f (fx- n 1)) (... ...)))))
                                 pvar*)]
                         [id* (map pattern-variable-identifier pvar*)])
-                    (dlog
-                     (mat (lambda ()
-                            `($with-syntax ([,pat* ,id*] ...)
-                               ,(if fend
-                                    `(if ,fend ,out ,(f))
-                                    out)))))))))))
+                    (mat (lambda ()
+                           `($with-syntax ([,pat* ,id*] ...)
+                              ,(if fend
+                                   `(if ,fend ,out ,(f))
+                                   out))))))))))
 
         (define parse-clause
           (lambda (cl)
@@ -393,9 +390,10 @@
                     cl*)))))))))
 
   ;; FIXME: DEBUG: XXX: LOG
+  ;; Move this into execute-transformer code.
   (define dlog (lambda (x)
-                (pretty-print (syntax-object->datum x)
-                              )
+                 #;
+                 (pretty-print (syntax-object->datum x))
                 x))
 
   (define parse-syntax-case
@@ -412,17 +410,46 @@
 
   (define/who syntax-expander
     ;; XXX: Handle the case of constant tail and (...)!
+    ;; XXX: Check the meaning of tail.
     (define lookup-pattern-variable
       (lambda (x)
         (let ([bdg (label->binding (identifier->label x))])
           (and (pattern-variable-binding? bdg)
                bdg))))
+    (define extend-envs
+      (lambda (n env*)
+        (let f ([n n] [env* env*])
+          (let ([env* (cons '() env*)])
+            (if (fx=? n 1)
+                env*
+                (f (fx- n 1) env*))))))
     (lambda (depth)
       (lambda (x)
         (define gen-template
           (lambda (tmpl depth)
             (let f ([tmpl tmpl] [depth depth] [env* '()] [tail? #f])
+              (define update-envs
+                (lambda (in out lvl env*)
+                  (let f ([in in]
+                          [lvl lvl]
+                          [env* env*])
+                    (cond
+                     [(null? env*)
+                      (syntax-error #f "too few ellipses following syntax template" x tmpl)]
+                     [(fx=? lvl 1)
+                      (cons (cons (cons in out)
+                                  (car env*))
+                            (cdr env*))]
+                     [else
+                      (let ([out (generate-temporary)])
+                        (cons (cons (cons in out)
+                                    (car env*))
+                              (f out
+                                 (fx- lvl 1)
+                                 (cdr env*))))]))))
               (syntax-match tmpl
+                ;; FIXME: Repeated variables.
+
                 ;; <identifier>
                 [,tmpl
                  (guard ($identifier? tmpl))
@@ -433,8 +460,10 @@
                               [lvl (pattern-variable-binding-level bdg)])
                           (if (fxzero? lvl)
                               (values id env* #t)
-                              ;; FIXME
-                              (assert #f))))]
+                              (let ([tmp (generate-temporary)])
+                                (values tmp
+                                        (update-envs tmp id lvl env*)
+                                        #t)))))]
                   [else
                    (values `($syntax ,tmpl) env* #f)])]
                 ;; <constant>
@@ -575,7 +604,7 @@
          (let f ([e e] [e* e*])
            (if (null? e*)
                e
-               (build `(if ,e ,(f (car e*) (cdr e*)) '#f))))]
+               (build (if ,e ,(f (car e*) (cdr e*)) '#f))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax or
@@ -697,7 +726,7 @@
     (lambda (x)
       (define who '$syntax)
       (syntax-match x
-        [(,k ,e) (build `(quote ,e))]
+        [(,k ,e) (build (quote ,e))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax $with-syntax
