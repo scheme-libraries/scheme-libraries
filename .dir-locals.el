@@ -4,9 +4,10 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put '$with-syntax 'scheme-indent-function 1)
           (put 'values 'scheme-indent-function 0)
           (put 'for-each 'scheme-indent-function 'defun)
-          (put 'map 'scheme-indent-function 'defun)
+          (put 'map 'scheme-indent-function 0)
           (put 'for-all 'scheme-indent-function 0)
           (put 'exists 'scheme-indent-function 0)
           (put 'fold-left 'scheme-indent-function 'defun)

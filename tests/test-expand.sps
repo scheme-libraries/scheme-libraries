@@ -119,4 +119,35 @@
               [3 #t]))])
     m))
 
+(test-expand '#t
+  (let-syntax
+      ([m (lambda (x)
+            (syntax-case '(3 4) ()
+              [2 #f]
+              [(3 4) #t]))])
+    m))
+
+(test-expand '#t
+  (let-syntax
+      ([m (lambda (x)
+            (syntax-case x ()
+              [(_ 3) #f]
+              [(_ 2) #t]))])
+    (m 2)))
+
+(test-expand '#t
+  (let-syntax
+      ([m (lambda (x)
+            (syntax-case x (a b)
+              [(_ b) #f]
+              [(_ a) #t]))])
+    (m a)))
+
+(test-expand '#t
+  (let-syntax
+      ([m (lambda (x)
+            (syntax-case x ()
+              [(_ a) #'a]))])
+    (m #t)))
+
 (test-end "expand")

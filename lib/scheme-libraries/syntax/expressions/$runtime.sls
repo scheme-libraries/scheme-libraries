@@ -5,6 +5,7 @@
 (library (scheme-libraries syntax expressions $runtime)
   (export
     ;; Keywords
+    begin
     lambda
     letrec
     letrec*
@@ -15,9 +16,19 @@
     ;; Procedures
     equal?
     memv
+    syntax-car
+    syntax-cdr
+    syntax-null?
+    syntax-pair?
     void
-    syntax->datum
-    (rename (syntax-error syntax-violation)))
+    (rename ($identifier? identifier?)
+            ($free-identifier=? free-identifier=?)
+            (syntax-object->datum syntax->datum)
+            (syntax-error syntax-violation))
+
+    ;; DEBUG
+    display
+    newline)
   (import
     (rnrs)
     (scheme-libraries void)
