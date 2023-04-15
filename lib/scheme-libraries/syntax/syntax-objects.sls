@@ -29,6 +29,7 @@
     add-substitutions*
     syntax-object->datum
     datum->syntax-object
+    generate-temporary
     syntax-atom?
     syntax-null?
     syntax-pair?
@@ -86,7 +87,11 @@
     make-prim-binding
     prim-binding?
     prim-binding-name
-    prim-binding-arity)
+    prim-binding-arity
+    make-pattern-variable-binding
+    pattern-variable-binding?
+    pattern-variable-binding-identifier
+    pattern-variable-binding-level)
   (import
     (except (rnrs) &syntax &undefined)
     (rnrs mutable-pairs)
@@ -94,6 +99,7 @@
     (scheme-libraries counters)
     (scheme-libraries define-values)
     (scheme-libraries define-who)
+    (scheme-libraries gensyms)
     (scheme-libraries helpers)
     (scheme-libraries lists)
     (scheme-libraries numbers)
@@ -207,11 +213,6 @@
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) proc)))))
 
-  #;
-  (define-record-type begin-binding
-    (nongenerative begin-binding-bd5e8fd6-f0ec-4626-a19d-cba8937b566e)
-    (parent binding) (sealed #t))
-
   (define-record-type auxiliary-binding
     (nongenerative auxiliary-binding-90472bac-e875-4218-bc1c-f856e1587073)
     (parent binding) (sealed #t)
@@ -237,6 +238,20 @@
           (unless (fixnum? arity)
             (assertion-violation who "invalid arity argument" arity))
           ((pargs->new) name arity)))))
+
+  (define-record-type pattern-variable-binding
+    (nongenerative pattern-variable-binding-35069673-4c20-44d1-a6d0-b8e45243ade0)
+    (parent binding) (sealed #t)
+    (fields identifier level)
+    (protocol
+      (lambda (pargs->new)
+        (define who 'make-pattern-variable-binding)
+        (lambda (id lvl)
+          (unless ($identifier? id)
+            (assertion-violation who "invalid identifier argument" id))
+          (unless (nonnegative-fixnum? lvl)
+            (assertion-violation who "invalid level argument" lvl))
+          ((pargs->new) id lvl)))))
 
   ;; Metalevels
 
@@ -810,6 +825,10 @@
        [(vector? e)
         (vector-map syntax-object->datum e)]
        [else e])))
+
+  (define generate-temporary
+    (lambda ()
+      (make-syntax-object (gensym))))
 
   (define syntax-atom?
     (lambda (stx)

@@ -7,6 +7,7 @@
     bootstrap-environment)
   (import
     (rnrs)
+    (scheme-libraries define-who)
     (scheme-libraries helpers)
     (scheme-libraries match)
     (scheme-libraries parameters)
@@ -119,6 +120,11 @@
 			 id*))
 		   (f (cdr stx*) (cons stx id*))))))))
 
+  (define $ellipsis?
+    (lambda (x)
+      (and ($identifier? x)
+           ($free-identifier=? x (syntax-extend-backquote here `...)))))
+
   (define expand-letrec
     (lambda (x who)
       (syntax-match x
@@ -200,10 +206,12 @@
 
   ;; Syntax-case
 
-  (define syntax-case-expander
+  (define/who syntax-case-expander
+    (define who 'syntax-case)
+    (define-record-type pattern-variable
+      (nongenerative) (sealed #t)
+      (fields pattern identifier level))
     (lambda (x)
-
-      (define who 'syntax-case)
 
       (let-values ([(e lit* cl*) (parse-syntax-case x)])
 
@@ -217,7 +225,43 @@
             (define gen-matcher
               (lambda (pat e)
                 (syntax-match pat
-                  ;; TODO: Other clauses.
+                  ;; (<pattern> . <patter>)
+                  [(,pat1 . ,pat2)
+                   (let ([e1 (generate-temporary)]
+                         [e2 (generate-temporary)])
+                     (let-values ([(mat1 pvar1*) (gen-matcher pat1 e1)]
+                                  [(mat2 pvar2*) (gen-matcher pat2 e2)])
+                       (values
+                         (lambda (k)
+                           `(if (syntax-pair? ,e)
+                                ;; TODO: Introduce syntax-car+cdr.
+                                (let ([,e1 (syntax-car ,e)]
+                                      [,e2 (syntax-cdr ,e)])
+                                  ,(mat1 (lambda () (mat2 k))))
+                                ,(f)))
+                         (append pvar1* pvar2*))))]
+                  ;; <underscore>
+                  [_ (values (lambda (k) (k)) '())]
+                  ;; <ellipsis>
+                  [... (syntax-error #f "misplaced ellipsis in syntax pattern" x pat)]
+                  [,pat
+                   (guard ($identifier? pat))
+                   (if (literal? pat)
+                       ;; <literal>
+                       (values
+                         (lambda (k)
+                           `(if (and (identifier? ,e)
+                                     (free-identifier=? ($syntax ,pat) ,e))
+                                ,(k)
+                                ,(f)))
+                         '())
+                       ;; <pattern variable>
+                       (begin
+                         (display e) (newline)
+                         (values
+                           (lambda (k) (k))
+                           (list (make-pattern-variable pat e 0)))))]
+                  ;; <constant>
                   [,pat
                    (let ([d (syntax-object->datum pat)])
                      (values
@@ -226,20 +270,27 @@
                               ,(k)
                               ,(f)))
                    '()))])))
-
+            ;; gen-matcher
             (let*-values ([(pat fend out) (parse-clause cl)]
                           [(mat pvar*) (gen-matcher pat e)])
-
-              ;; TODO: Add pattern variables.  Q: How to add pattern
-              ;; variables without ribs?  We can take the output of
-              ;; the production of syntax-extend-backquote below!
-
-              (mat
-               (lambda ()
-                 (syntax-extend-backquote here
-                   (if fend
-                       `(if ,fend ,out ,(f))
-                       out)))))))
+              (let ([pat* (map pattern-variable-pattern pvar*)])
+                (unless (valid-bound-identifiers? pat*)
+                  (syntax-error who "duplicate pattern variable" x))
+                (syntax-extend-backquote here
+                  (let ([pat* (map
+                                (lambda (pvar)
+                                  (let f ([n (pattern-variable-level pvar)])
+                                    (if (fxzero? n)
+                                        (pattern-variable-pattern pvar)
+                                        `(,f (fx- n 1) (... ...)))))
+                                pvar*)]
+                        [id* (map pattern-variable-identifier pvar*)])
+                    (dlog
+                     (mat (lambda ()
+                            `($with-syntax ([,pat* ,id*] ...)
+                               ,(if fend
+                                    `(if ,fend ,out ,(f))
+                                    out)))))))))))
 
         (define parse-clause
           (lambda (cl)
@@ -252,14 +303,19 @@
 
         ;; syntax-case-expander
         (expand-expression
-         (syntax-extend-backquote here
-           `(let ([e ,e])
-              ,(fold-right
-                 (lambda (cl rest)
-                   `(let ([f (lambda () ,rest)])
-                      ,(gen-clause cl `e (lambda () `(f)))))
-                 `(syntax-violation #f "invalid syntax" e)
-                 cl*)))))))
+         (let ([t (generate-temporary)])
+           (syntax-extend-backquote here
+             `(let ([,t ,e])
+                ,(fold-right
+                   (lambda (cl rest)
+                     `(let ([f (lambda () ,rest)])
+                        ,(gen-clause cl t (lambda () `(f)))))
+                   `(syntax-violation #f "invalid syntax" ,t)
+                   cl*))))))))
+
+  ;; FIXME: DEBUG: XXX: LOG
+  (define dlog (lambda (x)
+                (display (syntax-object->datum x)) (newline) x))
 
   (define parse-syntax-case
     (lambda (x)
@@ -273,7 +329,12 @@
                  lit*))
          (values e lit* cl*)])))
 
-  (define syntax-expander
+  (define/who syntax-expander
+    (define lookup-pattern-variable
+      (lambda (x)
+        (let ([bdg (label->binding (identifier->label x))])
+          (and (pattern-variable-binding? bdg)
+               bdg))))
     (lambda (depth)
       (lambda (x)
         (define gen-template
@@ -284,7 +345,14 @@
                 [,tmpl
                  (guard ($identifier? tmpl))
                  (cond
-                  ;; FIXME: Handle pattern variables
+                  [(lookup-pattern-variable tmpl)
+                   => (lambda (bdg)
+                        (let ([id (pattern-variable-binding-identifier bdg)]
+                              [lvl (pattern-variable-binding-level bdg)])
+                          (if (fxzero? lvl)
+                              (values id env* #t)
+                              ;; FIXME
+                              (assert #f))))]
                   [else
                    (values `($syntax ,tmpl) env* #f)])]
                 ;; <constant>
@@ -299,7 +367,7 @@
           [(,k ,tmpl)
            (let-values ([(out env* var?)
                          (gen-template tmpl depth)])
-             (expand-expression out))]
+             (expand-expression (dlog out)))]
           [,x
            (syntax-error #f "invalid syntax" x)]))))
 
@@ -518,22 +586,23 @@
       (define who 'case)
       (syntax-match x
         [(,k ,e ,cl ,cl* ...)
-         (expand-expression
-          `(let ([k ,e])
-             (cond
-              ,(let f ([cl cl] [cl* cl*])
-                 (if (null? cl*)
-                     (syntax-match cl
-                       [[else ,e ,e* ...]
-                        `[else ,e ,e* ...]]
-                       [[(,d ...) ,e ,e* ...]
-                        `[(memv k '(,d ...)) ,e ,e* ...]]
-                       [,cl (syntax-error who "invalid clause" x cl)])
-                    (let ([rest (f (car cl*) (cdr cl*))])
-                      (syntax-match cl
-                        [[(,d ...) ,e ,e* ...]
-                         `[(memv k '(,d ...)) ,e ,e* ...]]
-                        [,cl (syntax-error who "invalid clause" x cl)])))))))]
+         (let ([t (generate-temporary)])
+           (expand-expression
+            `(let ([,t ,e])
+               (cond
+                ,(let f ([cl cl] [cl* cl*])
+                   (if (null? cl*)
+                       (syntax-match cl
+                         [[else ,e ,e* ...]
+                          `[else ,e ,e* ...]]
+                         [[(,d ...) ,e ,e* ...]
+                          `[(memv ,t '(,d ...)) ,e ,e* ...]]
+                         [,cl (syntax-error who "invalid clause" x cl)])
+                       (let ([rest (f (car cl*) (cdr cl*))])
+                         (syntax-match cl
+                           [[(,d ...) ,e ,e* ...]
+                            `[(memv ,t '(,d ...)) ,e ,e* ...]]
+                           [,cl (syntax-error who "invalid clause" x cl)]))))))))]
         [,x (syntax-error who "invalid sytnax" x)])))
 
   (declare-expander-syntax syntax-case
@@ -549,11 +618,58 @@
         [(,k ,e) (build `(quote ,e))]
         [,x (syntax-error who "invalid syntax" x)])))
 
+  (declare-expander-syntax $with-syntax
+    (lambda (x)
+      (define who '$with-syntax)
+      (define-record-type pattern-variable
+        (nongenerative) (sealed #t)
+        (fields identifier level))
+      (define parse-pattern
+        (lambda (pat)
+          (let f ([pat pat] [lvl 0])
+            (syntax-match pat
+              [,pat
+               (guard ($identifier? pat))
+               (make-pattern-variable pat lvl)]
+              [(,pat ,ell)
+               ($ellipsis? ell)
+               (f pat (fx+ lvl 1))]
+              [,pat (syntax-error who "invalid pattern" pat)]))))
+      (syntax-match x
+        [(,k ([,pat* ,id*] ...) ,b)
+         (guard (for-all $identifier? id*))
+         (let* ([pvar* (map parse-pattern pat*)]
+                [x* (map pattern-variable-identifier pvar*)])
+           (unless (valid-bound-identifiers? x*)
+             (syntax-error who "invalid syntax" x))
+           (let* ([bdg* (map (lambda (pvar id)
+                               (make-pattern-variable-binding
+                                id (pattern-variable-level pvar)))
+                             pvar* id*)]
+                  [lbl* (map make-label bdg*)]
+                  [ribs (make-ribcage x* lbl*)]
+                  [b (add-substitutions ribs b)]
+                  [e (expand-expression b)])
+             (for-each label-kill! lbl*)
+             e))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
   ;; prims
 
   (declare-prim-syntax equal? 2)
   (declare-prim-syntax void 0)
   (declare-prim-syntax memv 2)
+  (declare-prim-syntax identifier? 1)
+  (declare-prim-syntax free-identifier=? 2)
+  (declare-prim-syntax syntax-car 1)
+  (declare-prim-syntax syntax-cdr 1)
+  (declare-prim-syntax syntax-null? 1)
+  (declare-prim-syntax syntax-pair? 1)
   (declare-prim-syntax syntax->datum 1)
   (declare-prim-syntax syntax-violation (fxnot 3))
+
+  ;; DEBUG
+  (declare-prim-syntax display 1)
+  (declare-prim-syntax newline 0)
+
   )
