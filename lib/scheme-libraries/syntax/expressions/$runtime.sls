@@ -22,6 +22,7 @@
     equal?
     map
     memv
+    list
     reverse
     syntax-car
     syntax-cdr
