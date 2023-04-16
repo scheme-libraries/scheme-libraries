@@ -182,4 +182,11 @@
               [(a ...) #''#(a ...)]))])
     m))
 
+(test-expand ('2 '3)
+  (let-syntax
+      ([m (lambda (x)
+            (with-syntax ([(_ a ...) x])
+              #'(a ...)))])
+    (m 2 3)))
+
 (test-end "expand")

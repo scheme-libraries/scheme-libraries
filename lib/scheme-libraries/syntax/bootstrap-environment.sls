@@ -800,6 +800,18 @@
   (declare-expander-syntax syntax
     (syntax-expander #f))
 
+  (declare-expander-syntax with-syntax
+    (lambda (x)
+      (define who 'with-syntax)
+      (syntax-match x
+        [(,k ([,p* ,e*] ...) ,b* ... ,b)
+         (expand-expression
+          `(syntax-case (list ,e* ...) ()
+             [(,p* ...) (let* () ,b* ... ,b)]))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  ;; Internal syntax
+
   (declare-expander-syntax $syntax
     (lambda (x)
       (define who '$syntax)
@@ -852,6 +864,7 @@
   (declare-prim-syntax eq? 2)
   (declare-prim-syntax equal? 2)
   (declare-prim-syntax void 0)
+  (declare-prim-syntax list (fxnot 0))
   (declare-prim-syntax map (fxnot 1))
   (declare-prim-syntax memv 2)
   (declare-prim-syntax identifier? 1)
