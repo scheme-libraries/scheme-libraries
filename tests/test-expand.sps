@@ -189,4 +189,34 @@
               #'(a ...)))])
     (m 2 3)))
 
+(test-expand ('1 ('2 '3))
+  (let-syntax
+      ([m (lambda (x)
+            #`(1 #,(list 2 3)))])
+    m))
+
+(test-expand ('2 '3)
+  (let-syntax
+      ([m (lambda (x)
+            #`#,(list 2 3))])
+    m))
+
+(test-expand '#`(1 #,(list 2 3))
+  (let-syntax
+      ([m (lambda (x)
+            #`'#`(1 #,(list 2 3)))])
+    m))
+
+(test-expand '((1 2) (3 4))
+  (let-syntax
+      ([m (lambda (x)
+            #`'((unsyntax #'(1 2) #'(3 4))))])
+    m))
+
+(test-expand '(1 2 3 4)
+  (let-syntax
+      ([m (lambda (x)
+            #`'((unsyntax-splicing #'(1 2) #'(3 4))))])
+    m))
+
 (test-end "expand")

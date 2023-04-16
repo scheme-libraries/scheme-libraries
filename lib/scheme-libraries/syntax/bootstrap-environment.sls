@@ -482,13 +482,41 @@
                        (values `(list ($syntax ,us) ,out) env* #f)
                        (values `($syntax ,tmpl) env* #f)))]
                 ;; ((unsyntax-splicing <template> ...) . <template>)
-
-                ;; TODO
-
+                [((unsyntax-splicing ,expr* ...) . ,tmpl1)
+                 (guard depth (fxzero? depth))
+                 (let-values ([(out env* var?)
+                               (f tmpl1 0 env* ell? #t)])
+                   (values `(append (syntax-list ,expr*) ... ,out)
+                           env*
+                           #t))]
+                [((,us ,tmpl* ...) . ,tmpl1)
+                 (guard depth ($identifier? us) ($free-identifier=? us `unsyntax-splicing))
+                 (let*-values ([(out* env* var*?)
+                                (f tmpl* (fx- depth 1) env* ell? #f)]
+                               [(out1 env* var1?)
+                                (f tmpl1 depth env* ell? #f)])
+                   (if (or var*? var1?)
+                       (values `(cons (list ($syntax ,us) . ,out*) ,out1)
+                               env*
+                               #f)
+                       (values `($syntax ,tmpl) env* #f)))]
                 ;; ((unsyntax <template> ...) . <template>)
-
-                ;; TODO
-
+                [((unsyntax ,expr* ...) . ,tmpl1)
+                 (guard depth (fxzero? depth))
+                 (let-values ([(out env* var?)
+                               (f tmpl1 0 env* ell? #t)])
+                   (values `(cons* ,expr* ... ,out) env* #t))]
+                [((,us ,tmpl* ...) . ,tmpl1)
+                 (guard depth ($identifier? us) ($free-identifier=? us `unsyntax))
+                 (let*-values ([(out* env* var*?)
+                                (f tmpl* (fx- depth 1) env* ell? #f)]
+                               [(out1 env* var1?)
+                                (f tmpl1 depth env* ell? #f)])
+                   (if (or var*? var1?)
+                       (values `(cons (list ($syntax ,us) . ,out*) ,out1)
+                               env*
+                               #f)
+                       (values `($syntax ,tmpl) env* #f)))]
                 ;; (<template> <ellipsis> ... . <template>)
                 [(,tmpl1 ,ell . ,tmpl2)
                  (guard (ell? ell))
@@ -548,7 +576,7 @@
                                 (f tmpl2 depth env* ell? #f)])
                    (if (or var1? var2?)
                        (values `(cons ,out1 ,out2) env* #t)
-                       (values `($syntax ,tmpl) #f)))]
+                       (values `($syntax ,tmpl) env* #f)))]
                 ;; #(<subtemplate> ...)
                 [#(,tmpl* ...)
                  (let-values ([(out env* var?) (f tmpl* depth env* ell? #f)])
@@ -842,6 +870,9 @@
              [(,p* ...) (let* () ,b* ... ,b)]))]
         [,x (syntax-error who "invalid syntax" x)])))
 
+  ;; TODO: More syntactic keywords like: quasisyntax, when, unless,
+  ;; syntax-rules, identifier-syntax.
+
   ;; Internal syntax
 
   (declare-expander-syntax $syntax
@@ -893,6 +924,7 @@
   (declare-prim-syntax car 1)
   (declare-prim-syntax cdr 1)
   (declare-prim-syntax cons 2)
+  (declare-prim-syntax cons* (fxnot 1))
   (declare-prim-syntax eq? 2)
   (declare-prim-syntax equal? 2)
   (declare-prim-syntax void 0)
@@ -907,6 +939,7 @@
   (declare-prim-syntax syntax-null? 1)
   (declare-prim-syntax syntax-pair? 1)
   (declare-prim-syntax syntax->datum 1)
+  (declare-prim-syntax syntax-list 1)
   (declare-prim-syntax syntax-list->vector 1)
   (declare-prim-syntax syntax-split 4)
   (declare-prim-syntax syntax-vector? 1)

@@ -38,6 +38,7 @@
     syntax-length+
     syntax-split
     syntax-vector?
+    syntax-list
     syntax-vector->list
     syntax-list->vector
     make-mark
@@ -898,6 +899,17 @@
           (let-values ([(x1 x2) (f (syntax-cdr x) (fx- k 1))])
             (values (cons (syntax-car x) x1) x2))]
          [else (assert #f)]))))
+
+  (define syntax-list
+    (lambda (stx)
+      (let f ([x stx])
+        (cond
+         [(syntax-pair? x)
+          (cons (syntax-car x)
+                (f (syntax-cdr x)))]
+         [(syntax-null? x) '()]
+         [else
+          (assertion-violation 'quasisyntax "attempt to splice an non-list" stx)]))))
 
   (define syntax-vector?
     (lambda (stx)

@@ -7,6 +7,7 @@
     ;; Keywords
     begin
     cons
+    cons*
     lambda
     letrec
     letrec*
@@ -29,6 +30,7 @@
     syntax-null?
     syntax-pair?
     syntax-split
+    syntax-list
     syntax-list->vector
     syntax-vector?
     syntax-vector->list
