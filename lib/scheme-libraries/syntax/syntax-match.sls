@@ -24,7 +24,7 @@
             (syntax-pair? match-pair?)
             (syntax-null? match-null?)
             (syntax-vector? match-vector?)
-            (syntax-vector->list match-syntax-vector->list)))
+            (syntax-vector->list match-vector->list)))
 
   ;; System environment
 

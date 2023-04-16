@@ -243,7 +243,6 @@
                                 ,(mat1 (lambda () (mat2 k))))
                               (lambda () ,(f))))
                          (append pvar1* pvar2*))))]
-                  ;; FIXME: Other patterns, like vector pattern.
                   ;; (<pattern> . <pattern>)
                   [(,pat1 . ,pat2)
                    (let ([e1 (generate-temporary)]
@@ -259,6 +258,17 @@
                                   ,(mat1 (lambda () (mat2 k))))
                                 ,(f)))
                          (append pvar1* pvar2*))))]
+                  ;; #<pattern ...>
+                  [#(,pat* ...)
+                   (let ([t (generate-temporary)])
+                     (let-values ([(mat pvar*) (gen-matcher pat* t)])
+                       (values
+                         (lambda (k)
+                           `(if (syntax-vector? ,e)
+                                (let ([,t (syntax-vector->list ,e)])
+                                  ,(mat k))
+                                ,(f)))
+                         pvar*)))]
                   ;; <underscore>
                   [_ (values (lambda (k) (k)) '())]
                   ;; <ellipsis>
@@ -500,6 +510,7 @@
                                                          [(var* init* env*)
                                                           (pop-env env*)])
                                              (values
+                                               ;; FIXME: Provide append-map in runtime.
                                                `(append-map
                                                  (lambda (,var* ...)
                                                    ,out)
@@ -843,6 +854,8 @@
   (declare-prim-syntax syntax-pair? 1)
   (declare-prim-syntax syntax->datum 1)
   (declare-prim-syntax syntax-split 4)
+  (declare-prim-syntax syntax-vector? 1)
+  (declare-prim-syntax syntax-vector->list 1)
   (declare-prim-syntax syntax-violation (fxnot 3))
 
   ;; DEBUG

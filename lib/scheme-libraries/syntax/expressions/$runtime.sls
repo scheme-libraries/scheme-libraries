@@ -28,6 +28,8 @@
     syntax-null?
     syntax-pair?
     syntax-split
+    syntax-vector?
+    syntax-vector->list
     void
     (rename ($identifier? identifier?)
             ($free-identifier=? free-identifier=?)
