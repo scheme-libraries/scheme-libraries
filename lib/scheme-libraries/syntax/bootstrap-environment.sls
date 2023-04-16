@@ -585,6 +585,22 @@
                                `($syntax ,tmpl))
                            env*
                            var?))]
+                ;; quasisyntax
+                [quasisyntax
+                 (guard depth)
+                 (syntax-error who "misplaced quasisyntax in template" tmpl)]
+                ;; unsyntax
+                [unsyntax
+                 (guard depth)
+                 (syntax-error who "misplaced unsyntax in template" tmpl)]
+                ;; unsyntax-splicing
+                [unsyntax-splicing
+                 (guard depth)
+                 (syntax-error who "misplaced unsyntax-splicing in template" tmpl)]
+                ;; unsyntax
+                [,ell
+                 (guard ($ellipsis? ell))
+                 (syntax-error who "misplaced ellipsis in template" tmpl)]
                 ;; <identifier>
                 [,tmpl
                  (guard ($identifier? tmpl))
@@ -868,6 +884,72 @@
          (expand-expression
           `(syntax-case (list ,e* ...) ()
              [(,p* ...) (let* () ,b* ... ,b)]))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax quasiquote
+    (lambda (x)
+      (define who 'quasiquote)
+      (define unquote
+        (lambda (x)
+          (and ($identifier? x)
+               ($free-identifier=? x (syntax-extend-backquote here `unquote)))))
+      (define gen-template
+        (lambda (tmpl depth)
+          (syntax-match tmpl
+            [(,uq ,expr)
+             (guard (unquote? uq) (fxzero? depth))
+             (values expr #t)]
+            [(,uq ,tmpl1)
+             (guard (unquote? uq))
+             (let-values ([(out var?) (gen-template tmpl1 (fx- depth 1))])
+               (if var?
+                   (values `(list 'unquote ,out) #t)
+                   (values `',tmpl #f)))]
+            [((,uq ,expr* ...) . ,tmpl1)
+             (guard (unquote? uq) (fxzero? depth))
+             (let-values ([(out var?) (gen-template tmpl1 depth)])
+               (values `(cons* ,expr* ... ,out) #f))]
+            [((,uq ,tmpl* ...) . ,tmpl1)
+             (guard (unquote? uq))
+             (let-values ([(out* var*?) (gen-template tmpl* (fx- depth 1))]
+                          [(out1 var1?) (gen-template tmpl1 depth)])
+               (if (or var*? var1?)
+                   (values `(cons (list 'unquote ,out* ...) ,out1) #t)
+                   (values `',tmpl #f)))]
+            [((unquote-splicing ,expr* ...) . ,tmpl1)
+             (guard (fxzero? depth))
+             (let-values ([(out var?) (gen-template tmpl1 depth)])
+               (values `(append ,expr* ... ,out) #f))]
+            [((unquote-splicing ,tmpl* ...) . ,tmpl1)
+             (let-values ([(out* var*?) (gen-template tmpl* (fx- depth 1))]
+                          [(out1 var1?) (gen-template tmpl1 depth)])
+               (if (or var*? var1?)
+                   (values `(cons (list 'unquote-splicing ,out* ...) ,out1) #t)
+                   (values `',tmpl #f)))]
+            [(,tmpl1 . ,tmpl2)
+             (let-values ([(out1 var1?) (gen-template tmpl1 depth)]
+                          [(out2 var2?) (gen-template tmpl2 depth)])
+               (if (or var1? var2?)
+                   (values `(cons ,out1 ,out2) #t)
+                   (values `',tmpl #f)))]
+            [#(tmpl* ...)
+             (let-values ([(out* var*? (gen-template tmpl* depth))])
+               (if var*?
+                   (values `(vector ,out* ...) #t)
+                   (values `',tmpl #f)))]
+            [quasiquote
+             (syntax-error who "misplaced quasiquote in template" tmpl)]
+            [,uq
+             (guard (unquote? uq))
+             (syntax-error who "misplaced unquote in template" tmpl)]
+            [unquote-splicing
+             (syntax-error who "misplaced unquote-splicing in template" tmpl)]
+            [,tmpl
+             `',tmpl])))
+      (syntax-match x
+        [(,k ,tmpl)
+         (let-values ([(out var?) (gen-template tmpl 0)])
+           out)]
         [,x (syntax-error who "invalid syntax" x)])))
 
   ;; TODO: More syntactic keywords like: quasisyntax, when, unless,
