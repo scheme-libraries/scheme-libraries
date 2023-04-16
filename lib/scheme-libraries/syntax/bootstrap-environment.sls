@@ -215,13 +215,10 @@
       (nongenerative) (sealed #t)
       (fields pattern identifier level))
     (lambda (x)
-
       (let-values ([(e lit* cl*) (parse-syntax-case x)])
-
         (define literal?
           (lambda (id)
             (exists (lambda (lit) ($bound-identifier=? id lit)) lit*)))
-
         (define gen-clause
           (lambda (cl e f)
             (define gen-matcher
@@ -258,7 +255,7 @@
                                   ,(mat1 (lambda () (mat2 k))))
                                 ,(f)))
                          (append pvar1* pvar2*))))]
-                  ;; #<pattern ...>
+                  ;; #(<pattern> ...)
                   [#(,pat* ...)
                    (let ([t (generate-temporary)])
                      (let-values ([(mat pvar*) (gen-matcher pat* t)])
@@ -297,7 +294,6 @@
                               ,(k)
                               ,(f)))
                    '()))])))
-
             (define gen-map
               (lambda (pat e)
                 (let ([g (generate-temporary)]
@@ -330,7 +326,6 @@
                              g
                              (fx+ (pattern-variable-level pvar) 1)))
                           pvar* g*)))))))
-
             (define gen-matcher*
               (lambda (pat e)
                 (syntax-match pat
@@ -354,7 +349,6 @@
                      '())]
                   [,pat
                    (gen-matcher pat e)])))
-
             ;; gen-clause
             (let*-values ([(pat fend out) (parse-clause cl)]
                           [(mat pvar*) (gen-matcher pat e)])
@@ -375,7 +369,6 @@
                               ,(if fend
                                    `(if ,fend ,out ,(f))
                                    out))))))))))
-
         (define parse-clause
           (lambda (cl)
             (syntax-match cl
@@ -384,7 +377,6 @@
               [(,pat ,out)
                (values pat #f out)]
               [,cl (syntax-error who "invalid clause" x cl)])))
-
         ;; syntax-case-expander
         (expand-expression
          (let ([t (generate-temporary)]
@@ -519,6 +511,23 @@
                         (values `(append ,out ,out2)
                                 env*
                                 #t))]))]
+                ;; (<template> . <template>)
+                [(,tmpl1 . ,tmpl2)
+                 (let*-values ([(out1 env* var1?)
+                                (f tmpl1 depth env* ell? #f)]
+                               [(out2 env* var2?)
+                                (f tmpl2 depth env* ell? #t)])
+                   (if (or var1? var2?)
+                       (values `(cons ,out1 ,out2) env* #t)
+                       (values `($syntax ,tmpl) #f)))]
+                ;; #(<subtemplate> ...)
+                [#(,tmpl* ...)
+                 (let-values ([(out env* var?) (f tmpl* depth env* ell? #t)])
+                   (values (if var?
+                               `(syntax-list->vector ,out)
+                               `($syntax ,tmpl))
+                           env*
+                           var?))]
                 ;; <identifier>
                 [,tmpl
                  (guard ($identifier? tmpl))
@@ -853,6 +862,7 @@
   (declare-prim-syntax syntax-null? 1)
   (declare-prim-syntax syntax-pair? 1)
   (declare-prim-syntax syntax->datum 1)
+  (declare-prim-syntax syntax-list->vector 1)
   (declare-prim-syntax syntax-split 4)
   (declare-prim-syntax syntax-vector? 1)
   (declare-prim-syntax syntax-vector->list 1)
