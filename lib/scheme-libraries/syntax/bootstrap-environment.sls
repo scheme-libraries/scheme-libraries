@@ -460,7 +460,35 @@
                                (f tmpl1 depth env* (lambda (x) #f) tail?)])
                    (if var?
                        (values out env* #t)
-                       (values `($syntax ,tmpl) env* #t)))]
+                       (values `($syntax ,tmpl1) env* #t)))]
+                ;; (quasisyntax <template>)
+                [(,qs ,tmpl1)
+                 (guard depth ($identifier? qs) ($free-identifier=? qs `quasisyntax))
+                 (let-values ([(out env* var?)
+                               (f tmpl1 (fx+ depth 1) env* ell? #f)])
+                   (if var?
+                       (values `(list ($syntax ,qs) ,out) env* #f)
+                       (values `($syntax ,tmpl) env* #f)))]
+                ;; (unsyntax <expression>)
+                [(unsyntax ,out)
+                 (guard depth (fxzero? depth))
+                 (values out env* #t)]
+                ;; (unsyntax <template>)
+                [(,us ,tmpl1)
+                 (guard depth ($identifier? us) ($free-identifier=? us `unsyntax))
+                 (let-values ([(out env* var?)
+                               (f tmpl1 (fx- depth 1) env* ell? #f)])
+                   (if var?
+                       (values `(list ($syntax ,us) ,out) env* #f)
+                       (values `($syntax ,tmpl) env* #f)))]
+                ;; ((unsyntax-splicing <template> ...) . <template>)
+
+                ;; TODO
+
+                ;; ((unsyntax <template> ...) . <template>)
+
+                ;; TODO
+
                 ;; (<template> <ellipsis> ... . <template>)
                 [(,tmpl1 ,ell . ,tmpl2)
                  (guard (ell? ell))
@@ -800,6 +828,9 @@
 
   (declare-expander-syntax syntax
     (syntax-expander #f))
+
+  (declare-expander-syntax quasisyntax
+    (syntax-expander 0))
 
   (declare-expander-syntax with-syntax
     (lambda (x)
