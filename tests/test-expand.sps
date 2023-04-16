@@ -175,4 +175,11 @@
               [#(a ... 3) #'(a ...)]))])
     m))
 
+(test-expand '#(1 2 3)
+  (let-syntax
+      ([m (lambda (x)
+            (syntax-case '(1 2 3) ()
+              [(a ...) #''#(a ...)]))])
+    m))
+
 (test-end "expand")

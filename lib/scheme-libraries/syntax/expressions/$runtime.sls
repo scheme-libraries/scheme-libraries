@@ -28,6 +28,7 @@
     syntax-null?
     syntax-pair?
     syntax-split
+    syntax-list->vector
     syntax-vector?
     syntax-vector->list
     void

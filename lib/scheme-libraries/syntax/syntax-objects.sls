@@ -39,6 +39,7 @@
     syntax-split
     syntax-vector?
     syntax-vector->list
+    syntax-list->vector
     make-mark
     apply-anti-mark
     wrap-syntax-object
@@ -869,6 +870,8 @@
 
   (define/who syntax-length+
     (lambda (stx)
+      ;; TODO: Raise an error is stx is not a valid syntax object (has
+      ;; circular structure).
       (let f ([stx stx] [n 0])
         (cond
          [(syntax-pair? stx)
@@ -910,6 +913,15 @@
           (make-syntax-object (annotated-vector->list  (syntax-object-expression stx))
                               (syntax-object-wrap stx))
           (annotated-vector->list stx))))
+
+  (define syntax-list->vector
+    (lambda (stx)
+      (let ([n (syntax-length+ stx)])
+        (do ([v (make-vector n)]
+             [i 0 (fx+ i 1)]
+             [stx stx (syntax-cdr stx)])
+            ((fx=? i n) v)
+          (vector-set! v i (syntax-car stx))))))
 
   (define wrap-syntax-object
     (lambda (x mark ribs)
