@@ -411,7 +411,6 @@
          (values e lit* cl*)])))
 
   (define/who syntax-expander
-    ;; XXX: Handle the case of constant tail and (...)!
     ;; XXX: Check the meaning of tail.
     (define lookup-pattern-variable
       (lambda (x)
@@ -455,11 +454,13 @@
                                  (cdr env*))))]))))
               (syntax-match tmpl
                 ;; (<ellipsis> <template>)
-                [(,ell ,tmpl)
+                [(,ell ,tmpl1)
                  (guard (ell? ell))
                  (let-values ([(out env* var?)
-                               (f tmpl depth env* (lambda (x) #f) tail?)])
-                   (values out env* #t))]
+                               (f tmpl1 depth env* (lambda (x) #f) tail?)])
+                   (if var?
+                       (values out env* #t)
+                       (values `($syntax ,tmpl) env* #t)))]
                 ;; (<template> <ellipsis> ... . <template>)
                 [(,tmpl1 ,ell . ,tmpl2)
                  (guard (ell? ell))
@@ -516,13 +517,13 @@
                  (let*-values ([(out1 env* var1?)
                                 (f tmpl1 depth env* ell? #f)]
                                [(out2 env* var2?)
-                                (f tmpl2 depth env* ell? #t)])
+                                (f tmpl2 depth env* ell? #f)])
                    (if (or var1? var2?)
                        (values `(cons ,out1 ,out2) env* #t)
                        (values `($syntax ,tmpl) #f)))]
                 ;; #(<subtemplate> ...)
                 [#(,tmpl* ...)
-                 (let-values ([(out env* var?) (f tmpl* depth env* ell? #t)])
+                 (let-values ([(out env* var?) (f tmpl* depth env* ell? #f)])
                    (values (if var?
                                `(syntax-list->vector ,out)
                                `($syntax ,tmpl))
