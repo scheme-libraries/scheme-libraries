@@ -219,4 +219,40 @@
             #`'((unsyntax-splicing #'(1 2) #'(3 4))))])
     m))
 
+(test-expand '(1 2)
+  (let-syntax
+      ([m (lambda (x)
+            #'`(1 2))])
+    m))
+
+(test-expand '`(1 2)
+  (let-syntax
+      ([m (lambda (x)
+            #'``(1 2))])
+    m))
+
+(test-expand '`(1 ,2)
+  (let-syntax
+      ([m (lambda (x)
+            #'``(1 ,2))])
+    m))
+
+(test-expand '2
+  (let-syntax
+      ([m (lambda (x)
+            #'`,2)])
+    m))
+
+(test-expand (cons '1 (cons* '2 '()))
+  (let-syntax
+      ([m (lambda (x)
+            #'`(1 ,2))])
+    m))
+
+(test-expand (list 'quasiquote (cons '1 (cons (cons 'unquote (cons* '2 '())) '())))
+  (let-syntax
+      ([m (lambda (x)
+            #'``(1 ,,2))])
+    m))
+
 (test-end "expand")
