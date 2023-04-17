@@ -4,6 +4,7 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'identifier-syntax 'scheme-indent-function 0)
           (put '$with-syntax 'scheme-indent-function 1)
           (put 'split 'scheme-indent-function 'defun)
           (put 'syntax-split 'scheme-indent-function 'defun)
@@ -52,6 +53,7 @@
               (2 font-lock-function-name-face nil t))
 	     ("(\\(\\(syntax-\\)?extend-backquote\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(build\\(-begin\\|-let\\)?\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(identifier-syntax\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(fields\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(protocol\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(sealed\\)\\>" 1 font-lock-keyword-face)

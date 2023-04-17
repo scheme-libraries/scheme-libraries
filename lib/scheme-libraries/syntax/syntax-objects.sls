@@ -110,6 +110,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading source-locations)
     (scheme-libraries syntax variables)
+    (scheme-libraries syntax variable-transformers)
     (scheme-libraries parameters)
     (scheme-libraries rec)
     (scheme-libraries record-writer))
@@ -201,7 +202,8 @@
       (lambda (pargs->new)
         (define who 'make-keyword-binding)
         (lambda (proc)
-          (unless (procedure? proc)
+          (unless (or (procedure? proc)
+                      (variable-transformer? proc))
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) proc)))))
 

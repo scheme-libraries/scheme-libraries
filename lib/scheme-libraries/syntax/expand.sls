@@ -6,7 +6,8 @@
   (export
     expand
     expand-body
-    expand-expression)
+    expand-expression
+    transform)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
@@ -19,7 +20,8 @@
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax syntax-match)
-    (scheme-libraries syntax syntax-objects))
+    (scheme-libraries syntax syntax-objects)
+    (scheme-libraries syntax variable-transformers))
 
   ;; Library collections
 
@@ -157,11 +159,14 @@
 
   (define apply-transformer
     (lambda (f x ribs)
-      (guard (c
-              [(invalid-syntax-object-condition? c)
-               (syntax-error #f (format "encountered invalid object ~s in output of macro"
-                                  (invalid-syntax-object-irritant c)))])
-        (wrap-syntax-object (f x) (make-mark) ribs))))
+      (let ([f (if (variable-transformer? f)
+                   (variable-transformer-proc f)
+                   f)])
+        (guard (c
+                [(invalid-syntax-object-condition? c)
+                 (syntax-error #f (format "encountered invalid object ~s in output of macro"
+                                    (invalid-syntax-object-irritant c)))])
+          (wrap-syntax-object (f x) (make-mark) ribs)))))
 
   ;; syntax-type
 

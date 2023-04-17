@@ -38,6 +38,7 @@
     void
     (rename ($identifier? identifier?)
             ($free-identifier=? free-identifier=?)
+            ($make-variable-transformer make-variable-transformer)
             (syntax-object->datum syntax->datum)
             (syntax-error syntax-violation))
 
@@ -48,4 +49,5 @@
     (rnrs)
     (scheme-libraries void)
     (scheme-libraries syntax exceptions)
+    (scheme-libraries syntax variable-transformers)
     (scheme-libraries syntax syntax-objects)))
