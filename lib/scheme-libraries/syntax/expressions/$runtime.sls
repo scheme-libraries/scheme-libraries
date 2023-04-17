@@ -34,6 +34,7 @@
     syntax-list->vector
     syntax-vector?
     syntax-vector->list
+    values
     void
     (rename ($identifier? identifier?)
             ($free-identifier=? free-identifier=?)
