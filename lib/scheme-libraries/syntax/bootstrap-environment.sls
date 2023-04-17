@@ -496,7 +496,7 @@
                                [(out1 env* var1?)
                                 (f tmpl1 depth env* ell? #f)])
                    (if (or var*? var1?)
-                       (values `(cons (list ($syntax ,us) . ,out*) ,out1)
+                       (values `(cons (list ($syntax ,us) ,out*) ,out1)
                                env*
                                #f)
                        (values `($syntax ,tmpl) env* #f)))]
@@ -513,7 +513,7 @@
                                [(out1 env* var1?)
                                 (f tmpl1 depth env* ell? #f)])
                    (if (or var*? var1?)
-                       (values `(cons (list ($syntax ,us) . ,out*) ,out1)
+                       (values `(cons (list ($syntax ,us) ,out*) ,out1)
                                env*
                                #f)
                        (values `($syntax ,tmpl) env* #f)))]
@@ -889,13 +889,19 @@
   (declare-expander-syntax quasiquote
     (lambda (x)
       (define who 'quasiquote)
-      (define unquote
+      (define unquote?
         (lambda (x)
           (and ($identifier? x)
                ($free-identifier=? x (syntax-extend-backquote here `unquote)))))
       (define gen-template
         (lambda (tmpl depth)
+          ;(display tmpl) (display "   ") (display depth) (newline)
           (syntax-match tmpl
+            [(quasiquote ,tmpl1)
+             (let-values ([(out var?) (gen-template tmpl1 (fx+ depth 1))])
+               (if var?
+                   (values `(list 'quasiquote ,out) #t)
+                   (values `',tmpl #f)))]
             [(,uq ,expr)
              (guard (unquote? uq) (fxzero? depth))
              (values expr #t)]
@@ -908,13 +914,13 @@
             [((,uq ,expr* ...) . ,tmpl1)
              (guard (unquote? uq) (fxzero? depth))
              (let-values ([(out var?) (gen-template tmpl1 depth)])
-               (values `(cons* ,expr* ... ,out) #f))]
+               (values `(cons* ,expr* ... ,out) #t))]
             [((,uq ,tmpl* ...) . ,tmpl1)
              (guard (unquote? uq))
              (let-values ([(out* var*?) (gen-template tmpl* (fx- depth 1))]
                           [(out1 var1?) (gen-template tmpl1 depth)])
                (if (or var*? var1?)
-                   (values `(cons (list 'unquote ,out* ...) ,out1) #t)
+                   (values `(cons (cons 'unquote ,out*) ,out1) #t)
                    (values `',tmpl #f)))]
             [((unquote-splicing ,expr* ...) . ,tmpl1)
              (guard (fxzero? depth))
@@ -924,7 +930,7 @@
              (let-values ([(out* var*?) (gen-template tmpl* (fx- depth 1))]
                           [(out1 var1?) (gen-template tmpl1 depth)])
                (if (or var*? var1?)
-                   (values `(cons (list 'unquote-splicing ,out* ...) ,out1) #t)
+                   (values `(cons (cons 'unquote-splicing ,out*) ,out1) #t)
                    (values `',tmpl #f)))]
             [(,tmpl1 . ,tmpl2)
              (let-values ([(out1 var1?) (gen-template tmpl1 depth)]
@@ -932,8 +938,8 @@
                (if (or var1? var2?)
                    (values `(cons ,out1 ,out2) #t)
                    (values `',tmpl #f)))]
-            [#(tmpl* ...)
-             (let-values ([(out* var*? (gen-template tmpl* depth))])
+            [#(,tmpl* ...)
+             (let-values ([(out* var*?) (gen-template tmpl* depth)])
                (if var*?
                    (values `(vector ,out* ...) #t)
                    (values `',tmpl #f)))]
@@ -945,15 +951,51 @@
             [unquote-splicing
              (syntax-error who "misplaced unquote-splicing in template" tmpl)]
             [,tmpl
-             `',tmpl])))
+             (values `',tmpl #f)])))
       (syntax-match x
-        [(,k ,tmpl)
-         (let-values ([(out var?) (gen-template tmpl 0)])
-           out)]
+        [(,k ,tmpl1)
+         (let-values ([(out var?) (gen-template tmpl1 0)])
+           (expand-expression out))]
         [,x (syntax-error who "invalid syntax" x)])))
 
-  ;; TODO: More syntactic keywords like: quasisyntax, when, unless,
-  ;; syntax-rules, identifier-syntax.
+  (declare-expander-syntax when
+    (lambda (x)
+      (define who 'when)
+      (syntax-match x
+        [(,k ,t ,e* ... ,e)
+         (expand-expression
+          `(if ,t (begin ,e* ... ,e) (values)))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax unless
+    (lambda (x)
+      (define who 'unless)
+      (syntax-match x
+        [(,k ,t ,e* ... ,e)
+         (expand-expression
+          `(if ,t (values) (begin ,e* ... ,e)))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax do
+    (lambda (x)
+      (define who 'do)
+      (syntax-match x
+        ;; FIXME
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax syntax-rules
+    (lambda (x)
+      (define who 'syntax-rules)
+      (syntax-match x
+        ;; FIXME
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax identifier-syntax
+    (lambda (x)
+      (define who 'identifier-syntax)
+      (syntax-match x
+        ;; FIXME
+        [,x (syntax-error who "invalid syntax" x)])))
 
   ;; Internal syntax
 
