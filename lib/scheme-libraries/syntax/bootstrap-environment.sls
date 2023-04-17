@@ -22,6 +22,7 @@
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variables)
+    (scheme-libraries syntax variable-transformers)
     (scheme-libraries thread-parameters))
 
   (define-syntax declare-syntax
@@ -181,8 +182,8 @@
     (lambda (x who)
       (let ([e (meta-expand x)])
         (let ([f (execute-transformer e)])
-          ;; TODO: variable transformer
-          (unless (procedure? f)
+          (unless (or (procedure? f)
+                      (variable-transformer? f))
             (assertion-violation who "invalid transformer" f))
           f))))
 
@@ -737,13 +738,25 @@
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax set!
-    (lambda (x)
+    (lambda (stx)
       (define who 'set!)
-      (syntax-match x
-        [(,k ,x ,[expand-expression -> e])
+      (syntax-match stx
+        [(,k ,x ,e)
          (guard ($identifier? x))
-         ;; TODO: Variable transformers.
-         `(set! ,x ,e)]
+         (let* ([lbl (identifier->label x)]
+                [bdg (label->binding lbl)])
+           (cond
+            [(variable-binding? bdg)
+             `(set! ,(variable-binding-symbol bdg) ,(expand-expression e))]
+            [(keyword-binding? bdg)
+             (let ([t (keyword-binding-transformer bdg)])
+               (unless (variable-transformer? t)
+                 (syntax-error who "invalid syntax" stx))
+               (expand-expression (transform (variable-transformer-proc t) stx #f)))]
+            [(not lbl)
+             (undefined-error x "unbound identifier ~a")]
+            [else
+             (syntax-error who "invalid syntax" stx)]))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax and
@@ -997,11 +1010,29 @@
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax identifier-syntax
-    (lambda (x)
+    (lambda (stx)
       (define who 'identifier-syntax)
-      (syntax-match x
-        ;; FIXME
-        [,x (syntax-error who "invalid syntax" x)])))
+      (let ([x (generate-temporary)]
+            [y (generate-temporary)])
+        (syntax-match stx
+          [(,k ,e)
+           (let ([id (generate-temporary)])
+             (expand-expression
+              `(lambda (,x)
+                 (syntax-case ,x ()
+                   [,id (identifier? #',id) #',e]
+                   [(_ ,y (... ...)) #'(,e ,y (... ...))]))))]
+          [(,k [,id ,exp1]
+               [(set! ,var ,val) ,exp2])
+           (guard ($identifier? id) ($identifier? var))
+           (expand-expression
+            `(make-variable-transformer
+              (lambda (,x)
+                (syntax-case ,x (set!)
+                  [(set! ,var ,val) #',exp2]
+                  [(,id ,y (... ...)) #'(,exp1 ,y (... ...))]
+                  [,id (identifier? #',id) #',exp1]))))]
+          [,x (syntax-error who "invalid syntax" x)]))))
 
   ;; Internal syntax
 
@@ -1060,6 +1091,7 @@
   (declare-prim-syntax values (fxnot 0))
   (declare-prim-syntax void 0)
   (declare-prim-syntax list (fxnot 0))
+  (declare-prim-syntax make-variable-transformer 1)
   (declare-prim-syntax map (fxnot 1))
   (declare-prim-syntax memv 2)
   (declare-prim-syntax identifier? 1)

@@ -275,4 +275,23 @@
             [(k x) 'x])])
     (m 1 2)))
 
+(test-expand '3
+  (let-syntax
+      ([m (identifier-syntax 3)])
+    m))
+
+(test-expand '4
+  (let-syntax
+      ([m (identifier-syntax
+            [_ 4]
+            [(set! _ e) #f])])
+    m))
+
+(test-expand 'b
+  (let-syntax
+      ([m (identifier-syntax
+            [_ 4]
+            [(set! _ e) e])])
+    (set! m 'b)))
+
 (test-end "expand")
