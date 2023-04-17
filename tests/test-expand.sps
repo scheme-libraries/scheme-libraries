@@ -255,4 +255,24 @@
             #'``(1 ,,2))])
     m))
 
+(test-expand (if '#t (begin '1 '2) (values))
+  (when #t 1 2))
+
+(test-expand (if '#t (values) (begin '1 '2))
+  (unless #t 1 2))
+
+(test-expand 'u
+  (let-syntax
+      ([m (syntax-rules ()
+            [(k 1 2) 'k]
+            [(k x) 'x])])
+    (m u)))
+
+(test-expand 'k
+  (let-syntax
+      ([m (syntax-rules ()
+            [(k 1 2) 'k]
+            [(k x) 'x])])
+    (m 1 2)))
+
 (test-end "expand")

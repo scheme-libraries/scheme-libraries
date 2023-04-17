@@ -987,7 +987,13 @@
     (lambda (x)
       (define who 'syntax-rules)
       (syntax-match x
-        ;; FIXME
+        [(,k (,lit* ...) [(,k* . ,p*) ,t*] ...)
+         (guard (for-all $identifier? lit*) (for-all $identifier? k*))
+         (let ([x (generate-temporary)])
+           (expand-expression
+            `(lambda (,x)
+               (syntax-case ,x ,lit*
+                 [(_ . ,p*) #',t*] ...))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax identifier-syntax
@@ -1051,6 +1057,7 @@
   (declare-prim-syntax cons* (fxnot 1))
   (declare-prim-syntax eq? 2)
   (declare-prim-syntax equal? 2)
+  (declare-prim-syntax values (fxnot 0))
   (declare-prim-syntax void 0)
   (declare-prim-syntax list (fxnot 0))
   (declare-prim-syntax map (fxnot 1))
