@@ -992,8 +992,37 @@
   (declare-expander-syntax do
     (lambda (x)
       (define who 'do)
+      (define parse-do-clause*
+        (lambda (cl*)
+          (let f ([cl* cl*]
+                  [x* '()]
+                  [i* '()]
+                  [s* '()])
+            (if (null? cl*)
+                (begin
+                  (unless (valid-bound-identifiers? x*)
+                    (syntax-error who "invalid syntax" x))
+                  (values x* i* s*))
+                (syntax-match (car cl*)
+                  [[,x ,i ,s]
+                   (guard ($identifier? x))
+                   (f (cdr cl*) (cons x x*) (cons i i*) (cons s s*))]
+                  [[,x ,i]
+                   (guard ($identifier? x))
+                   (f (cdr cl*) (cons x x*) (cons i i*) (cons i s*))]
+                  [,cl
+                   (syntax-error who "invalid do clause" x cl)])))))
       (syntax-match x
-        ;; FIXME
+        [(,k (,cl* ...) (,t ,e* ...) ,c* ...)
+         (let-values ([(x* i* s*) (parse-do-clause* cl*)])
+           (let ([f (generate-temporary)])
+             (expand-expression
+              `(let f [(,x* ,i*) ...]
+                 (if ,t
+                     (begin (values) ,e* ...)
+                     (begin
+                       ,c* ...
+                       (,f ,s* ...)))))))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax syntax-rules
