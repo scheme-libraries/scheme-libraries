@@ -19,6 +19,7 @@
     make-environment
     environment?
     environment-set!
+    environment-rib
     make-ribcage
     ribcage?
     ribcage-add!
