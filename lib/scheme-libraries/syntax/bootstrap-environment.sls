@@ -653,6 +653,11 @@
   (declare-auxiliary-syntax unquote-splicing)
   (declare-auxiliary-syntax unsyntax)
   (declare-auxiliary-syntax unsyntax-splicing)
+  (declare-auxiliary-syntax library)
+  (declare-auxiliary-syntax export)
+  (declare-auxiliary-syntax import)
+  (declare-auxiliary-syntax for)
+  (declare-auxiliary-syntax meta)
 
   ;; Definitions
 
