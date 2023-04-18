@@ -14,6 +14,7 @@
     (scheme-libraries define-who)
     (scheme-libraries helpers)
     (scheme-libraries match)
+    (scheme-libraries numbers)
     (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax exceptions)
@@ -220,4 +221,59 @@
          (let ([e (syntax-object->datum x)])
            (unless (constant? e)
              (syntax-error #f "invalid expression syntax" x))
-           (values x (make-constant-type e)))]))))
+           (values x (make-constant-type e)))])))
+
+  ;; Libraries
+
+  (define expand-library
+    (lambda (x)
+      (let-values ([(name ver exp* imp* body*)
+                    (parse-library x)])
+        ;; FIXME
+        (assert #f))))
+
+  ;; Parsers
+
+  (define parse-library
+    (lambda (x)
+      (syntax-match x
+        [(library ,name
+           (export ,exp-spec* ...)
+           (import ,imp-spec* ...)
+           ,body* ...)
+         (let-values ([(name ver)
+                       (parameterize ([current-form x])
+                         (parse-library-name name))])
+           (values name ver exp-spec* imp-spec* body*))]
+        [,k (syntax-error #f "invalid library syntax" x)])))
+
+  (define/who parse-library-name
+    (define doparse
+      (lambda (part* sub-ver*)
+        (values (map parse-library-name-part part*)
+                (map parse-sub-version sub-ver*))))
+    (lambda (x)
+      (syntax-match x
+        [(,part* ... (,sub-ver* ...))
+         (guard (for-all $identifier? part*))
+         (doparse part* sub-ver*)]
+        [(,part* ...)
+         (guard (for-all $identifier? part*))
+         (doparse part* '())]
+        [,x (syntax-error #f "ill-formed library name" #f x)])))
+
+  (define parse-library-name-part
+    (lambda (x)
+      (unless ($identifier? x)
+        (syntax-error #f "invalid library name part" #f x))
+      (identifier->symbol x)))
+
+  (define parse-sub-version
+    (lambda (x)
+      (let ([e (syntax-object->datum x)])
+        (unless (exact-nonnegative-integer? e)
+          (syntax-error #f "invalid library sub-version" #f x))
+        e)))
+
+
+  )
