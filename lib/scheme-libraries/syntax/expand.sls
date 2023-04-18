@@ -24,20 +24,6 @@
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variable-transformers))
 
-  ;; Library collections
-
-  (define-record-type library-collection
-    (nongenerative library-collection-fa5e52df-c5a9-4d3b-ac3c-2f1c8cd9ad5a)
-    (sealed #t)
-    (fields ))
-
-  (define/who current-library-collection
-    (make-parameter (make-library-collection)
-      (lambda (x)
-        (unless (library-collection? x)
-          (assertion-violation who "invalid library collection" x))
-        x)))
-
   ;; Expander
 
   (define/who expand
