@@ -5,7 +5,8 @@
 (library (scheme-libraries syntax eval)
   (export
     eval
-    eval-annotated-datum)
+    eval-annotated-datum
+    environment)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -27,4 +28,14 @@
       ;; FIXME: Invoke the libraries referenced by the expression.
       ((compile-to-thunk (expand-expression (annotated-datum->syntax-object expr env))))))
 
-  )
+  (define/who environment
+    (lambda (imp-spec*)
+      (let ([rib (make-rib)])
+        (for-each
+          (lambda (imp-spec)
+            (import-spec-import! (annotated-datum->syntax-object
+                                  (datum->annotated-datum imp-spec)
+                                  (system-environment))
+                                 rib))
+          imp-spec*)
+        (make-environment rib)))))

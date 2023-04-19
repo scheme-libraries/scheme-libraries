@@ -607,8 +607,14 @@
     (fields rib)
     (protocol
       (lambda (new)
-        (lambda ()
-          (new (make-rib))))))
+        (define who 'make-environment)
+        (case-lambda
+          [(rib)
+           (unless (rib? rib)
+             (assertion-violation who "invalid rib argument" env))
+           (new rib)]
+          [()
+           (new (make-rib))]))))
 
   (define/who environment-set!
     (lambda (env name l/p)
