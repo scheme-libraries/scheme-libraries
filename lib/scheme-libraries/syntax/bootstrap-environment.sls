@@ -665,7 +665,6 @@
   (declare-auxiliary-syntax except)
   (declare-auxiliary-syntax prefix)
   (declare-auxiliary-syntax rename)
-  ;; TODO: Need and, or, not, <=, ... for library references.
 
   ;; Definitions
 
@@ -1123,6 +1122,8 @@
 
   ;; prims
 
+  (declare-prim-syntax >= (fxnot 1))
+  (declare-prim-syntax <= (fxnot 1))
   (declare-prim-syntax append (fxnot 0))
   (declare-prim-syntax car 1)
   (declare-prim-syntax cdr 1)
@@ -1136,6 +1137,7 @@
   (declare-prim-syntax make-variable-transformer 1)
   (declare-prim-syntax map (fxnot 1))
   (declare-prim-syntax memv 2)
+  (declare-prim-syntax not 1)
   (declare-prim-syntax identifier? 1)
   (declare-prim-syntax free-identifier=? 2)
   (declare-prim-syntax reverse 1)

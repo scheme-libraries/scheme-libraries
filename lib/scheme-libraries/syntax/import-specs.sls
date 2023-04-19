@@ -7,10 +7,12 @@
     import-spec-import!)
   (import
     (rnrs)
+    (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries numbers)
-    (scheme-libraries syntax-match)
-    (scheme-libraries syntax-objects))
+    (scheme-libraries syntax $parsers)
+    (scheme-libraries syntax syntax-match)
+    (scheme-libraries syntax syntax-objects))
 
   (define/who import-spec-import!
     (lambda (imp-spec rib)
@@ -24,9 +26,58 @@
   (define expand-import-spec
     (lambda (spec)
       (let f ([imp-set (parse-import-spec form spec)])
-        ...)
+        (syntax-match imp-set
+          [(library ,lib-ref)
+           (expand-library-reference lib-ref)]
+          [(only ,imp-set ,id* ...)
+           (guard (for-all $identifier? id*))
+           ;; FIXME
+           (assert #f)]
+          [(except ,imp-set ,id* ...)
+           (guard (for-all $identifier? id*))
+           ;; FIXME
+           (assert #f)]
+          [(prefix ,imp-set ,id)
+           (guard ($identifier? id))
+           ;; FIXME
+           (assert #f)]
+          [(rename ,imp-set (,orig-id* ,new-id*) ...)
+           (guard (for-all $identifier? orig-id*) (for-all $identifier? new-id*))
+           ;; FIXME
+           (assert #f)]
+          [,imp-set (expand-library-reference imp-set)]))))
 
-      ))
+  (define expand-library-reference
+    (lambda (lib-ref)
+      (library-exports (import-library! lib-ref))))
+
+  (define import-library!
+    (lambda (lib-ref)
+      (or (maybe-import-library! lib-ref)
+          (syntax-error #f (format "library ~a not found" (syntax-object->datum lib-ref))
+            #f lib-ref))))
+
+  (define maybe-import-library!
+    (lambda (lib-ref)
+      (let-values ([(name pred?) (parse-library-reference lib-ref)])
+        (let ([lib (library-ref name #f)])
+          (or lib
+              (begin
+                (when (library-pending? name)
+                  (syntax-error #f "circular import of library" #f lib-ref))
+                (library-pending! name #t)
+                (let ([lib (load-library name pred)])
+                  (library-set! name (or lib #t))
+                  (when (and lib (not (pred? (library-version lib))))
+                    (syntax-error #f "library ~a version mismatch" #f lib-ref))
+                  (library-pending! name #f)
+                  lib)))))))
+
+  ;; Move this somewhere else.
+  (define load-library
+    (lambda (name pred?)
+      ;; FIXME
+      (assert #f)))
 
   ;; Parsers
 
@@ -61,11 +112,10 @@
          (values id* ver-ref)]
         [,x (syntax-error #f "ill-formed library reference" #f x)])))
 
-  ;; FIXME TODO
   (define parse-version-reference
-    (lambda (form stx)
-      (let f ([stx stx])
-        (syntax-match stx
+    (lambda (x)
+      (let f ([x x])
+        (syntax-match x
           [(and ,ver-ref* ...)
            (let ([pred?* (map f ver-ref*)])
              (lambda (ver)
@@ -79,21 +129,20 @@
              (lambda (ver)
                (not (pred? ver))))]
           [(,sub-ver-ref* ...)
-           (let* ([pred?* (map (lambda (stx)
-                                 (parse-sub-version-reference form stx))
+           (let* ([pred?* (map (lambda (x)
+                                 (parse-sub-version-reference form x))
                             sub-ver-ref*)]
                   [n (length pred?*)])
              (lambda (sub-ver*)
                (and (fx<=? n (length sub-ver*))
                     (for-all (lambda (pred? sub-ver) (pred? sub-ver)) pred?* sub-ver*))))]
-          [,_
-            (syntax-error #f "ill-formed version-reference" form stx)]))))
+          [,x
+            (syntax-error #f "ill-formed version-reference" #f x)]))))
 
-  ;; FIXME TODO
   (define parse-sub-version-reference
-    (lambda (form stx)
-      (let f ([stx stx])
-	(syntax-match stx
+    (lambda (x)
+      (let f ([x x])
+	(syntax-match x
 	  [(>= ,sub-ver)
 	   (let ([e (parse-sub-version form sub-ver)])
 	     (lambda (ver) (>= e ver)))]
@@ -111,8 +160,8 @@
 	  [(not ,sub-ver-ref)
 	   (let ([pred? (f sub-ver-ref)])
 	     (lambda (ver) (not (pred? ver))))]
-	  [,_
-           (let ([e (parse-sub-version form stx)])
+	  [,x
+           (let ([e (parse-sub-version form x)])
 	     (lambda (ver) (= ver e)))]))))
 
 

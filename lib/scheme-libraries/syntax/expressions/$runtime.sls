@@ -16,6 +16,8 @@
     quote
     set!
     ;; Procedures
+    <=
+    >=
     append
     car
     cdr
@@ -23,6 +25,7 @@
     equal?
     map
     memv
+    not
     list
     reverse
     syntax-car

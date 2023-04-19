@@ -15,7 +15,7 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
-    (scheme-libraries syntax numbers)
+    (scheme-libraries numbers)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variables))
@@ -44,7 +44,7 @@
     (protocol
       (lambda (new)
         (define who 'make-library)
-        (lambda (name ver)
+        (lambda (name ver exports)
           (assert (library-name? name))
           (assert (library-version? ver))
           (assert (rib? exports))
@@ -87,7 +87,7 @@
     (lambda (lt name def)
       (assert (library-table? lt))
       (assert (library-name? name))
-      (hashtable-ref lt name dfe)))
+      (hashtable-ref lt name def)))
 
   (define library-table-set!
     (lambda (lt name lib)

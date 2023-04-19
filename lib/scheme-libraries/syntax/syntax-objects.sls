@@ -23,6 +23,7 @@
     make-ribcage
     ribcage?
     ribcage-add!
+    rib?
     syntax-object?
     annotated-datum->syntax-object
     syntax-object-source-location
@@ -611,7 +612,7 @@
         (case-lambda
           [(rib)
            (unless (rib? rib)
-             (assertion-violation who "invalid rib argument" env))
+             (assertion-violation who "invalid rib argument" rib))
            (new rib)]
           [()
            (new (make-rib))]))))
