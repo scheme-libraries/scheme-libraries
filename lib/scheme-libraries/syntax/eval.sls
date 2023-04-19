@@ -13,6 +13,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
+    (scheme-libraries syntax import-specs)
     (scheme-libraries syntax syntax-objects))
 
   (define eval

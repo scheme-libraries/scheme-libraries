@@ -5,7 +5,11 @@
 (library (scheme-libraries syntax library-collections)
   (export
     current-library-collection
-    bootstrap-library-collection)
+    bootstrap-library-collection
+    library-set!
+    library-ref!
+    library-pending?
+    library-pending!)
   (import
     (rnrs)
     (scheme-libraries libraries)
@@ -18,10 +22,11 @@
   (define-record-type library-collection
     (nongenerative library-collection-765810f4-88f2-47a3-9d4a-df90941f0a82)
     (sealed #t)
-    (fields libraries)
+    (fields libraries pending)
     (protocol
       (lambda (new)
-        (new (make-library-table)))))
+        (new (make-library-table)
+             (make-library-table)))))
 
   ;; Current library collection
 
@@ -36,11 +41,28 @@
     (lambda ()
       (library-collection-libaries (current-library-collection))))
 
+  (define current-pending-table
+    (lambda ()
+      (library-collection-pending (current-library-collection))))
+
   (define library-set!
     (lambda (name lib)
       (library-table-set! (current-library-table) name lib)))
 
-  ;; TODO: locate library for high-level environment procedure.
+  (define library-ref
+    (lambda (name default)
+      (library-table-ref (current-library-table) name default)))
+
+  (define library-pending?
+    (lambda (name)
+      (library-table-contains? (current-pending-table) name)))
+
+  (define library-pending!
+    (lambda (name flag)
+      (let ([tbl (current-pending-table)])
+        (if flag
+            (library-table-set! tbl name #t)
+            (library-table-delete! tbl name)))))
 
   ;; Bootstrap library collection
 
