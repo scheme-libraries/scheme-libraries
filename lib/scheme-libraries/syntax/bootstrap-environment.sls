@@ -658,6 +658,14 @@
   (declare-auxiliary-syntax import)
   (declare-auxiliary-syntax for)
   (declare-auxiliary-syntax meta)
+  (declare-auxiliary-syntax run)
+  (declare-auxiliary-syntax expand)
+  (declare-auxiliary-syntax library)
+  (declare-auxiliary-syntax only)
+  (declare-auxiliary-syntax except)
+  (declare-auxiliary-syntax prefix)
+  (declare-auxiliary-syntax rename)
+  ;; TODO: Need and, or, not, <=, ... for library references.
 
   ;; Definitions
 
