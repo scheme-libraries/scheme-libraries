@@ -7,15 +7,17 @@
     current-library-collection
     bootstrap-library-collection
     library-set!
-    library-ref!
+    library-ref
     library-pending?
     library-pending!)
   (import
     (rnrs)
-    (scheme-libraries libraries)
-    (scheme-libraries syntax-match)
+    (scheme-libraries parameters)
     (scheme-libraries thread-parameters)
-    (scheme-libraries define-who))
+    (scheme-libraries define-who)
+    (scheme-libraries syntax libraries)
+    (scheme-libraries syntax syntax-match)
+    (scheme-libraries syntax syntax-objects))
 
   ;; Library collections
 
@@ -25,8 +27,9 @@
     (fields libraries pending)
     (protocol
       (lambda (new)
-        (new (make-library-table)
-             (make-library-table)))))
+        (lambda ()
+          (new (make-library-table)
+               (make-library-table))))))
 
   ;; Current library collection
 
@@ -39,7 +42,7 @@
 
   (define current-library-table
     (lambda ()
-      (library-collection-libaries (current-library-collection))))
+      (library-collection-libraries (current-library-collection))))
 
   (define current-pending-table
     (lambda ()

@@ -10,6 +10,9 @@
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries numbers)
+    (scheme-libraries syntax library-collections)
+    (scheme-libraries syntax exceptions)
+    (scheme-libraries syntax libraries)
     (scheme-libraries syntax $parsers)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
@@ -19,13 +22,13 @@
       (unless (rib? rib)
         (assertion-violation who "invalid rib argument" rib))
       (let ([imp-set (expand-import-spec imp-spec)])
-        (rib-for-each! (lambda (name marks l/p)
-                         (rib-set! rib name marks l/p))
-                       imp-set))))
+        (rib-for-each (lambda (name marks l/p)
+                        (rib-set! rib name marks l/p))
+                      imp-set))))
 
   (define expand-import-spec
     (lambda (spec)
-      (let f ([imp-set (parse-import-spec form spec)])
+      (let f ([imp-set (parse-import-spec spec)])
         (syntax-match imp-set
           [(library ,lib-ref)
            (expand-library-reference lib-ref)]
@@ -66,7 +69,7 @@
                 (when (library-pending? name)
                   (syntax-error #f "circular import of library" #f lib-ref))
                 (library-pending! name #t)
-                (let ([lib (load-library name pred)])
+                (let ([lib (load-library name pred?)])
                   (library-set! name (or lib #t))
                   (when (and lib (not (pred? (library-version lib))))
                     (syntax-error #f "library ~a version mismatch" #f lib-ref))
@@ -129,9 +132,7 @@
              (lambda (ver)
                (not (pred? ver))))]
           [(,sub-ver-ref* ...)
-           (let* ([pred?* (map (lambda (x)
-                                 (parse-sub-version-reference form x))
-                            sub-ver-ref*)]
+           (let* ([pred?* (map parse-sub-version-reference sub-ver-ref*)]
                   [n (length pred?*)])
              (lambda (sub-ver*)
                (and (fx<=? n (length sub-ver*))
@@ -144,10 +145,10 @@
       (let f ([x x])
 	(syntax-match x
 	  [(>= ,sub-ver)
-	   (let ([e (parse-sub-version form sub-ver)])
+	   (let ([e (parse-sub-version sub-ver)])
 	     (lambda (ver) (>= e ver)))]
 	  [(<= ,sub-ver)
-	   (let ([e (parse-sub-version form sub-ver)])
+	   (let ([e (parse-sub-version sub-ver)])
 	     (lambda (ver) (<= e ver)))]
 	  [(and ,sub-ver-ref* ...)
 	   (let ([pred?* (map f sub-ver-ref*)])
@@ -161,7 +162,7 @@
 	   (let ([pred? (f sub-ver-ref)])
 	     (lambda (ver) (not (pred? ver))))]
 	  [,x
-           (let ([e (parse-sub-version form x)])
+           (let ([e (parse-sub-version x)])
 	     (lambda (ver) (= ver e)))]))))
 
 

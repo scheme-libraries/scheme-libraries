@@ -8,10 +8,17 @@
     definition?
     definition-var
     definition-expr
+    make-library
+    library?
+    library-name
+    library-version
+    library-exports
     make-library-table
     library-table?
     library-table-ref
-    library-table-set!)
+    library-table-set!
+    library-table-delete!
+    library-table-contains?)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -40,7 +47,7 @@
 
   (define-record-type library
     (nongenerative library-a6116c91-15b0-4c42-8b87-547f2be2bd18)
-    (fields name ver exports)
+    (fields name version exports)
     (protocol
       (lambda (new)
         (define who 'make-library)
@@ -48,7 +55,7 @@
           (assert (library-name? name))
           (assert (library-version? ver))
           (assert (rib? exports))
-          (new name ver)))))
+          (new name ver exports)))))
 
   ;; Library names
 
@@ -72,6 +79,16 @@
     (lambda (ver)
       (and (list? ver)
            (for-all exact-nonnegative-integer? ver))))
+
+  (define library-table-contains?
+    (lambda (table name)
+      (assert (library-name? name))
+      (hashtable-contains? table name)))
+
+  (define library-table-delete!
+    (lambda (table name)
+      (assert (library-name? name))
+      (hashtable-delete! table name)))
 
   ;; Library hashtable
 

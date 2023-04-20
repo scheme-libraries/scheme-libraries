@@ -23,7 +23,10 @@
     make-ribcage
     ribcage?
     ribcage-add!
+    make-rib
     rib?
+    rib-for-each
+    rib-set!
     syntax-object?
     annotated-datum->syntax-object
     syntax-object-source-location
@@ -494,6 +497,18 @@
        [else
 	#f])))
 
+  (define rib-for-each
+    (lambda (f rib)
+      (assert (procedure? f))
+      (assert (rib? rib))
+      (let-values ([(n* a*) (hashtable-entries rib)])
+        (vector-for-each
+         (lambda (n a)
+           (for-each (lambda (p)
+                       (f n (car p) (cdr p)))
+             a))
+         n* a*))))
+
   (define/who ribcage-set!
     (lambda (r n m l/p)
       (unless (ribcage? r)
@@ -585,12 +600,7 @@
         (assertion-violation who "invalid procedure argument" proc))
       (unless (ribcage? r)
         (assertion-violation who "invalid ribcage argument" r))
-      (let-values ([(n* a*) (hashtable-entries (car (ribcage-chunks r)))])
-	(vector-for-each (lambda (n a)
-			   (for-each (lambda (p)
-				       (proc n (car p) (cdr p)))
-				     a))
-			 n* a*))))
+      (rib-for-each proc (car (ribcage-chunks r)))))
 
   (define ass-marks
     (lambda (marks a)
