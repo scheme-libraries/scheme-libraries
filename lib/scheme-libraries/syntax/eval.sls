@@ -31,7 +31,7 @@
       ((compile-to-thunk (expand-expression (annotated-datum->syntax-object expr env))))))
 
   (define/who environment
-    (lambda (imp-spec*)
+    (lambda imp-spec*
       (let ([rib (make-rib)])
         (for-each
           (lambda (imp-spec)
