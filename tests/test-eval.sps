@@ -6,8 +6,11 @@
   (rnrs)
   (scheme-libraries testing)
   (scheme-libraries syntax bootstrap-environment)
+  (scheme-libraries syntax library-collections)
   (scheme-libraries syntax eval)
   (scheme-libraries syntax syntax-objects))
+
+(current-library-collection (bootstrap-library-collection))
 
 (test-begin "eval")
 

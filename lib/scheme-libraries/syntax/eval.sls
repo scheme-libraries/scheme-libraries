@@ -14,6 +14,7 @@
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax import-specs)
+    (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
   (define eval
