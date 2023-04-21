@@ -4,6 +4,7 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'call-with-continuation-prompt 'scheme-indent-function 0)
           (put 'identifier-syntax 'scheme-indent-function 0)
           (put '$with-syntax 'scheme-indent-function 1)
           (put 'split 'scheme-indent-function 'defun)
