@@ -76,12 +76,6 @@
                   (library-pending! name #f)
                   lib)))))))
 
-  ;; Move this somewhere else.
-  (define load-library
-    (lambda (name pred?)
-      ;; FIXME
-      (assert #f)))
-
   ;; Parsers
 
   (define parse-import-spec
