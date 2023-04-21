@@ -22,4 +22,11 @@
       1)
     tag))
 
+(test-eqv 2
+  (call-with-continuation-prompt
+    (lambda ()
+      (abort-current-continuation tag (lambda () 2))
+      1)
+    tag))
+
 (test-end "continuation prompts")

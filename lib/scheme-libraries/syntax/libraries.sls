@@ -13,6 +13,7 @@
     library-name
     library-version
     library-exports
+    library-name=?
     make-library-table
     library-table?
     library-table-ref

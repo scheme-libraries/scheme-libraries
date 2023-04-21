@@ -4,18 +4,37 @@
 
 (library (scheme-libraries syntax import-specs)
   (export
-    import-spec-import!)
+    import-spec-import!
+    current-library-loader)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries numbers)
+    (scheme-libraries parameters)
     (scheme-libraries syntax library-collections)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax $parsers)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
+
+  ;; Library loaders
+
+  (define/who current-library-loader
+    (make-parameter
+        (lambda (name pred?)
+          (assertion-violation 'load-library "no library loader installed" name pred?))
+      (lambda (loader)
+        (unless (procedure? loader)
+          (assertion-violation who "invalid library loader" loader))
+        loader)))
+
+  (define/who load-library
+    (lambda (name pred?)
+      ((current-library-loader) name pred?)))
+
+  ;; Importing
 
   (define/who import-spec-import!
     (lambda (imp-spec rib)

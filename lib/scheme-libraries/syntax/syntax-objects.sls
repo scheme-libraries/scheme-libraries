@@ -23,6 +23,7 @@
     make-ribcage
     ribcage?
     ribcage-add!
+    ribcage-add-barrier!
     make-rib
     rib?
     rib-for-each
