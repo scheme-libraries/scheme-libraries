@@ -49,7 +49,7 @@
        ((call/cc
          (lambda (abort)
            (parameterize ([(continuation-prompt-tag-parameter prompt-tag)
-                           (lambda obj*
+                           (lambda (obj*)
                              (abort
                               (lambda ()
                                 (apply abort-handler obj*))))])

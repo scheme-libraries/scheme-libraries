@@ -4,10 +4,14 @@
 
 (library (scheme-libraries syntax library-locators)
   (export
-    library-locator?)
+    make-library-locator
+    library-locator?
+    library-locator-search)
   (import
     (rnrs)
-    (scheme-libraries define-who))
+    (scheme-libraries define-who)
+    (scheme-libraries continuation-prompts)
+    (scheme-libraries reading readers))
 
   (define-record-type library-locator
     (nongenerative library-locator-1f1b2c93-4e0f-45e4-bd04-ac084d6c18dd)
@@ -27,34 +31,42 @@
 
   (define/who library-locator-search
     (lambda (loc name pred? succ fail)
-      (unless (locator? loc)
+      (unless (library-locator? loc)
         (assertion-violation who "invalid library locator argument" loc))
-      ((call/cc
-        (lambda (abort)
-          (let f ([dir* (library-locator-directories loc)])
-            (if (pair? dir*)
-                (let g ([ext* (library-locator-extensions loc)])
-                  (if (null? ext*)
-                      (f (cdr dir*))
-                      (or (locate-in-file name pred?
-                                          (library-name->filename (car dir*) name (car ext*))
-                                          succ fail)
-                          (g (cdr ext*)))))
-                fail)))))))
+      (let ([tag (make-continuation-prompt-tag 'library-locator-search)])
+        (define locate-in-file
+          (lambda (filename)
+            (guard (c [(i/o-file-does-not-exist-error? c)])
+              (call-with-input-file filename
+                (lambda (in)
+                  (let ([reader (make-reader in filename)])
+                    (do ([form (reader-get-annotated-datum reader)])
+                        ((eof-object? form))
+                      (call/cc
+                       (lambda (k)
+                         (abort-current-continuation tag
+                           (lambda ()
+                             (succ form k))))))))))))
+        (call-with-continuation-prompt
+          (lambda ()
+            (for-each
+              (lambda (dir)
+                (for-each
+                  (lambda (ext)
+                    (locate-in-file (library-name->filename dir name ext)))
+                  (library-locator-extensions loc)))
+              (library-locator-directories loc))
+            (abort-current-continuation tag fail))
+          tag (lambda (thunk) (thunk))))))
 
-  (define locate-in-file
-    (lambda (abort name pred? filename succ fail)
-      (guard (exc [(i/o-file-does-not-exist-error? exc) #f])
-        (call-with-input-file filename
-          (lambda (in)
-            (call/cc
-             (lambda (k)
-               (abort
-                (lambda ()
-                  (succ filename k)))))
-            ;; try next.
-            )))))
+  (define library-name->filename
+    (lambda (dir name ext)
+      (let f ([dir dir] [name name])
+	(let ([part (library-name-part->string (car name))])
+	  (if (null? (cdr name))
+	      (string-append dir (string-append part ext))
+	      (f (string-append dir part "/") (cdr name)))))))
 
-  ;; todo: provide call-to-abort...
-
-  )
+  (define library-name-part->string
+    (lambda (part)
+      (symbol->string part))))

@@ -7,6 +7,7 @@
     expand
     expand-body
     expand-expression
+    expand-library
     transform)
   (import
     (rnrs)
@@ -212,14 +213,13 @@
   ;; Libraries
 
   (define expand-library
-    (lambda (x)
-      (let-values ([(name ver exp* imp* body*)
-                    (parse-library x)])
-        ;; FIXME
-        (assert #f))))
+    (lambda (name ver exp* imp* body*)
+      ;; FIXME
+      (assert #f)))
 
   ;; Parsers
 
+  #;
   (define parse-library
     (lambda (x)
       (syntax-match x
@@ -233,6 +233,7 @@
            (values name ver exp-spec* imp-spec* body*))]
         [,k (syntax-error #f "invalid library syntax" x)])))
 
+  #;
   (define/who parse-library-name
     (define doparse
       (lambda (part* sub-ver*)
@@ -248,12 +249,14 @@
          (doparse part* '())]
         [,x (syntax-error #f "ill-formed library name" #f x)])))
 
+  #;
   (define parse-library-name-part
     (lambda (x)
       (unless ($identifier? x)
         (syntax-error #f "invalid library name part" #f x))
       (identifier->symbol x)))
 
+  #;
   (define parse-sub-version
     (lambda (x)
       (let ([e (syntax-object->datum x)])
