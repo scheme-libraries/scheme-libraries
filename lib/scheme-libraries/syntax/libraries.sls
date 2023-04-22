@@ -14,6 +14,8 @@
     library-version
     library-exports
     library-name=?
+    library-visit!
+    library-invoke!
     make-library-table
     library-table?
     library-table-ref
@@ -25,7 +27,7 @@
     (scheme-libraries define-who)
     (scheme-libraries numbers)
     (scheme-libraries syntax expressions)
-    (scheme-libraries syntax syntax-objects)
+    (scheme-libraries syntax $ribs)
     (scheme-libraries syntax variables))
 
   ;; Definitions
@@ -90,6 +92,14 @@
     (lambda (table name)
       (assert (library-name? name))
       (hashtable-delete! table name)))
+
+  (define library-visit!
+    (lambda (lib)
+      (put-string (current-error-port) "FIXME: Implement library-visit!")))
+
+  (define library-invoke!
+    (lambda (lib)
+      (put-string (current-error-port) "FIXME: Implement library-invoke!")))
 
   ;; Library hashtable
 

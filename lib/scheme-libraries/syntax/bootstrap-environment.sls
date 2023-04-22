@@ -23,6 +23,9 @@
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variables)
     (scheme-libraries syntax variable-transformers)
+    (scheme-libraries syntax $environments)
+    (scheme-libraries syntax $metalevels)
+    (scheme-libraries syntax $labels)
     (scheme-libraries thread-parameters))
 
   (define-syntax declare-syntax
@@ -140,7 +143,7 @@
                 [var* (map make-variable name*)]
                 [bdg* (map make-variable-binding var*)]
                 [lbl* (map make-label bdg*)]
-                [ribs (make-ribcage x* lbl*)]
+                [ribs (ribcage x* lbl*)]
                 [e* (add-substitutions* ribs e*)]
                 [form* (add-substitutions* ribs `(,b* ... ,b))])
            (parameterize ([current-who who]
@@ -160,7 +163,7 @@
                         (lambda (x)
                           (make-label #f (current-metalevel-for-syntax)))
                         x*)]
-                [ribs (make-ribcage x* lbl*)]
+                [ribs (ribcage x* lbl*)]
                 [bdg*
                  (map
                    (lambda (x lbl e)
@@ -668,6 +671,7 @@
 
   ;; Definitions
 
+  ;; TODO: Return label/binding
   (declare-definition-syntax define
     (lambda (x ribs)
       (let-values ([(x e) (parse-define x)])
@@ -676,9 +680,12 @@
                [lbl (ribcage-add! ribs x bdg)])
           (unless lbl
             (identifier-error 'define x "trying to redefine the local keyword ~a"))
-          (list (lambda ()
-                  (make-definition var (expand-expression e))))))))
+          (values
+            (list (lambda ()
+                    (make-definition var (expand-expression e))))
+            (list lbl))))))
 
+  ;; TODO: Return label/binding
   (declare-definition-syntax define-syntax
     (lambda (x ribs)
       (define who 'define-syntax)
@@ -688,7 +695,7 @@
                [lbl (ribcage-add! ribs x bdg (current-metalevel-for-syntax))])
           (unless lbl
             (identifier-error 'define-syntax x "trying to redefine the local keyword ~a"))
-          '()))))
+          (values '() (list lbl))))))
 
   ;; Splicing syntax
 
@@ -721,7 +728,7 @@
                 [id* (formals->list formals)]
                 [bdg* (map make-variable-binding (formals->list vars))]
                 [lbl* (map make-label bdg*)]
-                [ribs (make-ribcage id* lbl*)]
+                [ribs (ribcage id* lbl*)]
                 [form* (add-substitutions* ribs `(,body* ... ,body))]
                 [e (parameterize ([current-who who]
                                   [current-form x])
@@ -920,7 +927,6 @@
                ($free-identifier=? x (syntax-extend-backquote here `unquote)))))
       (define gen-template
         (lambda (tmpl depth)
-          ;(display tmpl) (display "   ") (display depth) (newline)
           (syntax-match tmpl
             [(quasiquote ,tmpl1)
              (let-values ([(out var?) (gen-template tmpl1 (fx+ depth 1))])
@@ -1113,7 +1119,7 @@
                                 id (pattern-variable-level pvar)))
                              pvar* id*)]
                   [lbl* (map make-label bdg*)]
-                  [ribs (make-ribcage x* lbl*)]
+                  [ribs (ribcage x* lbl*)]
                   [b (add-substitutions ribs b)]
                   [e (expand-expression b)])
              (for-each label-kill! lbl*)

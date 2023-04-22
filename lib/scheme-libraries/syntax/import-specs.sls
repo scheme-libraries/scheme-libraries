@@ -16,6 +16,7 @@
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax $parsers)
+    (scheme-libraries syntax $ribs)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 

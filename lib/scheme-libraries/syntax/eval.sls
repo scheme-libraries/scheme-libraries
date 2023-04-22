@@ -11,6 +11,8 @@
     (rnrs)
     (scheme-libraries define-who)
     (scheme-libraries reading annotated-datums)
+    (scheme-libraries syntax $environments)
+    (scheme-libraries syntax $ribs)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax import-specs)

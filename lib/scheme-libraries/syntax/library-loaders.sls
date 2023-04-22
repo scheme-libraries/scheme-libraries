@@ -11,10 +11,12 @@
     (scheme-libraries thread-parameters)
     (scheme-libraries define-who)
     (scheme-libraries syntax exceptions)
-    (scheme-libraries syntax $expand-library)
+    (scheme-libraries syntax expand)
     (scheme-libraries syntax libraries)
+    (scheme-libraries syntax library-collections)
     (scheme-libraries syntax library-locators)
     (scheme-libraries syntax $parsers)
+    (scheme-libraries syntax $labels)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
@@ -23,6 +25,8 @@
   (define make-default-library-loader
     (lambda (loc)
       (lambda (name pred?)
+        ;; TODO: Change it into a regular for-each interface and use
+        ;; call/cc here.
         (library-locator-search
           loc
           name pred?
@@ -32,17 +36,38 @@
                             (parse-library-definition x)])
                 (unless (and (library-name=? name n) (pred? ver))
                   (k))
-                (let-values ([(lib)
+                (let-values ([(lib lbl*)
+                              ;; XXX: Can we extract lbl* from lib?
                               (parameterize ([current-form x])
                                 (expand-library name ver exp* imp* body*))])
-                  ;; FIXME
-                  #;
-                  (record-expanded-library! lib)
-                  #;
+                  (library-list-append! lib)
                   (library-bind-globals! lib lbl*)
                   lib))))
           (lambda ()
             #f)))))
+
+  (define library-bind-globals!
+    (lambda (lib lbl*)
+      (define dobind!
+        (lambda (lbl)
+          (let ([bdg (label->binding lbl)])
+            (cond
+             [(variable-binding? bdg)
+              (label-binding-set! lbl
+                (make-global-variable-binding lib
+                                              (variable-binding-symbol bdg)
+                                              (variable-binding-location bdg)))]
+             [(keyword-binding? bdg)
+              (label-binding-set! lbl
+                (make-global-keyword-binding lib
+                                             (keyword-binding-transformer bdg)))]
+             [else
+              ;; Only variables and keywords should be defineable at the
+              ;; top level of a library.
+              (assert #f)]))))
+      (for-each dobind! lbl*)))
+
+  ;; Parsers
 
   (define parse-library-definition
     (lambda (x)
