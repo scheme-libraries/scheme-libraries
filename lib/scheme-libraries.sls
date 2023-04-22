@@ -12,7 +12,7 @@
     ellipsis?
     make-parameter
     make-thread-parameter
-    parameterize
+    oparameterize
     symbolic-identifier=?
     constant?
     with-implicit
@@ -29,6 +29,16 @@
     box?
     unbox
     set-box!
+
+    ;; (scheme-libraries continuation-prompts)
+    make-continuation-prompt-tag
+    continuation-prompt-tag?
+    call-with-continuation-prompt
+    abort-current-continuation
+    &continuation
+    make-continuation-violation
+    continuation-violation?
+    continuation-violation-prompt-tag
 
     ;; (scheme-libraries counters)
     make-counter
@@ -248,6 +258,7 @@
     (scheme-libraries atoms)
     (scheme-libraries basic-format-strings)
     (scheme-libraries boxes)
+    (scheme-libraries continuation-prompts)
     (scheme-libraries counters)
     (scheme-libraries define-auxiliary-syntax)
     (scheme-libraries define-who)
@@ -264,6 +275,7 @@
     (scheme-libraries impure)
     (scheme-libraries lists)
     (scheme-libraries match)
+    (scheme-libraries modules)
     (scheme-libraries numbers)
     (scheme-libraries ports)
     (scheme-libraries random-numbers)
