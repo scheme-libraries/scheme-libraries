@@ -11,7 +11,7 @@
     (scheme-libraries thread-parameters)
     (scheme-libraries define-who)
     (scheme-libraries syntax exceptions)
-    (scheme-libraries syntax expand)
+    (scheme-libraries syntax $expand-library)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax library-locators)
     (scheme-libraries syntax $parsers)
@@ -48,19 +48,16 @@
     (lambda (x)
       (parameterize ([current-form x])
         (syntax-match x
-          [(library ,name (export ,exp-spec* ...) (import ,imp-spec*) ,body* ...)
+          [(library ,name (export ,exp-spec* ...) (import ,imp-spec* ...) ,body* ...)
            (let-values ([(name ver) (parse-library-name name)])
-             (let ([ribs (make-ribcage)])
-               (ribcage-add-barrier! ribs (list))
-               (values name ver exp-spec* imp-spec*
-                       (add-substitutions* ribs body*))))]
+             (values name ver exp-spec* imp-spec* body*))]
           [,x (syntax-error #f "invalid library definition" x)]))))
 
   (define parse-library-name
     (lambda (x)
       (define return
         (lambda (part* sub-ver*)
-          (values (map parse-library-name part*)
+          (values (map parse-library-name-part part*)
                   (map parse-sub-version sub-ver*))))
       (syntax-match x
         [(,part* ... (,sub-ver* ...))

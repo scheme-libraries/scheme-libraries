@@ -7,7 +7,6 @@
     expand
     expand-body
     expand-expression
-    expand-library
     transform)
   (import
     (rnrs)
@@ -209,13 +208,6 @@
            (unless (constant? e)
              (syntax-error #f "invalid expression syntax" x))
            (values x (make-constant-type e)))])))
-
-  ;; Libraries
-
-  (define expand-library
-    (lambda (name ver exp* imp* body*)
-      ;; FIXME
-      (assert #f)))
 
   ;; Parsers
 
