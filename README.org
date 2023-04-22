@@ -28,6 +28,10 @@ the ~(srfi :28)~ library of SRFI 28.
 The ~(scheme-libraries boxes)~ library is a drop-in replacement for
 the ~(srfi :111)~ library of SRFI 111.
 
+** Continuation prompts
+
+Implements ~abort-to-continuation~.
+
 ** Counters
 
 ** Displayed conditions
@@ -57,6 +61,10 @@ coloring graphs, suitable in register allocators.
 
 The ~(scheme-libraries match)~ library is a drop-in replacement for
 the ~(srfi :241 match)~ library of SRFI 241.
+
+** Modules
+
+Allows a primitive form of micro-modularization.
 
 ** Multiple-value definitions
 
