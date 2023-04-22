@@ -6,7 +6,8 @@
   (export
     (rename (make-variable-transformer $make-variable-transformer))
     variable-transformer?
-    variable-transformer-proc)
+    variable-transformer-proc
+    transformer?)
   (import
     (except (rnrs)
             make-variable-transformer))
@@ -22,4 +23,9 @@
           (unless (procedure? proc)
             (assertion-violation who "invalid procedure argument" proc))
           (new proc)))))
+
+  (define transformer?
+    (lambda (obj)
+      (or (procedure? obj)
+          (variable-transformer? obj))))
   )

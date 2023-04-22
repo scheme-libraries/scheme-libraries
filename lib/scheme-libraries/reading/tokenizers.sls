@@ -251,7 +251,6 @@
                                      (#\\ . #\\)))
                           =>
                           (lambda (e)
-                            (write e (current-error-port)) (newline (current-error-port))
                             (f (cons (cdr e) ch*)))]
                          [(char=? ch #\x)
                           (f (cons (read-inline-hex-escape) ch*))]

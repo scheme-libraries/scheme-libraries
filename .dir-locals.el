@@ -4,6 +4,11 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'except 'scheme-indent-function 1)
+          (put 'rename 'scheme-indent-function 1)
+          (put 'prefix 'scheme-indent-function 1)
+          (put 'only 'scheme-indent-function 1)
+          (put 'label-binding-set! 'scheme-indent-function 'defun)
           (put 'library-locator-search 'scheme-indent-function 0)
           (put 'call-with-continuation-prompt 'scheme-indent-function 0)
           (put 'identifier-syntax 'scheme-indent-function 0)
@@ -47,18 +52,26 @@
           (put 'syntax-error 'scheme-indent-function 'defun)
 	  (font-lock-add-keywords
 	   nil
-	   '(("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
+	   '(("(\\(define-values2\\) (\\([^()]*\\))"
+              (1 font-lock-keyword-face)
+              (2 font-lock-function-name-face nil t))
+             ("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
              ("(\\(declare-syntax\\|declare-\\(expander\\|definition\\|prim\\|splicing\\)-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
-	     ("(\\(\\(syntax-\\)?extend-backquote\\)\\>" 1 font-lock-keyword-face)
+             ("(\\(module\\)\\>[ \t]*(\\(.*\\))"
+              (1 font-lock-keyword-face)
+              (2 font-lock-function-name-face))
+             ("(\\(\\(syntax-\\)?extend-backquote\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(build\\(-begin\\|-let\\)?\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(identifier-syntax\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(fields\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(protocol\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(sealed\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(expansion-mode\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(expansion-modes\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(opaque\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(nongenerative\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(parent\\)\\>" 1 font-lock-keyword-face)

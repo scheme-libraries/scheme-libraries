@@ -9,12 +9,15 @@
     library-set!
     library-ref
     library-pending?
-    library-pending!)
+    library-pending!
+    library-list-append!
+    library-list)
   (import
     (rnrs)
     (scheme-libraries parameters)
     (scheme-libraries thread-parameters)
     (scheme-libraries define-who)
+    (scheme-libraries syntax $environments)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
@@ -24,12 +27,13 @@
   (define-record-type library-collection
     (nongenerative library-collection-765810f4-88f2-47a3-9d4a-df90941f0a82)
     (sealed #t)
-    (fields libraries pending)
+    (fields libraries pending (mutable list))
     (protocol
       (lambda (new)
         (lambda ()
           (new (make-library-table)
-               (make-library-table))))))
+               (make-library-table)
+               '())))))
 
   ;; Current library collection
 
@@ -66,6 +70,15 @@
         (if flag
             (library-table-set! tbl name #t)
             (library-table-delete! tbl name)))))
+
+  (define library-list-append!
+    (lambda (lib)
+      (let ([coll (current-library-collection)])
+        (library-collection-list-set! coll
+                                      (cons lib (library-collection-list coll))))))
+
+  (define library-list
+    (reverse (library-collection-list (current-library-collection))))
 
   ;; Bootstrap library collection
 
