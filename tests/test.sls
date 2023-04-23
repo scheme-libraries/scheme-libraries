@@ -5,6 +5,8 @@
 
   (define-syntax foo
     (lambda (x)
-      12))
+      #'y))
+
+  (define y 12)
 
   )

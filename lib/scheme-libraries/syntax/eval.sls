@@ -9,13 +9,16 @@
     environment)
   (import
     (rnrs)
+    (scheme-libraries boxes)
     (scheme-libraries define-who)
+    (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax $environments)
     (scheme-libraries syntax $ribs)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax import-specs)
+    (scheme-libraries syntax libraries)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
@@ -29,8 +32,17 @@
         (assertion-violation who "invalid expression argument" expr))
       (unless (environment? env)
         (assertion-violation who "invalid environment argument" env))
-      ;; FIXME: Invoke the libraries referenced by the expression.
-      ((compile-to-thunk (expand-expression (annotated-datum->syntax-object expr env))))))
+      (parameterize ([current-requirements-collector (make-requirements-collector)])
+        (let ([e (expand-expression (annotated-datum->syntax-object expr env))])
+          (vector-for-each library-invoke! (collected-invoke-requirements))
+          (let-values ([(vars libs locs) (current-runtime-globals)])
+            ((compile-to-thunk
+              (build
+                (letrec ,(map (lambda (var loc)
+                                `[,var ',(unbox loc)])
+                              (vector->list vars)
+                              (vector->list locs))
+                  ,e)))))))))
 
   (define/who environment
     (lambda imp-spec*
