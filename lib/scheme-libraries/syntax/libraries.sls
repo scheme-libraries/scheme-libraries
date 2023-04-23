@@ -26,7 +26,9 @@
     requirements-collector?
     current-requirements-collector
     require-for-runtime!
+    require-for-expand!
     current-runtime-globals
+    collected-visit-requirements
     collected-invoke-requirements)
   (import
     (rnrs)
@@ -194,6 +196,7 @@
     (lambda ()
       (requirements-collector-runtime-globals (assert (current-requirements-collector)))))
 
+  ;; Do we need this?
   (define current-expand-requirements
     (lambda ()
       (requirements-collector-expand-globals (assert (current-requirements-collector)))))
@@ -206,10 +209,22 @@
       (hashtable-set! (current-invoke-requirements) lib #t)
       (hashtable-set! (current-runtime-requirements) var (make-global lib loc))))
 
+  (define require-for-expand!
+    (lambda (lib var loc)
+      (assert (library? lib))
+      (assert (variable? var))
+      (assert (box? loc))
+      (hashtable-set! (current-visit-requirements) lib #t)
+      (hashtable-set! (current-expand-requirements) var (make-global lib loc))))
+
   (define current-runtime-globals
     (lambda ()
       (let-values ([(vars globals) (hashtable-entries (current-runtime-requirements))])
         (values vars (vector-map global-library globals) (vector-map global-location globals)))))
+
+  (define collected-visit-requirements
+    (lambda ()
+      (hashtable-keys (current-visit-requirements))))
 
   (define collected-invoke-requirements
     (lambda ()

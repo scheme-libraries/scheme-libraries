@@ -183,8 +183,8 @@
 
   (define eval-transformer
     (lambda (x who)
-      (let ([e (meta-expand x)])
-        (let ([f (execute-transformer e)])
+      (let-values ([(vars locs e) (meta-expand x)])
+        (let ([f (execute-transformer vars locs e)])
           (unless (or (procedure? f)
                       (variable-transformer? f))
             (assertion-violation who "invalid transformer" f))
@@ -192,19 +192,29 @@
 
   (define meta-expand
     (lambda (x)
-      ;; TODO: Switch context and collect information about visited
-      ;; symbols.
-      (let ([e (parameterize ([current-metalevel
-                               (fx+ (current-metalevel) 1)])
-                 (expand-expression x))])
-        e)))
+      (let ([mrc (make-requirements-collector)])
+        (parameterize ([current-requirements-collector mrc]
+                       [current-metalevel (fx+ (current-metalevel) 1)])
+          (let ([e (expand-expression x)])
+            (let-values ([(vars libs locs)
+                          (current-runtime-globals)])
+              (vector-for-each
+               (lambda (var lib loc)
+                 (require-for-expand! lib var loc)
+                 (library-invoke! lib))
+               vars libs locs)
+              (values vars locs e)))))))
 
   (define execute-transformer
-    (lambda (e)
-      ;; TODO Wrap e with code so that the runtime globals coming from
-      ;; the expansion of e (in the meta-context) are set.  (The
-      ;; values are also delivered in a vector.)
-      (execute e)))
+    (lambda (vars locs e)
+      (execute
+       (build
+         (letrec ,(map (lambda (var loc)
+                         `[,var (unbox ',loc)])
+                       (vector->list vars)
+                       (vector->list locs))
+           ;; XXX: egg2 uses set!
+           ,e)))))
 
   (define execute
     (lambda (e)

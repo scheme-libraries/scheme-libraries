@@ -15,6 +15,7 @@
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax library-collections)
     (scheme-libraries syntax library-locators)
+    (scheme-libraries syntax $metalevels)
     (scheme-libraries syntax $parsers)
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax syntax-match)
@@ -50,6 +51,7 @@
     (lambda (lib lbl*)
       (define dobind!
         (lambda (lbl)
+          (label-metalevel-set! lbl (metalevel:syntax))
           (let ([bdg (label->binding lbl)])
             (cond
              [(variable-binding? bdg)

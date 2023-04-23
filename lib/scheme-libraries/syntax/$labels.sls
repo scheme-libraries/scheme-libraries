@@ -7,6 +7,7 @@
     make-label
     label?
     label=?
+    label-metalevel-set!
     label-bind!
     label-kill!
     label->binding
@@ -30,7 +31,7 @@
     (sealed #t)
     (fields
       (mutable binding)
-      metalevel
+      (mutable metalevel)
       (mutable name))
     (protocol
       (lambda (new)
