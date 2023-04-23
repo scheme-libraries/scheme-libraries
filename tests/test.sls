@@ -1,11 +1,12 @@
 (library (test)
   (export foo)
   (import
-    ($system))
+    ($system)
+    (test2))
 
   (define-syntax foo
     (lambda (x)
-      #'y))
+      (id #'y)))
 
   (define y 12)
 
