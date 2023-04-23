@@ -18,7 +18,7 @@
              (define-syntax instantiate-module
                (syntax-rules ()
                  [(instantiate-module exp ...)
-                  (begin def ...)]))
+                  (begin ((... ...) def) ...)]))
              (instantiate-module exp ...)
              (define dummy))]
         [_ (syntax-violation who "invalid syntax" x)]))))

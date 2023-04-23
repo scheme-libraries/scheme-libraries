@@ -91,6 +91,6 @@
 
   (define make-system-library
     (lambda ()
-      (make-library '($system) '() (environment-rib (system-environment)))))
+      (make-library '($system) '() (environment-rib (system-environment)) '#() #f)))
 
   )

@@ -1147,6 +1147,8 @@
   (declare-prim-syntax identifier? 1)
   (declare-prim-syntax free-identifier=? 2)
   (declare-prim-syntax reverse 1)
+  (declare-prim-syntax set-box! 2)
+  (declare-prim-syntax unbox 1)
   (declare-prim-syntax syntax-car 1)
   (declare-prim-syntax syntax-cdr 1)
   (declare-prim-syntax syntax-null? 1)

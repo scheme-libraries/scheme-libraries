@@ -21,11 +21,20 @@
     library-table-ref
     library-table-set!
     library-table-delete!
-    library-table-contains?)
+    library-table-contains?
+    make-requirements-collector
+    requirements-collector?
+    current-requirements-collector
+    require-for-runtime!
+    current-runtime-globals
+    collected-invoke-requirements)
   (import
     (rnrs)
+    (scheme-libraries basic-format-strings)
+    (scheme-libraries boxes)
     (scheme-libraries define-who)
     (scheme-libraries numbers)
+    (scheme-libraries parameters)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax $ribs)
     (scheme-libraries syntax variables))
@@ -50,15 +59,18 @@
 
   (define-record-type library
     (nongenerative library-a6116c91-15b0-4c42-8b87-547f2be2bd18)
-    (fields name version exports)
+    (fields name version exports invoke-requirements (mutable invoker))
     (protocol
       (lambda (new)
         (define who 'make-library)
-        (lambda (name ver exports)
+        (lambda (name ver exports invreqs invoker)
           (assert (library-name? name))
           (assert (library-version? ver))
           (assert (rib? exports))
-          (new name ver exports)))))
+          (assert (and (vector? invreqs)
+                       (for-all library? (vector->list invreqs))))
+          (assert (or (not invoker) (procedure? invoker)))
+          (new name ver exports invreqs invoker)))))
 
   ;; Library names
 
@@ -95,11 +107,28 @@
 
   (define library-visit!
     (lambda (lib)
-      (put-string (current-error-port) "FIXME: Implement library-visit!")))
+      (put-string (current-error-port) "FIXME: Implement library-visit!\n")))
 
   (define library-invoke!
     (lambda (lib)
-      (put-string (current-error-port) "FIXME: Implement library-invoke!")))
+      (assert (library? lib))
+      (let ([name (library-name lib)]
+            [invoker (library-invoker lib)])
+        (when invoker
+          (dynamic-wind
+            (lambda ()
+              (library-invoker-set! lib #t))
+            (lambda ()
+              (vector-for-each library-invoke! (library-invoke-requirements lib)))
+            (lambda ()
+              (library-invoker-set! lib invoker)))
+          (library-invoker-set! lib
+                                (lambda ()
+                                  (assertion-violation #f (format "invocation of library ~a did not return" name))))
+          (when (eq? invoker #t)
+            (assertion-violation #f (format "circular invocation of library ~a" name)))
+          (invoker)
+          (library-invoker-set! lib #f)))))
 
   ;; Library hashtable
 
@@ -124,5 +153,66 @@
       (assert (or (eq? lib #t)
                   (library? lib)))
       (hashtable-set! lt name lib)))
+
+  ;; Invoke and visit requirements
+
+  (define-record-type global
+    (nongenerative global-97fdc653-e31c-4ef5-a444-b626a5f823aa)
+    (sealed #t)
+    (fields library location)
+    (protocol
+      (lambda (new)
+        (lambda (lib loc)
+          (assert (library? lib))
+          (assert (box? loc))
+          (new lib loc)))))
+
+  (define-record-type requirements-collector
+    (nongenerative requirements-collector-331810a0-1fb7-48de-a422-aaf88b667810)
+    (fields invokes visits runtime-globals expand-globals)
+    (protocol
+      (lambda (new)
+        (lambda ()
+          (new (make-eq-hashtable) (make-eq-hashtable) (make-eq-hashtable) (make-eq-hashtable))))))
+
+  (define/who current-requirements-collector
+    (make-parameter #f
+      (lambda (x)
+        (unless (or (not x) (requirements-collector? x))
+          (assertion-violation who "invalid requirements collector argument" x))
+        x)))
+
+  (define current-visit-requirements
+    (lambda ()
+      (requirements-collector-visits (assert (current-requirements-collector)))))
+
+  (define current-invoke-requirements
+    (lambda ()
+      (requirements-collector-invokes (assert (current-requirements-collector)))))
+
+  (define current-runtime-requirements
+    (lambda ()
+      (requirements-collector-runtime-globals (assert (current-requirements-collector)))))
+
+  (define current-expand-requirements
+    (lambda ()
+      (requirements-collector-expand-globals (assert (current-requirements-collector)))))
+
+  (define require-for-runtime!
+    (lambda (lib var loc)
+      (assert (library? lib))
+      (assert (variable? var))
+      (assert (box? loc))
+      (hashtable-set! (current-invoke-requirements) lib #t)
+      (hashtable-set! (current-runtime-requirements) var (make-global lib loc))))
+
+  (define current-runtime-globals
+    (lambda ()
+      (let-values ([(vars globals) (hashtable-entries (current-runtime-requirements))])
+        (values vars (vector-map global-library globals) (vector-map global-location globals)))))
+
+  (define collected-invoke-requirements
+    (lambda ()
+      (hashtable-keys (current-invoke-requirements))))
 
   )

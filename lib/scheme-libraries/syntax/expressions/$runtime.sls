@@ -28,6 +28,7 @@
     not
     list
     reverse
+    set-box!
     syntax-car
     syntax-cdr
     syntax-null?
@@ -37,6 +38,7 @@
     syntax-list->vector
     syntax-vector?
     syntax-vector->list
+    unbox
     values
     void
     (rename ($identifier? identifier?)
@@ -50,6 +52,7 @@
     newline)
   (import
     (rnrs)
+    (scheme-libraries boxes)
     (scheme-libraries void)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax variable-transformers)

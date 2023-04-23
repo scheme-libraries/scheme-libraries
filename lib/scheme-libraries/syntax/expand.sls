@@ -84,6 +84,12 @@
             (expand-primop t x)]
            [(variable-binding? t)
             (build ,(variable-binding-symbol t))]
+           [(global-variable-binding? t)
+            (let ([var (global-variable-binding-symbol t)])
+              (require-for-runtime! (global-variable-binding-library t)
+                                    var
+                                    (global-variable-binding-location t))
+              (build ,var))]
            [else
             (display x) (newline)
             (syntax-error #f "invalid syntax in expression context" x)])))))
@@ -249,7 +255,8 @@
            => (lambda (lbl)
                 (let ([bdg (label->binding lbl)])
                   (cond
-                   [(variable-binding? bdg)
+                   [(or (variable-binding? bdg)
+                        (global-variable-binding? bdg))
                     (values x bdg)]
                    [(or (keyword-binding? bdg)
                         (global-keyword-binding? bdg))
@@ -276,22 +283,65 @@
     (define expand-library
       (lambda (name ver exp* imp* body*)
         (let ([ribs (make-ribcage)]
-              [rib (make-rib)])
+              [rib (make-rib)]
+              [rc (make-requirements-collector)])
           (ribcage-add-barrier! ribs rib '(()))
           (for-each
             (lambda (imp)
               (import-spec-import! imp rib))
             imp*)
-          (let-values ([(def* e lbl*) (expand-internal body* ribs (expansion-mode library))])
-            (assert (not e))
-            (let ([exports (make-rib)])
-              (for-each
-                (lambda (exp)
-                  (export-spec-export! exp exports ribs))
-                exp*)
-              (values
-                (make-library name ver exports)
-                lbl*)))))))
+          (parameterize ([current-requirements-collector rc])
+            (let-values ([(def* e lbl*)
+                          (expand-internal body* ribs (expansion-mode library))]
+                         [(vars libs locs) (current-runtime-globals)])
+              (assert (not e))
+              (let ([exports (make-rib)]
+                    [setters (build-variable-setters lbl*)])
+                (for-each
+                  (lambda (exp)
+                    (export-spec-export! exp exports ribs))
+                  exp*)
+                (values
+                  (make-library name
+                                ver
+                                exports
+                                (collected-invoke-requirements)
+                                (build-invoker def* setters vars locs))
+                  lbl*)))))))
+
+    (define build-variable-setters
+      (lambda (lbl*)
+        (fold-left
+          (lambda (def* lbl)
+            (let ([bdg (label->binding lbl)])
+              (if (variable-binding? bdg)
+                  (cons (build (set-box! ',(variable-binding-location bdg) ,(variable-binding-symbol bdg)))
+                        def*)
+                  def*)))
+          '() lbl*)))
+
+    (define build-invoker
+      (lambda (def* setters vars vals)
+        (compile-to-thunk
+         (build
+           (letrec (,(map (lambda (var loc)
+                            `[,var ,loc])
+                          (vector->list vars)
+                          (vector->list vals))
+                    ...
+                    ,(map (lambda (def)
+                            `[,(definition-var def)
+                              ,(definition-expr def)])
+                          def*)
+                    ...)
+             (begin
+               ,(map
+                  (lambda (var)
+                    `(set! ,var (unbox ,var)))
+                  (vector->list vars))
+               ...
+               ,setters ...
+               (values))))))))
 
   (define/who export-spec-export!
     (define parse-export-spec
