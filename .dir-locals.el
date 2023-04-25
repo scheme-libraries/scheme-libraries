@@ -4,6 +4,7 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put 'metalet 'scheme-indent-function 1)
           (put 'except 'scheme-indent-function 1)
           (put 'rename 'scheme-indent-function 1)
           (put 'prefix 'scheme-indent-function 1)
@@ -78,6 +79,7 @@
 	     ("(\\(mutable\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(immutable\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(assert\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(metalet\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(increment!\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(prepend!\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(match\\)\\>" 1 font-lock-keyword-face)
