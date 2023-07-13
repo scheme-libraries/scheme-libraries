@@ -195,8 +195,14 @@
     ;; (scheme-libraries record-writer)
     record-writer
 
+    ;; (scheme-libraries repl)
+    repl
+    repl-prompt-string
+    console-input-port
+    console-output-port
+
     ;; (scheme-libraries strings)
-    strings
+    string-split
 
     ;; (scheme-libraries trees)
     tree->list
@@ -254,6 +260,7 @@
     (scheme-libraries reading tokenizers)
     (scheme-libraries rec)
     (scheme-libraries record-writer)
+    (scheme-libraries repl)
     (scheme-libraries parameters)
     (scheme-libraries strings)
     (scheme-libraries thread-parameters)
