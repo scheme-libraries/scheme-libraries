@@ -12,6 +12,6 @@ check:
 	$(prove) tests
 
 repl:
-	$(scheme)
+	@$(scheme) schemerc
 
 .PHONY: all check repl
