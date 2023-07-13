@@ -1,6 +1,6 @@
 #!r6rs
 
-;; Copyright © Marc Nieper-Wißkirchen (2023).
+;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
 (library (scheme-libraries)
   (export
@@ -195,6 +195,9 @@
     ;; (scheme-libraries record-writer)
     record-writer
 
+    ;; (scheme-libraries strings)
+    strings
+
     ;; (scheme-libraries trees)
     tree->list
 
@@ -252,6 +255,7 @@
     (scheme-libraries rec)
     (scheme-libraries record-writer)
     (scheme-libraries parameters)
+    (scheme-libraries strings)
     (scheme-libraries thread-parameters)
     (scheme-libraries trees)
     (scheme-libraries unicode)
