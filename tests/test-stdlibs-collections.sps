@@ -10,8 +10,8 @@
 
 (define stdlibs
   (stdlibs-collection
-   (make-library-locator '() '())
-   ((rnrs) #t #t)))
+   (make-library-locator '("tests/") '(".sls"))
+   ((test) #t #t)))
 
 (test-begin "standard libraries collections")
 
