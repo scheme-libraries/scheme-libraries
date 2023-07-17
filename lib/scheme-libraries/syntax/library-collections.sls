@@ -4,6 +4,7 @@
 
 (library (scheme-libraries syntax library-collections)
   (export
+    library-collection?
     current-library-collection
     bootstrap-library-collection
     library-set!

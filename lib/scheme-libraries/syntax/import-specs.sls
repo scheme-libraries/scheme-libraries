@@ -5,7 +5,8 @@
 (library (scheme-libraries syntax import-specs)
   (export
     import-spec-import!
-    current-library-loader)
+    current-library-loader
+    load-library)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
