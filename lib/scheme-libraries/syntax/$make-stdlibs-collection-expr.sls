@@ -28,14 +28,20 @@
 
   (define make-stdlibs-collection-expr
     (lambda (loc stdlib*)
+      (define who 'stdlibs-collection)
       (parameterize ([current-library-loader (make-default-library-loader loc)]
                      [current-library-collection (bootstrap-library-collection)])
         (for-each
           (lambda (stdlib)
+            (define name (stdlib-name stdlib))
             ;; TODO: Check whether load-library is the correct procedure here.
             ;; Need something like ensure-loaded.
-            (load-library (stdlib-name stdlib) (stdlib-pred stdlib)))
+            (unless (load-library name (stdlib-pred stdlib))
+              (assertion-violation who "library not found" name)))
           stdlib*)
+
+
+
         ;; The stdlibs are now in the library collection.  Now
         ;; serialize the library collection.
         ;; what to do with the non-visible collections?
