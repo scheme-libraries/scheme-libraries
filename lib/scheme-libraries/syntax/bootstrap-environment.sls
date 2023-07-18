@@ -4,7 +4,8 @@
 
 (library (scheme-libraries syntax bootstrap-environment)
   (export
-    bootstrap-environment)
+    bootstrap-environment
+    bootstrap-library-collection)
   (import
     (rnrs)
     ;; DEBUG
@@ -19,6 +20,7 @@
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax libraries)
+    (scheme-libraries syntax library-collections)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variables)
@@ -653,6 +655,19 @@
     (lambda ()
       ;; TODO: Copy the system environment.
       (system-environment)))
+
+  ;; Bootstrap library collection
+
+  (define bootstrap-library-collection
+    (lambda ()
+      (let ([lc (make-library-collection)])
+        (parameterize ([current-library-collection lc])
+          (library-set! '($system) (make-system-library))
+          lc))))
+
+  (define make-system-library
+    (lambda ()
+      (make-library '($system) '() (environment-rib (system-environment)) '#() #f)))
 
   ;; Syntax
 

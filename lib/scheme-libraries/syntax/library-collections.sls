@@ -4,9 +4,9 @@
 
 (library (scheme-libraries syntax library-collections)
   (export
+    make-library-collection
     library-collection?
     current-library-collection
-    bootstrap-library-collection
     library-set!
     library-ref
     library-pending?
@@ -80,18 +80,5 @@
 
   (define library-list
     (reverse (library-collection-list (current-library-collection))))
-
-  ;; Bootstrap library collection
-
-  (define bootstrap-library-collection
-    (lambda ()
-      (let ([lc (make-library-collection)])
-        (parameterize ([current-library-collection lc])
-          (library-set! '($system) (make-system-library))
-          lc))))
-
-  (define make-system-library
-    (lambda ()
-      (make-library '($system) '() (environment-rib (system-environment)) '#() #f)))
 
   )
