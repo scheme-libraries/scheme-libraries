@@ -19,6 +19,7 @@
     (scheme-libraries parameters)
     (scheme-libraries syntax bootstrap-environment)
     (scheme-libraries syntax import-specs)
+    (scheme-libraries syntax libraries)
     (scheme-libraries syntax library-loaders)
     (scheme-libraries syntax library-collections))
 
@@ -53,7 +54,25 @@
         ;; -> no, this is not what r6rs says.  but it could still work for stdlibs... ?
         ;; -> each library knows which have to be inven
 
-        ;; FIXME
-        #'(bootstrap-library-collection)
-        )))
-  )
+        (let* ([lib* (map
+                       (lambda (stdlib)
+                         ;; FIXME: In library loaders, the stdlib is not entered into the tables...
+                         (assert (library-ref (stdlib-name stdlib) #f)))
+                       stdlib*)]
+               [name-stx* (map (lambda (lib)
+                                 (datum->syntax #'here (library-name lib)))
+                               lib*)])
+          (with-syntax ([(name ...) name-stx*]
+                        [(lib ...)
+                         (map (lambda (name-stx lib)
+                                #`(make-library '#,name-stx
+                                                #,(library-version lib)
+                                                (make-rib) ;fixme: exports!
+                                                '#() ;invoke-requirements
+                                                #f   ;invoker
+                                                ))
+                              name-stx* lib*)])
+            #'(parameterize ([current-library-collection (empty-library-collection)])
+                (library-set! 'name lib)
+                ...
+                (current-library-collection))))))))
