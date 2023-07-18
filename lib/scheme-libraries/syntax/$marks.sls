@@ -86,20 +86,20 @@
       (hashtable-set! ht (anti-mark) 'anti)
       (lambda (m)
         (assert (mark? m))
-        (intern! ht
-                 m
-                 (lambda ()
-                   (gensym "m"))))))
+        (hashtable-intern! ht
+                           m
+                           (lambda ()
+                             (gensym "m"))))))
 
   (define/who datum->mark
     (let ([ht (make-eq-hashtable)])
       (hashtable-set! ht 'anti (anti-mark))
       (lambda (s)
         (assert (symbol? s))
-        (intern! ht
-                 s
-                 (lambda ()
-                   (make-mark))))))
+        (hashtable-intern! ht
+                           s
+                           (lambda ()
+                             (make-mark))))))
 
   ;; Record writers
 
