@@ -21,6 +21,8 @@
     (scheme-libraries define-who)
     (scheme-libraries lists)
     (scheme-libraries rec)
+    (scheme-libraries gensyms)
+    (scheme-libraries hashtables)
     (scheme-libraries syntax $metalevels)
     (scheme-libraries syntax $syntax-types))
 
@@ -96,6 +98,22 @@
 	  (and (fxnegative? ml)
 	       (fx<=? (fxnot ml) cml)))))
 
+  (define label->datum
+    (let ([ht (make-eq-hashtable)])
+      (lambda (lbl)
+        (assert (label? lbl))
+        (intern! ht
+                 lbl
+                 (lambda ()
+                   ;; PROBLEM: The label needs to be recorded somewhere. Otherwise we place the same label several times.
+                   (list (binding->datum (label-binding lbl))
+                         (label-metalevel lbl)))))))
+
+  (define datum->label
+    (let ([ht (make-eq-hashtable)])
+      (lambda (s)
+        (assert ))))
+
   ;; Labels with props
 
   (define-record-type label/props
@@ -103,8 +121,8 @@
     (sealed #t)
     (fields label props)
     (protocol
-     (lambda (new)
-       (define who 'make-label/props)
+      (lambda (new)
+        (define who 'make-label/props)
         (rec make
           (case-lambda
             [(lbl) (make lbl '())]

@@ -8,6 +8,7 @@
     rib?
     rib-ref
     rib-for-each
+    rib-map
     rib-set!
     rib-update!)
   (import
@@ -48,6 +49,22 @@
                        (f n (car p) (cdr p)))
              a))
          n* a*))))
+
+  (define rib-map
+    (lambda (f rib)
+      (assert (procedure? f))
+      (assert (rib? rib))
+      (let-values ([(n* a*) (hashtable-entries rib)])
+        (fold-left
+          (lambda (x* n a)
+            (fold-left
+              (lambda (x* p)
+                (cons (f n (car p) (cdr p))
+                      x*))
+              x* a))
+          '()
+          (vector->list n*)
+          (vector->list a*)))))
 
   (define rib-set!
     (lambda (r n m l/p)

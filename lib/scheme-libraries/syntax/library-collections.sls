@@ -79,6 +79,7 @@
                                       (cons lib (library-collection-list coll))))))
 
   (define library-list
-    (reverse (library-collection-list (current-library-collection))))
+    (lambda ()
+      (reverse (library-collection-list (current-library-collection)))))
 
   )
