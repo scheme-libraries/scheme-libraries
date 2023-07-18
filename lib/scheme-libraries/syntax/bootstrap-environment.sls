@@ -5,7 +5,8 @@
 (library (scheme-libraries syntax bootstrap-environment)
   (export
     bootstrap-environment
-    bootstrap-library-collection)
+    bootstrap-library-collection
+    empty-library-collection)
   (import
     (rnrs)
     ;; DEBUG
@@ -668,6 +669,10 @@
   (define make-system-library
     (lambda ()
       (make-library '($system) '() (environment-rib (system-environment)) '#() #f)))
+
+  (define empty-library-collection
+    (lambda ()
+      (make-library-collection)))
 
   ;; Syntax
 
