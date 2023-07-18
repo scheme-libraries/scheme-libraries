@@ -6,7 +6,13 @@
   (export
     bootstrap-environment
     bootstrap-library-collection
-    library-collection)
+    library-collection
+    label->datum
+    datum->label
+    label/props->datum
+    datum->label/props
+    library-collection->datum
+    datum->library-collection)
   (import
     (rnrs)
     ;; DEBUG
@@ -17,6 +23,8 @@
     (scheme-libraries match)
     (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
+    (scheme-libraries gensyms)
+    (scheme-libraries hashtables)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
@@ -27,15 +35,20 @@
     (scheme-libraries syntax variables)
     (scheme-libraries syntax variable-transformers)
     (scheme-libraries syntax $environments)
+    (scheme-libraries syntax $marks)
     (scheme-libraries syntax $metalevels)
     (scheme-libraries syntax $labels)
+    (scheme-libraries syntax $ribs)
     (scheme-libraries thread-parameters))
 
   (define-syntax declare-syntax
     (lambda (stx)
       (syntax-case stx ()
           [(_ name bdg)
-           #`(let ([l/p (make-label/props (make-label bdg (metalevel:syntax) 'name))])
+           #`(let* ([lbl (make-label bdg (metalevel:syntax) 'name)]
+                    [l/p (make-label/props lbl)])
+               (hashtable-set! label->symbol-table lbl 'name)
+               (hashtable-set! symbol->label-table 'name lbl)
                (environment-set! (system-environment) 'name l/p))])))
 
   (define-syntax declare-expander-syntax
@@ -62,6 +75,43 @@
     (syntax-rules ()
       [(declare-expander-syntax name arity)
        (declare-syntax name (make-prim-binding 'name arity))]))
+
+  ;; Conversions
+
+  (define label->symbol-table
+    (make-eq-hashtable))
+
+  (define symbol->label-table
+    (make-eq-hashtable))
+
+  (define label->datum
+    (lambda (lbl)
+      (assert (label? lbl))
+      (hashtable-intern! label->symbol-table
+                         lbl
+                         (lambda ()
+                           (gensym "l")))))
+
+  (define datum->label
+    (lambda (s)
+      (assert (symbol? s))
+      (hashtable-intern! symbol->label-table
+                         s
+                         (lambda ()
+                           (make-label #f (metalevel:syntax) #f)))))
+
+  (define label/props->datum
+    (lambda (l/p)
+      (assert (label/props? l/p))
+      (cons (label->datum (label/props-label l/p))
+            (map label->datum (label/props-props l/p)))))
+
+  (define datum->label/props
+    (lambda (ls)
+      (assert (and (pair? ls)
+                   (list? (cdr ls))))
+      (make-label/props (datum->label (car ls))
+                        (map datum->label (cdr ls)))))
 
   ;; Helpers
 
@@ -679,6 +729,58 @@
               (library-set! (library-name lib) lib))
             lib*)
           lc))))
+
+  ;; Library collection serializing
+
+  (define library-collection->datum
+    (lambda (lc)
+      (parameterize ([current-library-collection lc])
+        (map library->datum (library-list)))))
+
+  (define library->datum
+    (lambda (lib)
+      (list (library-name lib)
+            (library-version lib)
+            (exports->datum (library-exports lib))
+            (vector)                    ;invoke reqs
+            #f                          ;invoker
+            )))
+
+  (define exports->datum
+    (lambda (exports)
+      (rib-map
+       (lambda (n m l/p)
+         (list n (map mark->datum m) (label/props->datum l/p)))
+       exports)))
+
+  (define datum->library-collection
+    (lambda (rep)
+      (assert (list? rep))
+      (parameterize ([current-library-collection (make-library-collection)])
+        (for-each
+          (lambda (rep)
+            (define lib (datum->library rep))
+            (library-set! (library-name lib) lib))
+          rep)
+        (current-library-collection))))
+
+  (define datum->library
+    (lambda (obj)
+      (match obj
+        [(,name ,ver ,exp* ,invreqs ,invoker)
+         (make-library name ver (datum->exports exp*) invreqs invoker)])))
+
+  (define datum->exports
+    (lambda (obj)
+      (assert (list? obj))
+      (let ([rib (make-rib)])
+        (for-each
+          (lambda (obj)
+            (match obj
+              [(,n (,m* ...) ,l/p)
+               (rib-set! rib n (map datum->mark m*) (datum->label/props l/p))]))
+          obj)
+        rib)))
 
   ;; Syntax
 

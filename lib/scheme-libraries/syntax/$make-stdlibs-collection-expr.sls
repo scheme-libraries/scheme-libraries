@@ -21,9 +21,6 @@
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax library-loaders)
     (scheme-libraries syntax library-collections)
-    (scheme-libraries syntax $marks)
-    (scheme-libraries syntax $labels)
-    (scheme-libraries syntax $ribs)
     )
 
   (define-record-type stdlib
@@ -47,9 +44,11 @@
              [else
               (assertion-violation who "library not found" name)]))
           stdlib*)
-        (let ([lib* (library-list)])
-          (define lib-expr* (map make-library-expr lib*))
-          #`(library-collection #,@lib-expr*)
+        #`(datum->library-collection
+           #,(syntax-quote (library-collection->datum (current-library-collection))))
+
+
+
 
 
 
@@ -63,30 +62,8 @@
           ;; -> no, this is not what r6rs says.  but it could still work for stdlibs... ?
           ;; -> each library knows which have to be inven
 
-          ))))
+          )))
 
-  (define make-library-expr
-    (lambda (lib)
-      ;; TODO
-      #`(make-library #,(syntax-quote (library-name lib))
-                      #,(syntax-quote (library-version lib))
-                      #,(make-export-expr (library-exports lib))
-                      '#()              ;invoke reqs
-                      #f                ;invoker
-                      )))
 
-  ;; we need to serialize marks!
-
-  (define make-export-expr
-    (lambda (exports)
-      #`(let ([rib (make-rib)])
-          #,@(rib-map
-              (lambda (n m l/p)
-                #`(rib-set! rib
-                            #,(syntax-quote name)
-                            (datum->mark #,(syntax-quote (mark->datum m)))
-                            (datum->label/props #,(syntax-quote (label/props->datum l/p)))))
-              exports)
-          rib)))
 
   )
