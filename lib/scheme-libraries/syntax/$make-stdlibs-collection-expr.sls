@@ -17,6 +17,7 @@
     (rnrs)
     (scheme-libraries define-who)
     (scheme-libraries parameters)
+    (scheme-libraries syntax bootstrap-environment)
     (scheme-libraries syntax import-specs)
     (scheme-libraries syntax library-loaders)
     (scheme-libraries syntax library-collections))
