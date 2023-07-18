@@ -7,6 +7,7 @@
     construct-name
     ellipsis?
     symbolic-identifier=?
+    syntax-quote
     constant?)
   (import
     (rnrs)
@@ -50,5 +51,9 @@
           (char? x)
           (number? x)
           (string? x))))
+
+  (define syntax-quote
+    (lambda (x)
+      #`'#,(datum->syntax #'* x)))
 
   )

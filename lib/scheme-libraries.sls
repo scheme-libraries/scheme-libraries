@@ -15,6 +15,7 @@
     parameterize
     symbolic-identifier=?
     constant?
+    syntax-quote
     with-implicit
 
     ;; (scheme-libraries atoms)
@@ -78,6 +79,9 @@
     graph-add-interference!
     graph-add-move!
     color-graph!
+
+    ;; (scheme-libraries hashtables)
+    hashtable-intern!
 
     ;; (scheme-libraries heaps)
     make-heap
@@ -270,6 +274,7 @@
     (scheme-libraries format-conditions)
     (scheme-libraries gensyms)
     (scheme-libraries graph-coloring)
+    (scheme-libraries hashtables)
     (scheme-libraries heaps)
     (scheme-libraries helpers)
     (scheme-libraries impure)

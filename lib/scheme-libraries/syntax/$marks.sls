@@ -10,10 +10,13 @@
     mark=?
     marks=?
     anti-mark
-    anti-mark?)
+    anti-mark?
+    mark->datum
+    datum->mark)
   (import
     (rnrs)
-    (scheme-libraries counters)
+    (scheme-libraries gensyms)
+    (scheme-libraries hashtables)
     (scheme-libraries define-values)
     (scheme-libraries define-who)
     (scheme-libraries record-writer))
@@ -76,9 +79,29 @@
         (assertion-violation who "invalid mark argument" m))
       (mark=? m (anti-mark))))
 
-  ;; Record writers
+  ;; Serializers
 
-  (define-values (mark-counter! mark-count) (make-counter))
+  (define/who mark->datum
+    (let ([ht (make-eq-hashtable)])
+      (hashtable-set! ht (anti-mark) 'anti)
+      (lambda (m)
+        (assert (mark? m))
+        (intern! ht
+                 m
+                 (lambda ()
+                   (gensym "m"))))))
+
+  (define/who datum->mark
+    (let ([ht (make-eq-hashtable)])
+      (hashtable-set! ht 'anti (anti-mark))
+      (lambda (s)
+        (assert (symbol? s))
+        (intern! ht
+                 s
+                 (lambda ()
+                   (make-mark))))))
+
+  ;; Record writers
 
   (record-writer (record-type-descriptor mark)
     (lambda (r p wr)
@@ -90,11 +113,8 @@
        [(number? name)
         (put-string p (number->string name))]
        [(not name)
-        (let ([name (mark-counter!)])
+        (let ([name (mark->datum r)])
           (mark-name-set! r name)
           (put-string p (number->string name)))]
        [else (assert #f)])
-      (put-string p ">")))
-
-
-  )
+      (put-string p ">"))))

@@ -6,7 +6,7 @@
   (export
     bootstrap-environment
     bootstrap-library-collection
-    empty-library-collection)
+    library-collection)
   (import
     (rnrs)
     ;; DEBUG
@@ -670,9 +670,15 @@
     (lambda ()
       (make-library '($system) '() (environment-rib (system-environment)) '#() #f)))
 
-  (define empty-library-collection
-    (lambda ()
-      (make-library-collection)))
+  (define library-collection
+    (lambda lib*
+      (let ([lc (make-library-collection)])
+        (parameterize ([current-library-collection lc])
+          (for-each
+            (lambda (lib)
+              (library-set! (library-name lib) lib))
+            lib*)
+          lc))))
 
   ;; Syntax
 
