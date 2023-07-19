@@ -61,18 +61,35 @@
 
   (define-record-type library
     (nongenerative library-a6116c91-15b0-4c42-8b87-547f2be2bd18)
-    (fields name version exports invoke-requirements (mutable invoker))
+    (fields
+      ;; The library name as a list of symbols.
+      name
+      ;; The version as a list of nonnegative exact numbers.
+      version
+      ;; The exported identifiers as a rib.
+      exports
+      ;; The visit requirements as a vector of libraries.
+      visit-requirements
+      ;; The invoke requirements as a vector of libraries.
+      invoke-requirements
+      ;; The visit procedure of #t if visiting or #f if visited.
+      (mutable visiter)
+      ;; The invoke procedure or #t if invoking or #f if invoked.
+      (mutable invoker))
     (protocol
       (lambda (new)
         (define who 'make-library)
-        (lambda (name ver exports invreqs invoker)
+        (lambda (name ver exports visreqs invreqs visiter invoker)
           (assert (library-name? name))
           (assert (library-version? ver))
           (assert (rib? exports))
+          (assert (and (vector? visreqs)
+                       (for-all library? (vector->list visreqs))))
           (assert (and (vector? invreqs)
                        (for-all library? (vector->list invreqs))))
+          (assert (or (not visiter) (procedure? visiter)))
           (assert (or (not invoker) (procedure? invoker)))
-          (new name ver exports invreqs invoker)))))
+          (new name ver exports visreqs invreqs visiter invoker)))))
 
   ;; Library names
 

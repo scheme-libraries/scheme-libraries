@@ -16,7 +16,7 @@
   (import
     (rnrs)
     ;; DEBUG
-    (only (chezscheme) pretty-print)
+    (only (chezscheme) pretty-print trace-define)
 
     (scheme-libraries define-who)
     (scheme-libraries helpers)
@@ -718,7 +718,21 @@
 
   (define make-system-library
     (lambda ()
-      (make-library '($system) '() (environment-rib (system-environment)) '#() #f)))
+      (make-library
+       ;; Name
+       '($system)
+       ;; Version
+       '()
+       ;; Exports
+       (environment-rib (system-environment))
+       ;; Visit requirements
+       '#()
+       ;; Invoke requirements
+       '#()
+       ;; Visiter
+       #f
+       ;; Invoker
+       #f)))
 
   (define library-collection
     (lambda lib*
@@ -737,13 +751,17 @@
       (parameterize ([current-library-collection lc])
         (map library->datum (library-list)))))
 
-  (define library->datum
+  (trace-define library->datum
+    ;; Problem: The invoke requirements are libraries. Should be numbers...
+
     (lambda (lib)
       (list (library-name lib)
             (library-version lib)
             (exports->datum (library-exports lib))
+            (vector)                    ;visit reqs
             (vector)                    ;invoke reqs
-            #f                          ;invoker
+            #f                          ;visiter (should be code)
+            #f                          ;invoker (should be code)
             )))
 
   (define exports->datum
@@ -766,9 +784,24 @@
 
   (define datum->library
     (lambda (obj)
+      ;; XXX: We need to compile code a this stage.
       (match obj
-        [(,name ,ver ,exp* ,invreqs ,invoker)
-         (make-library name ver (datum->exports exp*) invreqs invoker)])))
+        [(,name ,ver ,exp* ,visreqs ,invreqs ,visiter ,invoker)
+         (make-library
+          ;; Name
+          name
+          ;; Version
+          ver
+          ;; Export
+          (datum->exports exp*)
+          ;; Visit requirements
+          visreqs
+          ;; Invoke requirements
+          invreqs
+          ;; Visiter
+          #f                            ;FIXME
+          ;; Invoker
+          invoker)])))
 
   (define datum->exports
     (lambda (obj)
