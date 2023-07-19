@@ -8,6 +8,6 @@
     (lambda (x)
       (id #'y)))
 
-  (define y 12)
+  (define y (id 12))
 
   )

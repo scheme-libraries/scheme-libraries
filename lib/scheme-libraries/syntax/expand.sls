@@ -302,11 +302,21 @@
                     (export-spec-export! exp exports ribs))
                   exp*)
                 (values
-                  (make-library name
-                                ver
-                                exports
-                                (collected-invoke-requirements)
-                                (build-invoker def* setters vars locs))
+                  (make-library
+                   ;; Name
+                   name
+                   ;; Version
+                   ver
+                   ;; Exports
+                   exports
+                   ;; Visit requirements
+                   (collected-visit-requirements)
+                   ;; Invoke requirements
+                   (collected-invoke-requirements)
+                   ;; Visiter
+                   #f                   ;FIXME
+                   ;; Invoker
+                   (build-invoker def* setters vars locs))
                   lbl*)))))))
 
     (define build-variable-setters
