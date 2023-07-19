@@ -784,7 +784,8 @@
 
   (define datum->library
     (lambda (obj)
-      ;; XXX: We need to compile code a this stage.
+      ;; XXX: We need to compile code a this stage.  We need to
+      ;; handle system code (e.g. syntax code) differently. Or provide it somewhere else.
       (match obj
         [(,name ,ver ,exp* ,visreqs ,invreqs ,visiter ,invoker)
          (make-library

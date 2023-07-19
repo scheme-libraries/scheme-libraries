@@ -335,7 +335,7 @@
         (compile-to-thunk
          (build
            (letrec (,(map (lambda (var loc)
-                            `[,var ,loc])
+                            `[,var ',loc])
                           (vector->list vars)
                           (vector->list vals))
                     ...
