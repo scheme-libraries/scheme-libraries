@@ -28,7 +28,6 @@
     require-for-runtime!
     require-for-expand!
     current-runtime-globals
-    current-wpo?
     collected-visit-requirements
     collected-invoke-requirements)
   (import
@@ -190,20 +189,18 @@
   (define-syntax/who with-requirements-collector
     (lambda (stx)
       (syntax-case stx ()
-        [(_ e b1 ... b2)
-         #'(parameterize ([current-requirements-collector (make-requirements-collector e)])
+        [(_ b1 ... b2)
+         #'(parameterize ([current-requirements-collector (make-requirements-collector)])
              b1 ... b2)]
         [_ (syntax-violation who "invalid syntax" stx)])))
 
   (define-record-type requirements-collector
     (nongenerative requirements-collector-331810a0-1fb7-48de-a422-aaf88b667810)
-    (fields wpo? invokes visits runtime-globals expand-globals)
+    (fields invokes visits runtime-globals expand-globals)
     (protocol
       (lambda (new)
-        (lambda (wpo?)
-          (assert (boolean? wpo?))
-          (new wpo?
-               (make-eq-hashtable)
+        (lambda ()
+          (new (make-eq-hashtable)
                (make-eq-hashtable)
                (make-eq-hashtable)
                (make-eq-hashtable))))))
@@ -252,14 +249,6 @@
     (lambda ()
       (let-values ([(vars globals) (hashtable-entries (current-runtime-requirements))])
         (values vars (vector-map global-library globals) (vector-map global-location globals)))))
-
-  (define current-wpo?
-    (lambda ()
-      (cond
-       [(current-requirements-collector)
-        => (lambda (rc)
-             (requirements-collector-wpo? rc))]
-       [else #f])))
 
   (define collected-visit-requirements
     (lambda ()

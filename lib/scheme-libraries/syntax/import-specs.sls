@@ -83,19 +83,19 @@
 
   (define maybe-import-library!
     (lambda (lib-ref)
+      (define who 'import-library!)
       (let-values ([(name pred?) (parse-library-reference lib-ref)])
-        (let ([lib (library-ref name #f)])
-          (or lib
-              (begin
-                (when (library-pending? name)
-                  (syntax-error #f "circular import of library" #f lib-ref))
-                (library-pending! name #t)
-                (let ([lib (load-library name pred?)])
-                  (library-set! name (or lib #t))
-                  (when (and lib (not (pred? (library-version lib))))
-                    (syntax-error #f "library ~a version mismatch" #f lib-ref))
-                  (library-pending! name #f)
-                  lib)))))))
+        (or (library-ref name #f)
+            (begin
+              (when (library-pending? name)
+                (syntax-error #f "circular import of library" #f lib-ref))
+              (library-pending! name #t)
+              (let ([lib (load-library name pred?)])
+                (library-set! name (or lib #t))
+                (when (and lib (not (pred? (library-version lib))))
+                  (syntax-error #f "library ~a version mismatch" #f lib-ref))
+                (library-pending! name #f)
+                lib))))))
 
   ;; Parsers
 
