@@ -330,6 +330,7 @@
           (lambda (def* lbl)
             (let ([bdg (label->binding lbl)])
               (if (variable-binding? bdg)
+                  ;; TODO: We should wait for a global-variable-binding here!
                   (cons (build (set-box! ',(variable-binding-location bdg) ,(variable-binding-symbol bdg)))
                         def*)
                   def*)))
