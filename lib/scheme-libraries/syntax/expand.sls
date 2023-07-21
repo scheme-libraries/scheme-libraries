@@ -290,9 +290,9 @@
               (import-spec-import! imp rib))
             imp*)
           (with-requirements-collector
-            (let-values ([(def* e lbl*)
-                          (expand-internal body* ribs (expansion-mode library))]
-                         [(vars libs locs) (current-runtime-globals)])
+            (let*-values ([(def* e lbl*)
+                           (expand-internal body* ribs (expansion-mode library))]
+                          [(vars libs locs) (current-runtime-globals)])
               (assert (not e))
               (let ([exports (make-rib)]
                     [setters (build-variable-setters lbl*)])
@@ -312,10 +312,16 @@
                    (collected-visit-requirements)
                    ;; Invoke requirements
                    (collected-invoke-requirements)
+                   ;; Visit commands
+                   '()                  ;FIXME
+                   ;; Invoke definitions
+                   def*
                    ;; Visiter
                    #f                   ;FIXME
                    ;; Invoker
-                   (build-invoker def* setters vars locs))
+                   (build-invoker def* setters vars locs)
+                   ;; Bindings
+                   lbl*)
                   lbl*)))))))
 
     (define build-variable-setters
