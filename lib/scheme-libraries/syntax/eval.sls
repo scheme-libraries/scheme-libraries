@@ -32,7 +32,7 @@
         (assertion-violation who "invalid expression argument" expr))
       (unless (environment? env)
         (assertion-violation who "invalid environment argument" env))
-      (with-requirements-collector #f
+      (with-requirements-collector
         (let ([e (expand-expression (annotated-datum->syntax-object expr env))])
           (vector-for-each library-invoke! (collected-invoke-requirements))
           (let-values ([(vars libs locs) (current-runtime-globals)])

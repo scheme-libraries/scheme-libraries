@@ -289,7 +289,7 @@
             (lambda (imp)
               (import-spec-import! imp rib))
             imp*)
-          (with-requirements-collector #f ;FIXME
+          (with-requirements-collector
             (let-values ([(def* e lbl*)
                           (expand-internal body* ribs (expansion-mode library))]
                          [(vars libs locs) (current-runtime-globals)])
