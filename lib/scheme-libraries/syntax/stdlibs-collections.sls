@@ -12,18 +12,25 @@
     (scheme-libraries syntax $parsers)
     (scheme-libraries syntax syntax-match))
 
-  ;; need include path... need expand-time library locator.
-  ;; how do we find it?  from default library-locator... we have to set it during load time...?
-  ;;
+  ;; A library in a stdlibs collection is identified by its name,
+  ;; which is also used by the library locator to retrieve its source
+  ;; code.
+
+  ;; A library is *visible* if it can later be imported from the
+  ;; library collection by its name.
+
+  ;; All system libraries are compiled together and are later invoked
+  ;; together.  A library, on which a system library depends must also
+  ;; be a system library.  It is an error if this is not fulfilled.
+
   #;
   (standard-library-collection
-   library-locator
-   ((rnrs) #f #f)
-   ((...) #f #t)
-   ((...) ...)
-   (<lib> <system?> <visible?>)
-
-   ...)
+    library-locator
+    ((rnrs) #f #f)
+    ((...) #f #t)
+    ((...) ...)
+    (<lib> <system?> <visible?>)
+    ...)
 
   ;; Helpers
 

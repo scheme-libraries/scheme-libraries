@@ -728,10 +728,16 @@
        '#()
        ;; Invoke requirements
        '#()
+       ;; Visit code
+       '()
+       ;; Invoke code
+       '()
        ;; Visiter
        #f
        ;; Invoker
-       #f)))
+       #f
+       ;; Bindings
+       '())))
 
   (define library-collection
     (lambda lib*
@@ -748,60 +754,91 @@
   (define library-collection->datum
     (lambda (lc)
       (parameterize ([current-library-collection lc])
-        (map library->datum (library-list)))))
+        (define lib* (library-list))
+        (define library->index
+          (let ([ht (make-eq-hashtable)])
+            (do ([i 0 (fx+ i 1)]
+                 [lib* lib* (cdr lib*)])
+                ((null? lib*)
+                 (lambda (idx)
+                   (assert (hashtable-ref ht idx #f))))
+              (hashtable-set! ht (car lib*) i))))
+        (map (lambda (lib)
+               (library->datum library->index lib))
+             lib*))))
 
   (trace-define library->datum
-    ;; Problem: The invoke requirements are libraries. Should be numbers...
-
-    (lambda (lib)
+    (lambda (library->index lib)
+      (define definition->datum
+        (lambda (def)
+          `(,(definition-var def) ,(definition-expr def))))
       (list (library-name lib)
             (library-version lib)
             (exports->datum (library-exports lib))
-            (vector)                    ;visit reqs
-            (vector)                    ;invoke reqs
-            #f                          ;visiter (should be code)
-            #f                          ;invoker (should be code)
+            (vector-map library->index (library-visit-requirements lib))
+            (vector-map library->index (library-invoke-requirements lib))
+            (library-visit-commands lib) ;FIXME: unlink
+            (map definition->datum (library-invoke-definitions lib)) ;FIXME: unlink
+            '()                         ;FIXME: bindings
             )))
 
   (define exports->datum
     (lambda (exports)
       (rib-map
        (lambda (n m l/p)
-         (list n (map mark->datum m) (label/props->datum l/p)))
+         (assert (null? m))
+         (cons n (label/props->datum l/p)))
        exports)))
 
   (define datum->library-collection
     (lambda (rep)
+      (define library-table (make-eqv-hashtable))
+      (define index->library
+        (lambda (idx)
+          (assert (hashtable-ref library-table idx #f))))
       (assert (list? rep))
       (parameterize ([current-library-collection (make-library-collection)])
-        (for-each
-          (lambda (rep)
-            (define lib (datum->library rep))
-            (library-set! (library-name lib) lib))
-          rep)
+        (do ([i 0 (fx+ i 1)]
+             [lib* rep (cdr lib*)])
+            ((null? lib*))
+          (let ([lib (datum->library index->library (car lib*))])
+            (hashtable-set! library-table i lib)
+            (library-set! (library-name lib) lib)))
         (current-library-collection))))
 
   (define datum->library
-    (lambda (obj)
-      ;; XXX: We need to compile code a this stage.  We need to
-      ;; handle system code (e.g. syntax code) differently. Or provide it somewhere else.
+    (lambda (index->library obj)
+      (define datum->definition
+        (lambda (e)
+          (match e
+            [(,var ,expr) (make-definition var expr)])))
       (match obj
-        [(,name ,ver ,exp* ,visreqs ,invreqs ,visiter ,invoker)
-         (make-library
-          ;; Name
-          name
-          ;; Version
-          ver
-          ;; Export
-          (datum->exports exp*)
-          ;; Visit requirements
-          visreqs
-          ;; Invoke requirements
-          invreqs
-          ;; Visiter
-          #f                            ;FIXME
-          ;; Invoker
-          invoker)])))
+        [(,name ,ver ,exp* ,visreqs ,invreqs ,viscode ,invcode ,bdg*)
+         (let ([lib
+                (make-library
+                 ;; Name
+                 name
+                 ;; Version
+                 ver
+                 ;; Export
+                 (datum->exports exp*)
+                 ;; Visit requirements
+                 (vector-map index->library visreqs)
+                 ;; Invoke requirements
+                 (vector-map index->library invreqs)
+                 ;; Visit commands
+                 viscode                       ;FIXME: link
+                 ;; Invoke definitions
+                 (map datum->definition invcode) ;FIXME: link
+                 ;; Visiter
+                 #f
+                 ;; Invoker
+                 #f
+                 ;; Bindings
+                 '()                    ;FIXME
+                 )])
+           ;; FIXME: set visiter & invoker! (use lib)
+           lib)])))
 
   (define datum->exports
     (lambda (obj)
@@ -810,8 +847,8 @@
         (for-each
           (lambda (obj)
             (match obj
-              [(,n (,m* ...) ,l/p)
-               (rib-set! rib n (map datum->mark m*) (datum->label/props l/p))]))
+              [(,n . ,l/p)
+               (rib-set! rib n '() (datum->label/props l/p))]))
           obj)
         rib)))
 

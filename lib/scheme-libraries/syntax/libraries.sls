@@ -13,6 +13,10 @@
     library-name
     library-version
     library-exports
+    library-visit-requirements
+    library-invoke-requirements
+    library-visit-commands
+    library-invoke-definitions
     library-name=?
     library-visit!
     library-invoke!
@@ -37,8 +41,10 @@
     (scheme-libraries define-who)
     (scheme-libraries numbers)
     (scheme-libraries parameters)
+    (scheme-libraries record-writer)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax $ribs)
+    (scheme-libraries syntax $labels)
     (scheme-libraries syntax variables))
 
   ;; Definitions
@@ -72,14 +78,20 @@
       visit-requirements
       ;; The invoke requirements as a vector of libraries.
       invoke-requirements
+      ;; Commands for visit code as a list of expressions
+      visit-commands
+      ;; Definitions for invoke code as a list of definitions as above
+      invoke-definitions
       ;; The visit procedure of #t if visiting or #f if visited.
       (mutable visiter)
       ;; The invoke procedure or #t if invoking or #f if invoked.
-      (mutable invoker))
+      (mutable invoker)
+      ;; Bindings
+      bindings)
     (protocol
       (lambda (new)
         (define who 'make-library)
-        (lambda (name ver exports visreqs invreqs visiter invoker)
+        (lambda (name ver exports visreqs invreqs viscode invcode visiter invoker bdg*)
           (assert (library-name? name))
           (assert (library-version? ver))
           (assert (rib? exports))
@@ -87,9 +99,15 @@
                        (for-all library? (vector->list visreqs))))
           (assert (and (vector? invreqs)
                        (for-all library? (vector->list invreqs))))
+          (assert (and (list? viscode)
+                       (for-all expression? viscode)))
+          (assert (and (list? invcode)
+                       (for-all definition? invcode)))
           (assert (or (not visiter) (procedure? visiter)))
           (assert (or (not invoker) (procedure? invoker)))
-          (new name ver exports visreqs invreqs visiter invoker)))))
+          (assert (and (list? bdg*)
+                       (for-all label? bdg*)))
+          (new name ver exports visreqs invreqs viscode invcode visiter invoker bdg*)))))
 
   ;; Library names
 
@@ -257,5 +275,17 @@
   (define collected-invoke-requirements
     (lambda ()
       (hashtable-keys (current-invoke-requirements))))
+
+  ;; Record writers
+
+  (record-writer (record-type-descriptor library)
+    (lambda (r p wr)
+      (define name (library-name r))
+      (define ver (library-version r))
+      (put-string p "#<library ")
+      (wr (if (null? ver) name (append name (list ver))) p)
+      (put-string p ">")))
+
+
 
   )
