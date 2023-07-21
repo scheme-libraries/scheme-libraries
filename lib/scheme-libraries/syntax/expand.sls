@@ -83,13 +83,16 @@
            [(prim-binding? t)
             (expand-primop t x)]
            [(variable-binding? t)
-            (build ,(variable-binding-symbol t))]
-           [(global-variable-binding? t)
-            (let ([var (global-variable-binding-symbol t)])
-              (require-for-runtime! (global-variable-binding-library t)
-                                    var
-                                    (global-variable-binding-location t))
-              (build ,var))]
+            (cond
+             [(variable-binding-library t)
+              => (lambda (lib)
+                   (let ([var (variable-binding-symbol t)])
+                     (require-for-runtime! lib
+                                           var
+                                           (variable-binding-location t))
+                     (build ,var)))]
+             [else
+              (build ,(variable-binding-symbol t))])]
            [else
             (display x) (newline)
             (syntax-error #f "invalid syntax in expression context" x)])))))
@@ -255,8 +258,7 @@
            => (lambda (lbl)
                 (let ([bdg (label->binding lbl)])
                   (cond
-                   [(or (variable-binding? bdg)
-                        (global-variable-binding? bdg))
+                   [(or (variable-binding? bdg))
                     (values x bdg)]
                    [(or (keyword-binding? bdg)
                         (global-keyword-binding? bdg))
@@ -330,7 +332,6 @@
           (lambda (def* lbl)
             (let ([bdg (label->binding lbl)])
               (if (variable-binding? bdg)
-                  ;; TODO: We should wait for a global-variable-binding here!
                   (cons (build (set-box! ',(variable-binding-location bdg) ,(variable-binding-symbol bdg)))
                         def*)
                   def*)))
