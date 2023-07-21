@@ -772,6 +772,17 @@
       (define definition->datum
         (lambda (def)
           `(,(definition-var def) ,(definition-expr def))))
+      (define binding->datum
+        (lambda (lbl)
+          (define bdg (label-binding lbl))
+          (cond
+           [(global-variable-binding? bdg)
+            `(,(label->datum lbl) variable)]
+           [(global-keyword-binding? bdg)
+            ;; XXX: Do we have to save more?
+            `(,(label->datum lbl) keyword)]
+           [else
+            (assert #f)])))
       (list (library-name lib)
             (library-version lib)
             (exports->datum (library-exports lib))
@@ -779,7 +790,7 @@
             (vector-map library->index (library-invoke-requirements lib))
             (library-visit-commands lib) ;FIXME: unlink
             (map definition->datum (library-invoke-definitions lib)) ;FIXME: unlink
-            '()                         ;FIXME: bindings
+            (map binding->datum (library-bindings lib))      ;FIXME
             )))
 
   (define exports->datum
@@ -804,6 +815,7 @@
           (let ([lib (datum->library index->library (car lib*))])
             (hashtable-set! library-table i lib)
             (library-set! (library-name lib) lib)))
+        ;; XXX: bind any globals after loading?
         (current-library-collection))))
 
   (define datum->library
@@ -812,6 +824,15 @@
         (lambda (e)
           (match e
             [(,var ,expr) (make-definition var expr)])))
+      (define datum->binding
+        (lambda (e)
+          (match e
+            [(,lbl variable)
+             (let ([lbl (datum->label lbl)])
+               ;; XXX: TODO: We have to fix the labels once we know the lib!
+               (label-binding-set! lbl (make-global-variable-bindinge LIB SYM LOC)))])))
+      ;; XXX: The library needs to know its runtime globals (for the later invoker).
+      ;; This should just be a list of labels!
       (match obj
         [(,name ,ver ,exp* ,visreqs ,invreqs ,viscode ,invcode ,bdg*)
          (let ([lib
@@ -835,8 +856,7 @@
                  ;; Invoker
                  #f
                  ;; Bindings
-                 '()                    ;FIXME
-                 )])
+                 (map datum->binding bdg*))])
            ;; FIXME: set visiter & invoker! (use lib)
            lib)])))
 

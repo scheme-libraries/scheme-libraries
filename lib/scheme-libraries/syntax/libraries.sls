@@ -17,6 +17,7 @@
     library-invoke-requirements
     library-visit-commands
     library-invoke-definitions
+    library-bindings
     library-name=?
     library-visit!
     library-invoke!

@@ -7,6 +7,7 @@
     make-label
     label?
     label=?
+    label-binding
     label-metalevel-set!
     label-bind!
     label-kill!
