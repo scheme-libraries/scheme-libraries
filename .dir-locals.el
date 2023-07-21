@@ -48,7 +48,8 @@
 	  (put 'rec 'scheme-indent-function 1)
           (put 'test-datums 'scheme-indent-function 'defun)
 	  (put 'with-implicit 'scheme-indent-function 1)
-	  (put 'with-syntax 'scheme-indent-function 1)
+	  (put 'with-requirements-collector 'scheme-indent-function 0)
+      	  (put 'with-syntax 'scheme-indent-function 1)
           (put 'syntax-match 'scheme-indent-function 1)
           (put 'syntax-error 'scheme-indent-function 'defun)
 	  (font-lock-add-keywords
@@ -88,5 +89,6 @@
 	     ("(\\(syntax-case\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(syntax-match\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(with-syntax\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(with-requirements-collector\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(with-syntax-error-context\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(test-datums\\)\\>" 1 font-lock-keyword-face))))))))

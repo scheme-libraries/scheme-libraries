@@ -24,7 +24,7 @@
     library-table-contains?
     make-requirements-collector
     requirements-collector?
-    current-requirements-collector
+    with-requirements-collector
     require-for-runtime!
     require-for-expand!
     current-runtime-globals
@@ -185,6 +185,14 @@
           (assert (library? lib))
           (assert (box? loc))
           (new lib loc)))))
+
+  (define-syntax/who with-requirements-collector
+    (lambda (stx)
+      (syntax-case stx ()
+        [(_ b1 ... b2)
+         #'(parameterize ([current-requirements-collector (make-requirements-collector)])
+             b1 ... b2)]
+        [_ (syntax-violation who "invalid syntax" stx)])))
 
   (define-record-type requirements-collector
     (nongenerative requirements-collector-331810a0-1fb7-48de-a422-aaf88b667810)
