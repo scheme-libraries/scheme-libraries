@@ -55,10 +55,7 @@
           (let ([bdg (label->binding lbl)])
             (cond
              [(variable-binding? bdg)
-              (label-binding-set! lbl
-                (make-global-variable-binding lib
-                                              (variable-binding-symbol bdg)
-                                              (variable-binding-location bdg)))]
+              (variable-binding-library-set! bdg lib)]
              [(keyword-binding? bdg)
               (label-binding-set! lbl
                 (make-global-keyword-binding lib

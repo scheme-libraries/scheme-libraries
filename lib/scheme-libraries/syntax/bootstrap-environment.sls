@@ -776,7 +776,7 @@
         (lambda (lbl)
           (define bdg (label-binding lbl))
           (cond
-           [(global-variable-binding? bdg)
+           [(variable-binding? bdg)
             `(,(label->datum lbl) variable)]
            [(global-keyword-binding? bdg)
             ;; XXX: Do we have to save more?
@@ -824,18 +824,12 @@
         (lambda (e)
           (match e
             [(,var ,expr) (make-definition var expr)])))
-      (define datum->binding
-        (lambda (e)
-          (match e
-            [(,lbl variable)
-             (let ([lbl (datum->label lbl)])
-               ;; XXX: TODO: We have to fix the labels once we know the lib!
-               (label-binding-set! lbl (make-global-variable-bindinge LIB SYM LOC)))])))
       ;; XXX: The library needs to know its runtime globals (for the later invoker).
       ;; This should just be a list of labels!
       (match obj
-        [(,name ,ver ,exp* ,visreqs ,invreqs ,viscode ,invcode ,bdg*)
-         (let ([lib
+        [(,name ,ver ,exp* ,visreqs ,invreqs ,viscode ,invcode ((,lbl* ,type) ...))
+         (let* ([lbl* (map datum->label lbl*)]
+                [lib
                 (make-library
                  ;; Name
                  name
@@ -856,8 +850,11 @@
                  ;; Invoker
                  #f
                  ;; Bindings
-                 (map datum->binding bdg*))])
-           ;; FIXME: set visiter & invoker! (use lib)
+                 lbl*)])
+           ;; FIXME: set visiter & invoker! (use lib) (using procedure on lib!
+           ;; FIXME: link labels
+           #;
+           (label-binding-set! lbl (make-global-variable-bindinge LIB SYM LOC))
            lib)])))
 
   (define datum->exports

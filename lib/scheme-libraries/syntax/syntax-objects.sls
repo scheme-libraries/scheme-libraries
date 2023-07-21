@@ -54,16 +54,18 @@
     constant-type-datum
     make-variable-binding
     variable-binding?
+    variable-binding-library
+    variable-binding-library-set!
     variable-binding-symbol
     variable-binding-location
     make-keyword-binding
     keyword-binding?
     keyword-binding-transformer
-    make-global-variable-binding
-    global-variable-binding?
-    global-variable-binding-library
-    global-variable-binding-symbol
-    global-variable-binding-location
+    ;; make-global-variable-binding
+    ;; global-variable-binding?
+    ;; global-variable-binding-library
+    ;; global-variable-binding-symbol
+    ;; global-variable-binding-location
     make-global-keyword-binding
     global-keyword-binding?
     global-keyword-binding-library
@@ -167,14 +169,14 @@
     (nongenerative variable-binding-d1b200da-754e-43ec-86bf-d03cd03c0da1)
     (parent binding)
     (sealed #t)
-    (fields symbol location)
+    (fields (mutable library) symbol location)
     (protocol
       (lambda (pargs->new)
         (define who 'make-variable-binding)
         (lambda (var)
           (unless (variable? var)
             (assertion-violation who "invalid variable argument" var))
-          ((pargs->new) var (box (void)))))))
+          ((pargs->new) #f var (box (void)))))))
 
   (define-record-type keyword-binding
     (nongenerative keyword-binding-032ff78b-c673-47cd-9140-fc52de498e1a)
@@ -190,6 +192,7 @@
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) proc)))))
 
+  #;
   (define-record-type global-variable-binding
     (nongenerative global-variable-binding-c2e5dca3-e856-4c29-ad67-009fb026936f)
     (parent binding)
