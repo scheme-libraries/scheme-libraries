@@ -48,7 +48,7 @@
 	  (put 'rec 'scheme-indent-function 1)
           (put 'test-datums 'scheme-indent-function 'defun)
 	  (put 'with-implicit 'scheme-indent-function 1)
-	  (put 'with-requirements-collector 'scheme-indent-function 0)
+	  (put 'with-requirements-collector 'scheme-indent-function 1)
       	  (put 'with-syntax 'scheme-indent-function 1)
           (put 'syntax-match 'scheme-indent-function 1)
           (put 'syntax-error 'scheme-indent-function 'defun)
