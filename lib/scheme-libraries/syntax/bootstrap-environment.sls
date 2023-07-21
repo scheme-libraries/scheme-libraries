@@ -245,9 +245,8 @@
 
   (define meta-expand
     (lambda (x)
-      (let ([mrc (make-requirements-collector)])
-        (parameterize ([current-requirements-collector mrc]
-                       [current-metalevel (fx+ (current-metalevel) 1)])
+      (with-requirements-collector
+        (parameterize ([current-metalevel (fx+ (current-metalevel) 1)])
           (let ([e (expand-expression x)])
             (let-values ([(vars libs locs)
                           (current-runtime-globals)])

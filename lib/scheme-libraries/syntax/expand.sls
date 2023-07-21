@@ -283,14 +283,13 @@
     (define expand-library
       (lambda (name ver exp* imp* body*)
         (let ([ribs (make-ribcage)]
-              [rib (make-rib)]
-              [rc (make-requirements-collector)])
+              [rib (make-rib)])
           (ribcage-add-barrier! ribs rib '(()))
           (for-each
             (lambda (imp)
               (import-spec-import! imp rib))
             imp*)
-          (parameterize ([current-requirements-collector rc])
+          (with-requirements-collector
             (let-values ([(def* e lbl*)
                           (expand-internal body* ribs (expansion-mode library))]
                          [(vars libs locs) (current-runtime-globals)])
@@ -335,14 +334,9 @@
         (compile-to-thunk
          (build
            (letrec (,(map (lambda (var loc)
-                            `[,var ',loc])
-                          (vector->list vars)
-                          (vector->list vals))
-                    ...
-                    ,(map (lambda (def)
-                            `[,(definition-var def)
-                              ,(definition-expr def)])
-                          def*)
+                             `[,var ',loc])
+                           (vector->list vars)
+                           (vector->list vals))
                     ...)
              (begin
                ,(map
@@ -350,8 +344,14 @@
                     `(set! ,var (unbox ,var)))
                   (vector->list vars))
                ...
-               ,setters ...
-               (values))))))))
+               (letrec* (,(map (lambda (def)
+                                 `[,(definition-var def)
+                                   ,(definition-expr def)])
+                               def*)
+                         ...)
+                 (begin
+                   ,setters ...
+                   (values))))))))))
 
   (define/who export-spec-export!
     (define parse-export-spec

@@ -40,14 +40,16 @@
     syntax-vector->list
     unbox
     values
+    vector-ref
     void
     (rename ($identifier? identifier?)
-            ($free-identifier=? free-identifier=?)
-            ($make-variable-transformer make-variable-transformer)
-            (syntax-object->datum syntax->datum)
-            (syntax-error syntax-violation))
+      ($free-identifier=? free-identifier=?)
+      ($make-variable-transformer make-variable-transformer)
+      (syntax-object->datum syntax->datum)
+      (syntax-error syntax-violation))
 
     ;; DEBUG
+    write
     display
     newline)
   (import
