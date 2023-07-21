@@ -777,7 +777,7 @@
           (define bdg (label-binding lbl))
           (cond
            [(variable-binding? bdg)
-            `(,(label->datum lbl) variable)]
+            `(,(label->datum lbl) variable ,(variable-binding-symbol bdg))]
            [(global-keyword-binding? bdg)
             ;; XXX: Do we have to save more?
             `(,(label->datum lbl) keyword)]
@@ -827,7 +827,7 @@
       ;; XXX: The library needs to know its runtime globals (for the later invoker).
       ;; This should just be a list of labels!
       (match obj
-        [(,name ,ver ,exp* ,visreqs ,invreqs ,viscode ,invcode ((,lbl* ,type) ...))
+        [(,name ,ver ,exp* ,visreqs ,invreqs ,viscode ,invcode ((,lbl* . ,type*) ...))
          (let* ([lbl* (map datum->label lbl*)]
                 [lib
                 (make-library
@@ -851,10 +851,21 @@
                  #f
                  ;; Bindings
                  lbl*)])
+           (for-each
+             (lambda (lbl type)
+               (match type
+                 [(variable ,sym)
+                  (let ([bdg (make-variable-binding sym)])
+                    (variable-binding-library-set! bdg lib)
+                    (label-binding-set! lbl bdg))]
+                 [(keyword)
+                  ;; TODO: Get rid of global-keyword-binding
+                  (let ([bdg (make-global-keyword-binding #f #f)])
+                    (global-keyword-binding-library-set! bdg lib)
+                    (label-binding-set! lbl bdg))]))
+             lbl* type*)
+
            ;; FIXME: set visiter & invoker! (use lib) (using procedure on lib!
-           ;; FIXME: link labels
-           #;
-           (label-binding-set! lbl (make-global-variable-bindinge LIB SYM LOC))
            lib)])))
 
   (define datum->exports

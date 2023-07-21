@@ -69,6 +69,7 @@
     make-global-keyword-binding
     global-keyword-binding?
     global-keyword-binding-library
+    global-keyword-binding-library-set!
     global-keyword-binding-transformer
     make-expander-binding
     expander-binding?
@@ -211,13 +212,13 @@
     (nongenerative global-keyword-binding-ac80d1fa-f521-48df-b1ba-5bae1823e42d)
     (parent binding)
     (sealed #t)
-    (fields library transformer)
+    (fields (mutable library) transformer)
     (protocol
       (lambda (pargs->new)
         (define who 'make-global-keyword-binding)
         (lambda (lib proc)
-          (assert (library? lib))
-          (assert (transformer? proc))
+          (assert (or (not lib) (library? lib)))
+          (assert (or (not proc) (transformer? proc)))
           ((pargs->new) lib proc)))))
 
 
