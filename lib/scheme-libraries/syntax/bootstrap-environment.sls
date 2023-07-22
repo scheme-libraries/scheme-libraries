@@ -248,14 +248,15 @@
       (with-requirements-collector
         (parameterize ([current-metalevel (fx+ (current-metalevel) 1)])
           (let ([e (expand-expression x)])
-            (let-values ([(vars libs locs)
-                          (current-runtime-globals)])
+            (let-values ([(var* lib* lbl*) (current-runtime-globals)])
+              (define loc* (vector-map variable-binding-location
+                                (vector-map label-binding lbl*)))
               (vector-for-each
-               (lambda (var lib loc)
-                 (require-for-expand! lib var loc)
+               (lambda (var lib lbl)
+                 (require-for-expand! lib var lbl)
                  (library-invoke! lib))
-               vars libs locs)
-              (values vars locs e)))))))
+               var* lib* lbl*)
+              (values var* loc* e)))))))
 
   (define execute-transformer
     (lambda (vars locs e)

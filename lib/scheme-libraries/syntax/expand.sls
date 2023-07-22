@@ -87,9 +87,7 @@
              [(variable-binding-library t)
               => (lambda (lib)
                    (let ([var (variable-binding-symbol t)])
-                     (require-for-runtime! lib
-                                           var
-                                           (variable-binding-location t))
+                     (require-for-runtime! lib var (assert (identifier->label x)))
                      (build ,var)))]
              [else
               (build ,(variable-binding-symbol t))])]
@@ -294,7 +292,10 @@
           (with-requirements-collector
             (let*-values ([(def* e lbl*)
                            (expand-internal body* ribs (expansion-mode library))]
-                          [(vars libs locs) (current-runtime-globals)])
+                          [(var* lib* ref-lbl*) (current-runtime-globals)]
+                          [(loc*)
+                           (vector-map variable-binding-location
+                                (vector-map label->binding ref-lbl*))])
               (assert (not e))
               (let ([exports (make-rib)]
                     [setters (build-variable-setters lbl*)])
@@ -321,7 +322,7 @@
                    ;; Visiter
                    #f                   ;FIXME
                    ;; Invoker
-                   (build-invoker def* setters vars locs)
+                   (build-invoker def* setters var* loc*)
                    ;; Bindings
                    lbl*)
                   lbl*)))))))

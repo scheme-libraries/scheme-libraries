@@ -15,6 +15,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax $environments)
     (scheme-libraries syntax $ribs)
+    (scheme-libraries syntax $labels)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax import-specs)
@@ -35,7 +36,9 @@
       (with-requirements-collector
         (let ([e (expand-expression (annotated-datum->syntax-object expr env))])
           (vector-for-each library-invoke! (collected-invoke-requirements))
-          (let-values ([(vars libs locs) (current-runtime-globals)])
+          (let-values ([(vars libs lbls) (current-runtime-globals)])
+            (define locs (vector-map variable-binding-location
+                                     (vector-map label-binding lbls)))
             ((compile-to-thunk
               (build
                 (letrec ,(map (lambda (var loc)
