@@ -197,13 +197,13 @@
   (define-record-type global
     (nongenerative global-97fdc653-e31c-4ef5-a444-b626a5f823aa)
     (sealed #t)
-    (fields library location)
+    (fields library label)
     (protocol
       (lambda (new)
-        (lambda (lib loc)
+        (lambda (lib lbl)
           (assert (library? lib))
-          (assert (box? loc))
-          (new lib loc)))))
+          (assert (label? lbl))
+          (new lib lbl)))))
 
   (define-syntax/who with-requirements-collector
     (lambda (stx)
@@ -249,25 +249,27 @@
       (requirements-collector-expand-globals (assert (current-requirements-collector)))))
 
   (define require-for-runtime!
-    (lambda (lib var loc)
+    (lambda (lib var lbl)
       (assert (library? lib))
       (assert (variable? var))
-      (assert (box? loc))
+      (assert (label? lbl))
       (hashtable-set! (current-invoke-requirements) lib #t)
-      (hashtable-set! (current-runtime-requirements) var (make-global lib loc))))
+      (hashtable-set! (current-runtime-requirements) var (make-global lib lbl))))
 
   (define require-for-expand!
-    (lambda (lib var loc)
+    (lambda (lib var lbl)
       (assert (library? lib))
       (assert (variable? var))
-      (assert (box? loc))
+      (assert (label? lbl))
       (hashtable-set! (current-visit-requirements) lib #t)
-      (hashtable-set! (current-expand-requirements) var (make-global lib loc))))
+      (hashtable-set! (current-expand-requirements) var (make-global lib lbl))))
 
   (define current-runtime-globals
     (lambda ()
       (let-values ([(vars globals) (hashtable-entries (current-runtime-requirements))])
-        (values vars (vector-map global-library globals) (vector-map global-location globals)))))
+        (values vars
+                (vector-map global-library globals)
+                (vector-map global-label globals)))))
 
   (define collected-visit-requirements
     (lambda ()
