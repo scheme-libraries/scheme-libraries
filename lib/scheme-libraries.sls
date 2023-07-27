@@ -214,6 +214,11 @@
     ;; (scheme-libraries union-find)
     union-find
 
+    ;; (scheme-libraries uuid)
+    random-uuid
+    uuid->string
+    uid
+
     ;; (scheme-libraries void)
     void
 
@@ -267,6 +272,7 @@
     (scheme-libraries trees)
     (scheme-libraries unicode)
     (scheme-libraries union-find)
+    (scheme-libraries uuid)
     (scheme-libraries void)
     (scheme-libraries with-implicit)
     (scheme-libraries worklists)))

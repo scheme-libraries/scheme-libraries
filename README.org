@@ -108,4 +108,6 @@ the ~(srfi :31)~ library of SRFI 31.
 
 ** Union-find
 
+** UUIDs
+
 ** The void value
