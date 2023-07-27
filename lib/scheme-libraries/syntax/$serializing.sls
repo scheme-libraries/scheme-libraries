@@ -12,9 +12,6 @@
     (scheme-libraries match)
     (scheme-libraries syntax libraries))
 
-  ;; TODO: We need to create a table of serialized libraries.  So that we can look up uids.
-
-
   (define/who library->datum
     (lambda (lib)
       (assert (library? lib))
