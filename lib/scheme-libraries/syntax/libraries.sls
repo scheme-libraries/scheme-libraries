@@ -73,6 +73,10 @@
       name
       ;; The version as a list of nonnegative exact numbers.
       version
+      ;; The library's UID
+      uid
+      ;; Imported libraries as a vector of libraries.
+      imports
       ;; The exported identifiers as a rib.
       exports
       ;; The visit requirements as a vector of libraries.
@@ -108,7 +112,7 @@
           (assert (or (not invoker) (procedure? invoker)))
           (assert (and (list? bdg*)
                        (for-all label? bdg*)))
-          (new name ver exports visreqs invreqs viscode invcode visiter invoker bdg*)))))
+          (new name ver #f exports visreqs invreqs viscode invcode visiter invoker bdg*)))))
 
   ;; Library names
 
