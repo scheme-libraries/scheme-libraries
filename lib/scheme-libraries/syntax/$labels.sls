@@ -6,6 +6,7 @@
   (export
     make-label
     label?
+    label-name
     label=?
     label-binding
     label-metalevel-set!
@@ -23,6 +24,7 @@
     (scheme-libraries define-who)
     (scheme-libraries lists)
     (scheme-libraries rec)
+    (scheme-libraries uuid)
     (scheme-libraries syntax $metalevels)
     (scheme-libraries syntax $syntax-types))
 
@@ -47,13 +49,13 @@
             [(bdg ml)
              (make bdg ml #f)]
             [(bdg ml name)
-             (let ([bdg (or bdg (make-displaced-binding))])
+             (let ([bdg (or bdg (make-displaced-binding))]
+                   [name (or name (uid 'label))])
                (unless (binding? bdg)
                  (assertion-violation who "invalid label argument" bdg))
                (unless (metalevel? ml)
                  (assertion-violation who "invalid metalevel argument" ml))
-               (unless (or (not name)
-                           (symbol? name))
+               (unless (symbol? name)
                  (assertion-violation who "invalid symbol argument" name))
                (new bdg ml name))])))))
 

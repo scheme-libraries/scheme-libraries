@@ -48,8 +48,7 @@
           [(_ name bdg)
            #`(let* ([lbl (make-label bdg (metalevel:syntax) 'name)]
                     [l/p (make-label/props lbl)])
-               (hashtable-set! label->symbol-table lbl 'name)
-               (hashtable-set! symbol->label-table 'name lbl)
+               (hashtable-set! symbol-table 'name lbl)
                (environment-set! (system-environment) 'name l/p))])))
 
   (define-syntax declare-expander-syntax
@@ -79,27 +78,20 @@
 
   ;; Conversions
 
-  (define label->symbol-table
-    (make-eq-hashtable))
-
-  (define symbol->label-table
+  (define symbol-table
     (make-eq-hashtable))
 
   (define label->datum
     (lambda (lbl)
       (assert (label? lbl))
-      (hashtable-intern! label->symbol-table
-                         lbl
-                         (lambda ()
-                           (gensym "l")))))
+      (label-name lbl)))
 
   (define datum->label
     (lambda (s)
       (assert (symbol? s))
-      (hashtable-intern! symbol->label-table
-                         s
-                         (lambda ()
-                           (make-label #f (metalevel:syntax) #f)))))
+      (or (hashtable-ref symbol-table s #f)
+          (symbol->object s (lambda ()
+                              (make-label #f (metalevel:syntax) s))))))
 
   (define label/props->datum
     (lambda (l/p)
