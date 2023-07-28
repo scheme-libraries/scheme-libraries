@@ -12,6 +12,7 @@
     library?
     library-name
     library-version
+    library-uid
     library-exports
     library-visit-requirements
     library-invoke-requirements
@@ -96,11 +97,13 @@
     (protocol
       (lambda (new)
         (define who 'make-library)
-        (lambda (name ver uid exports visreqs invreqs viscode invcode visiter invoker bdg*)
+        (lambda (name ver uid imports exports visreqs invreqs viscode invcode visiter invoker bdg*)
           (assert (library-name? name))
           (assert (library-version? ver))
           (assert (symbol? uid))
           (assert (rib? exports))
+          (assert (and (vector? imports)
+                       (for-all library? (vector->list imports))))
           (assert (and (vector? visreqs)
                        (for-all library? (vector->list visreqs))))
           (assert (and (vector? invreqs)
@@ -113,7 +116,7 @@
           (assert (or (not invoker) (procedure? invoker)))
           (assert (and (list? bdg*)
                        (for-all label? bdg*)))
-          (new name ver uid exports visreqs invreqs viscode invcode visiter invoker bdg*)))))
+          (new name ver uid imports exports visreqs invreqs viscode invcode visiter invoker bdg*)))))
 
   ;; Library names
 
