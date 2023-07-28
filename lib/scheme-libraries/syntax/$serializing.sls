@@ -15,66 +15,49 @@
   (define/who library->datum
     (lambda (lib)
       (assert (library? lib))
-      (let (uid* (list #f))
-        (define name (library-name lib))
-        (define version (library-version lib))
-        (define imp*
-          (vector->list (vector-map library->uid (vector-map library-imports lib))))
-        (define visreq*
-          (vector->list (vector-map library->uid (vector-map library-imports lib))))
-        (define invreq*
-          (vector->list (vector-map library->uid (vector-map library-imports lib))))
-        (define exp*
-          ;; serialize exports!
-          )
-        (define viscmd*
-          ;; serialize code
-          (library-visit-commands lib))
-        (define invdef*
-          (library-invoke-definitions lib))
-        (define e
-          (extend-backquote here
-            `($library (,@name ,version)
-               (uid . ,uid*)
-               (import ,imp* ...)
-               (visit-requirements ,visreq* ...)
-               (invoke-requirements ,invreq* ...)
-               (export ,exp* ...)
-               (environment ,env* ...)
-               (visit-commands ,@viscmd*)
-               (invoke-definitions ,@invdef*))))
-        (define uid (equal-hash e))
-        (cond
-         [(library-uid lib)
-          => (lambda (x)
-               (assert (eqv? x uid)))]
-         [else
-          (library-uid-set! lib e)])
-        (set-car! uid* uid)
-        e)))
+      (let ([imports (library-imports lib)])
+        (define import-table
+          (let ([ht (make-eq-hashtable)])
+            (define n (vector-length imports))
+            (do ([i 0 (+ i 1)])
+                ((= i n) ht)
+              (hashtable-set! ht (vector-ref imports i) i))))
+        (define library->index
+          (lambda (lib)
+            (assert (library? lib))
+            (assert (hashtable-ref import-table lib #f))))
+        (extend-backquote here
+          `($library (,@(library-name lib) ,(library-version lib))
+             (uid ,(library-uid lib))
+             (import ,@(vector->list
+                        (vector-map
+                         (lambda (implib)
+                           `((,@(library-name imp) ,(library-version implib))
+                             ,(library-uid implib)))
+                         (library-imports lib))))
+             (visit-requirements ,@(vector->list
+                                    (vector-map library->index (visit-requirements lib))))
+             (invoke-requirements ,@(vector->list
+                                     (vector-map library->index (invoke-requirements lib))))
+             (export ,@(rib-map
+                        (lambda (n m l/p)
+                          (assert (null? m))
+                          `(,n ,(label/props->datum l/p)))
+                        (library-exports lib)))
+             (environment ,env* ...)
+             (visit-commands ,@viscmd*)
+             (invoke-definitions ,@invdef*)
 
-  (define library->uid
-    (lambda (lib)
-      (assert (library? lib))
-      (library-serialize! lib)
-      (library-uid lib)))
 
-  ;; We don't want two library tables.
 
-  (define library-serialize!
-    (lambda (lib)
-      (assert (library? lib))
-      (unless (library-uid lib)
-        (hashtable-set! ...)
-
-        )))
+             )))))
 
   (define/who datum->library
     (lambda (e)
       (match e
         [($library (,name ... ,version)
            (uid ,uid)
-           (import ,imp*)
+           (import ,imp* ...)
            (visit-requirements ,visreq* ...)
            (invoke-requirements ,invreq* ...)
            (export ,exp* ...)
