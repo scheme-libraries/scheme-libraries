@@ -313,7 +313,9 @@
                    ver
                    ;; Uid
                    (uid (last name))
-                   ;; exports
+                   ;; Imports
+                   '#()                  ;FIXME
+                   ;; Exports
                    exports
                    ;; Visit requirements
                    (collected-visit-requirements)

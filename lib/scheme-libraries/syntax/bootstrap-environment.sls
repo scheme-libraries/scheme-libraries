@@ -25,6 +25,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries gensyms)
     (scheme-libraries hashtables)
+    (scheme-libraries uuid)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
@@ -723,6 +724,10 @@
        '($system)
        ;; Version
        '()
+       ;; Uid
+       (uid '$system)
+       ;; Imports
+       '#()
        ;; Exports
        (environment-rib (system-environment))
        ;; Visit requirements
@@ -786,6 +791,7 @@
             (assert #f)])))
       (list (library-name lib)
             (library-version lib)
+            (library-uid lib)
             (exports->datum (library-exports lib))
             (vector-map library->index (library-visit-requirements lib))
             (vector-map library->index (library-invoke-requirements lib))
@@ -828,7 +834,7 @@
       ;; XXX: The library needs to know its runtime globals (for the later invoker).
       ;; This should just be a list of labels!
       (match obj
-        [(,name ,ver ,exp* ,visreqs ,invreqs ,viscode ,invcode ((,lbl* . ,type*) ...))
+        [(,name ,ver ,uid ,exp* ,visreqs ,invreqs ,viscode ,invcode ((,lbl* . ,type*) ...))
          (let* ([lbl* (map datum->label lbl*)]
                 [lib
                 (make-library
@@ -836,6 +842,10 @@
                  name
                  ;; Version
                  ver
+                 ;; Uid
+                 uid
+                 ;; Imports
+                 '#()                    ;FIXME
                  ;; Export
                  (datum->exports exp*)
                  ;; Visit requirements
