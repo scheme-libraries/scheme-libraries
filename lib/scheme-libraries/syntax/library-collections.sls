@@ -13,6 +13,7 @@
     library-pending!
     library-list-append!
     library-list
+    object-set-symbol!
     object->symbol
     symbol->object)
   (import
@@ -87,6 +88,14 @@
   (define library-list
     (lambda ()
       (reverse (library-collection-list (current-library-collection)))))
+
+  ;; Serialization
+
+  ;; Is this used?
+  (define object-set-symbol!
+    (lambda (obj sym)
+      (hashtable-set! (library-collection-object-table (current-library-collection)) obj sym)
+      (hashtable-set! (library-collection-symbol-table (current-library-collection)) sym obj)))
 
   (define object->symbol
     (lambda (type obj)
