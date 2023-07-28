@@ -14,10 +14,12 @@
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries helpers)
+    (scheme-libraries lists)
     (scheme-libraries match)
     (scheme-libraries modules)
     (scheme-libraries numbers)
     (scheme-libraries parameters)
+    (scheme-libraries uuid)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax $environments)
     (scheme-libraries syntax $labels)
@@ -309,7 +311,9 @@
                    name
                    ;; Version
                    ver
-                   ;; Exports
+                   ;; Uid
+                   (uid (last name))
+                   ;; exports
                    exports
                    ;; Visit requirements
                    (collected-visit-requirements)
