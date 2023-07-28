@@ -9,6 +9,9 @@
 
 (test-begin "lists")
 
+(test-equal '3 (last '(1 2 3)))
+(test-equal '1 (last '(1)))
+
 (test-equal '(4 8 12)
   (filter-map (lambda (x)
                 (and (even? x) (* 2 x)))

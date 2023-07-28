@@ -4,6 +4,7 @@
 
 (library (scheme-libraries lists)
   (export
+    last
     iota
     filter-map
     make-list
@@ -15,6 +16,12 @@
     (scheme-libraries exceptions)
     (scheme-libraries numbers)
     (scheme-libraries void))
+
+  (define/who last
+    (lambda (ls)
+      (unless (pair? ls)
+        (assertion-violation who "invalid list argument" ls))
+      (car (reverse ls))))
 
   (define/who iota
     (case-lambda

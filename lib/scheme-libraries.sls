@@ -82,6 +82,7 @@
     prepend!
 
     ;; (scheme-libraries lists)
+    last
     iota
     make-list
     length+
