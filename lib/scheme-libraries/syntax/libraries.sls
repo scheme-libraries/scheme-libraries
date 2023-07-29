@@ -12,6 +12,7 @@
     library?
     library-name
     library-version
+    library-imports
     library-uid
     library-exports
     library-visit-requirements

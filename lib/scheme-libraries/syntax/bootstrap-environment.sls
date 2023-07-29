@@ -11,8 +11,7 @@
     datum->label
     label/props->datum
     datum->label/props
-    library-collection->datum
-    datum->library-collection)
+    )
   (import
     (rnrs)
     ;; DEBUG
