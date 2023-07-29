@@ -9,17 +9,14 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
-    (scheme-libraries gensyms))
+    (scheme-libraries uuid))
 
   (define/who make-variable
     (lambda (name)
       (unless (symbol? name)
         (assertion-violation "invalid name argument" name))
-      (if (gensym? name)
-          (gensym "g" ".")
-          (gensym (symbol->string name) "."))))
+      (uid name)))
 
   (define variable?
     (lambda (x)
-      (and (symbol? x)
-           (gensym? x)))))
+      (symbol? x))))

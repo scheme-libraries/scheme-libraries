@@ -21,7 +21,7 @@
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax library-loaders)
     (scheme-libraries syntax library-collections)
-    )
+    (scheme-libraries syntax $serializing))
 
   (define-record-type stdlib
     (nongenerative stdlib-78444666-3654-446f-8cb5-5d2764763191)

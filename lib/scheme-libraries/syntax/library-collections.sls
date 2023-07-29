@@ -13,9 +13,12 @@
     library-pending!
     library-list-append!
     library-list
+    uid->library
     object-set-symbol!
     object->symbol
-    symbol->object)
+    symbol->object
+    mark->datum
+    datum->mark)
   (import
     (rnrs)
     (scheme-libraries parameters)
@@ -24,6 +27,7 @@
     (scheme-libraries hashtables)
     (scheme-libraries uuid)
     (scheme-libraries syntax $environments)
+    (scheme-libraries syntax $marks)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
@@ -33,11 +37,12 @@
   (define-record-type library-collection
     (nongenerative library-collection-765810f4-88f2-47a3-9d4a-df90941f0a82)
     (sealed #t)
-    (fields libraries pending object-table symbol-table (mutable list))
+    (fields uid-table libraries pending object-table symbol-table (mutable list))
     (protocol
       (lambda (new)
         (lambda ()
-          (new (make-library-table)
+          (new (make-eq-hashtable)
+               (make-library-table)
                (make-library-table)
                (make-eq-hashtable)
                (make-eq-hashtable)
@@ -62,11 +67,24 @@
 
   (define library-set!
     (lambda (name lib)
-      (library-table-set! (current-library-table) name lib)))
+      (library-table-set! (current-library-table) name lib)
+      (hashtable-update! (library-collection-uid-table (current-library-collection))
+                         (library-uid lib)
+                         (lambda (old-val)
+                           (when old-val (assert #f))
+                           lib)
+                         #f)))
 
   (define library-ref
     (lambda (name default)
       (library-table-ref (current-library-table) name default)))
+
+  (define uid->library
+    (lambda (uid)
+      (assert (symbol? uid))
+      (assert (hashtable-ref (library-collection-uid-table (current-library-collection))
+                             uid
+                             #f))))
 
   (define library-pending?
     (lambda (name)
@@ -91,7 +109,7 @@
 
   ;; Serialization
 
-  ;; Is this used?
+  ;; XXX: Is this used?
   (define object-set-symbol!
     (lambda (obj sym)
       (hashtable-set! (library-collection-object-table (current-library-collection)) obj sym)
@@ -114,5 +132,18 @@
       (hashtable-intern! (library-collection-symbol-table (current-library-collection))
                          sym
                          fail)))
+
+  ;; Serializers
+
+  (define/who mark->datum
+    (lambda (m)
+      (assert (mark? m))
+      (assert (not (anti-mark? m)))
+      (mark-name m)))
+
+  (define/who datum->mark
+    (lambda (s)
+      (assert (symbol? s))
+      (symbol->object s (lambda () (make-mark s)))))
 
   )

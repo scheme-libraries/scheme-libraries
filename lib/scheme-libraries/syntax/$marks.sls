@@ -5,21 +5,20 @@
 (library (scheme-libraries syntax $marks)
   (export
     make-mark
+    mark-name
     mark?
     mark-list?
     mark=?
     marks=?
     anti-mark
-    anti-mark?
-    mark->datum
-    datum->mark)
+    anti-mark?)
   (import
     (rnrs)
-    (scheme-libraries gensyms)
     (scheme-libraries hashtables)
     (scheme-libraries define-values)
     (scheme-libraries define-who)
-    (scheme-libraries record-writer))
+    (scheme-libraries record-writer)
+    (scheme-libraries uuid))
 
   ;; Marks
 
@@ -31,7 +30,7 @@
       (lambda (new)
         (define who 'make-mark)
         (case-lambda
-          [() (new #f)]
+          [() (new (uid 'mark))]
           [(name)
            (unless (symbol? name)
              (assertion-violation who "not a valid name argument" name))
@@ -79,42 +78,11 @@
         (assertion-violation who "invalid mark argument" m))
       (mark=? m (anti-mark))))
 
-  ;; Serializers
-
-  (define/who mark->datum
-    (let ([ht (make-eq-hashtable)])
-      (hashtable-set! ht (anti-mark) 'anti)
-      (lambda (m)
-        (assert (mark? m))
-        (hashtable-intern! ht
-                           m
-                           (lambda ()
-                             (gensym "m"))))))
-
-  (define/who datum->mark
-    (let ([ht (make-eq-hashtable)])
-      (hashtable-set! ht 'anti (anti-mark))
-      (lambda (s)
-        (assert (symbol? s))
-        (hashtable-intern! ht
-                           s
-                           (lambda ()
-                             (make-mark))))))
-
   ;; Record writers
 
   (record-writer (record-type-descriptor mark)
     (lambda (r p wr)
       (define name (mark-name r))
       (put-string p "#<mark ")
-      (cond
-       [(symbol? name)
-        (put-string p (symbol->string name))]
-       [(number? name)
-        (put-string p (number->string name))]
-       [(not name)
-        (let ([name (mark->datum r)])
-          (mark-name-set! r name)
-          (put-string p (number->string name)))]
-       [else (assert #f)])
+      (put-string p (symbol->string name))
       (put-string p ">"))))
