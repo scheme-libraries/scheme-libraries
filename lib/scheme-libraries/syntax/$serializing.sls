@@ -83,11 +83,12 @@
              (invoke-definitions ))))))
 
   (define/who datum->library
+    ;; TODO: Check library names versus uids.
     (lambda (e)
       (match e
         [($library (,name ... ,version)
            (uid ,uid)
-           (import ,imp* ...)
+           (import ((,impname* ,impver*) ,impuid*) ...)
            (visit-requirements ,visreq* ...)
            (invoke-requirements ,invreq* ...)
            (export ,expexp* ...)
@@ -103,7 +104,7 @@
                  ;; Uid
                  uid
                  ;; Imports
-                 '#()                          ;fixme
+                 (vector-map uid->library (list->vector impuid*))
                  ;; Exports
                  (let ([rib (make-rib)])
                    (for-each
