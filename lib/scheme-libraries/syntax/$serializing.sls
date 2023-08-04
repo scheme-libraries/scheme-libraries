@@ -83,7 +83,7 @@
              (invoke-definitions ))))))
 
   (define/who datum->library
-    ;; TODO: Check library names versus uids.
+    ;; TODO: Check that library names corresponding to uids match.
     (lambda (e)
       (match e
         [($library (,name ... ,version)

@@ -339,7 +339,7 @@
           (lambda (def* lbl)
             (let ([bdg (label->binding lbl)])
               (if (variable-binding? bdg)
-                  (cons (build (set-box! ',(variable-binding-location bdg) ,(variable-binding-symbol bdg)))
+                  (cons (build (location-box-set! ',(variable-binding-location bdg) ,(variable-binding-symbol bdg)))
                         def*)
                   def*)))
           '() lbl*)))
@@ -356,7 +356,7 @@
              (begin
                ,(map
                   (lambda (var)
-                    `(set! ,var (unbox ,var)))
+                    `(set! ,var (location-box ,var)))
                   (vector->list vars))
                ...
                (letrec* (,(map (lambda (def)

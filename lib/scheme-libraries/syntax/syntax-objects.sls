@@ -4,6 +4,11 @@
 
 (library (scheme-libraries syntax syntax-objects)
   (export
+    make-location
+    location?
+    location-box
+    location-box-set!
+    location-name
     syntax-object?
     annotated-datum->syntax-object
     syntax-object-source-location
@@ -101,6 +106,7 @@
     (scheme-libraries helpers)
     (scheme-libraries lists)
     (scheme-libraries numbers)
+    (scheme-libraries uuid)
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading source-locations)
     (scheme-libraries syntax libraries)
@@ -116,6 +122,19 @@
     (scheme-libraries rec)
     (scheme-libraries record-writer)
     (scheme-libraries void))
+
+  ;; Locations
+
+  (define-record-type location
+    (nongenerative location-a10fb6e1-44cf-4c39-840f-14216ae9b94f)
+    (fields name (mutable box))
+    (protocol
+      (lambda (new)
+        (case-lambda
+          [()
+           (new (uid 'location) (void))]
+          [(name)
+           (new name (void))]))))
 
   ;; Bindings and syntax types
 
@@ -177,7 +196,7 @@
         (lambda (var)
           (unless (variable? var)
             (assertion-violation who "invalid variable argument" var))
-          ((pargs->new) #f var (box (void)))))))
+          ((pargs->new) #f var (make-location))))))
 
   (define-record-type keyword-binding
     (nongenerative keyword-binding-032ff78b-c673-47cd-9140-fc52de498e1a)
@@ -192,21 +211,6 @@
                       (variable-transformer? proc))
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) proc)))))
-
-  #;
-  (define-record-type global-variable-binding
-    (nongenerative global-variable-binding-c2e5dca3-e856-4c29-ad67-009fb026936f)
-    (parent binding)
-    (sealed #t)
-    (fields library symbol location)
-    (protocol
-      (lambda (pargs->new)
-        (define who 'make-global-variable-binding)
-        (lambda (lib sym loc)
-          (assert (library? lib))
-          (assert (variable? sym))
-          (assert (box? loc))
-          ((pargs->new) lib sym loc)))))
 
   (define-record-type global-keyword-binding
     (nongenerative global-keyword-binding-ac80d1fa-f521-48df-b1ba-5bae1823e42d)
