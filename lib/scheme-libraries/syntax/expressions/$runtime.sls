@@ -29,6 +29,8 @@
     list
     reverse
     set-box!
+    location-box
+    location-box-set!
     syntax-car
     syntax-cdr
     syntax-null?

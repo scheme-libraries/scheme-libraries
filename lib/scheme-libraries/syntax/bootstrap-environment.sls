@@ -255,7 +255,7 @@
       (execute
        (build
          (letrec ,(map (lambda (var loc)
-                         `[,var (unbox ',loc)])
+                         `[,var (location-box ',loc)])
                        (vector->list vars)
                        (vector->list locs))
            ;; XXX: egg2 uses set!
@@ -1386,6 +1386,7 @@
   (declare-prim-syntax free-identifier=? 2)
   (declare-prim-syntax reverse 1)
   (declare-prim-syntax set-box! 2)
+  (declare-prim-syntax location-box-set! 2)
   (declare-prim-syntax unbox 1)
   (declare-prim-syntax syntax-car 1)
   (declare-prim-syntax syntax-cdr 1)

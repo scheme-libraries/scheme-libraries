@@ -42,7 +42,7 @@
             ((compile-to-thunk
               (build
                 (letrec ,(map (lambda (var loc)
-                                `[,var ',(unbox loc)])
+                                `[,var ',(location-box loc)])
                               (vector->list vars)
                               (vector->list locs))
                   ,e)))))))))
