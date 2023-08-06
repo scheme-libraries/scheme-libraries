@@ -72,8 +72,9 @@
                                 (define lblsym (label->datum lbl))
                                 (cond
                                  [(variable-binding? bdg)
-                                  ;; TODO: store box
-                                  `(,lblsym (variable ,(variable-binding-symbol bdg)))]
+                                  `(,lblsym (variable ,(variable-binding-symbol bdg)
+                                                      ,(location-name
+                                                        (variable-binding-location bdg))))]
                                  [(global-keyword-binding? bdg)
                                   `(,lblsym (keyword))]
                                  [else (assert #f)]))
@@ -133,7 +134,26 @@
            (for-each
              (lambda (lbl type)
                (match type
-                 [(variable ,sym)
+                 [(variable ,sym ,locname)
+                  ;; FIXME: Lookup location for name.
+
+                  ;; XXX: The idea is to use symbol->object from the
+                  ;; current collection.  The problem is that only
+                  ;; those locations will be interned that will have
+                  ;; been previously loaded. We have to do this for
+                  ;; all locations in all libraries in a library
+                  ;; collection. We can assure this by calculating the
+                  ;; serialized version when a library is created.
+                  ;; This works if only serialized libraries get a uid. :-]
+
+                  ;; What happens if we serialize a library twice?  ->
+                  ;; If we serialize it from different collections,
+                  ;; the library will have different label ids.  When
+                  ;; do we serialize a library? When we precompile.
+                  ;; In principle, we need all previous libs
+                  ;; serialized as well. because of uids.
+
+
                   (let ([bdg (make-variable-binding sym)])
                     (variable-binding-library-set! bdg lib)
                     (label-binding-set! lbl bdg))]
