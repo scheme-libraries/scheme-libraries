@@ -4,7 +4,8 @@
 
 (library (scheme-libraries strings)
   (export
-    string-split)
+    string-split
+    string-prefix?)
   (import
     (rnrs)
     (scheme-libraries define-who))
@@ -30,5 +31,19 @@
                       (f (+ j 1)))]
                [else
                 (g (+ j 1))]))])))))
+
+  (define/who string-prefix?
+    (lambda (s1 s2)
+      (unless (string? s1)
+        (assertion-violation who "invalid prefix string argument" s1))
+      (unless (string? s2)
+        (assertion-violation who "invalid string argument" s2))
+      (let ([n (string-length s1)])
+        (and (>= (string-length s2) n)
+             (let f ([i 0])
+               (or (= i n)
+                   (and (char=? (string-ref s1 i)
+                                (string-ref s2 i))
+                        (f (+ i 1)))))))))
 
   )

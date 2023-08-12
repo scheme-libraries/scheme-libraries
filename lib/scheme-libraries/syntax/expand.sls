@@ -301,6 +301,10 @@
               (assert (not e))
               (let ([exports (make-rib)]
                     [setters (build-variable-setters lbl*)])
+                (define invoke-code
+                  (build-invoke-code def* setters var* loc*))
+                (define invoker
+                  (compile-to-thunk invoke-code))
                 (for-each
                   (lambda (exp)
                     (export-spec-export! exp exports ribs))
@@ -324,11 +328,11 @@
                    ;; Visit commands
                    '()                  ;FIXME
                    ;; Invoke definitions
-                   def*
+                   invoke-code
                    ;; Visiter
                    #f                   ;FIXME
                    ;; Invoker
-                   (build-invoker def* setters var* loc*)
+                   invoker
                    ;; Bindings
                    lbl*)
                   lbl*)))))))
@@ -339,10 +343,25 @@
           (lambda (def* lbl)
             (let ([bdg (label->binding lbl)])
               (if (variable-binding? bdg)
-                  (cons (build (location-box-set! ',(variable-binding-location bdg) ,(variable-binding-symbol bdg)))
+                  (cons (build (location-box-set! ',(variable-binding-location bdg)
+                                                  ,(variable-binding-symbol bdg)))
                         def*)
                   def*)))
           '() lbl*)))
+
+    (define build-invoke-code
+      (lambda (def* setter* vars locs)
+        (build
+          (letrec ,(map (lambda (var loc)
+                          `[,var (location-box ',loc)])
+                        (vector->list vars)
+                        (vector->list locs))
+            (letrec* ,(map (lambda (def)
+                             `[,(definition-var def) ,(definition-expr def)])
+                           def*)
+              (begin
+                ,@setter*
+                (values)))))))
 
     (define build-invoker
       (lambda (def* setters vars vals)
@@ -400,55 +419,6 @@
           (lambda (orig new)
             (doexport! orig new))
           orig* new*))))
-
-
-
-  ;; Parsers
-
-  #;
-  (define parse-library
-    (lambda (x)
-      (syntax-match x
-        [(library ,name
-           (export ,exp-spec* ...)
-           (import ,imp-spec* ...)
-           ,body* ...)
-         (let-values ([(name ver)
-                       (parameterize ([current-form x])
-                         (parse-library-name name))])
-           (values name ver exp-spec* imp-spec* body*))]
-        [,k (syntax-error #f "invalid library syntax" x)])))
-
-  #;
-  (define/who parse-library-name
-    (define doparse
-      (lambda (part* sub-ver*)
-        (values (map parse-library-name-part part*)
-                (map parse-sub-version sub-ver*))))
-    (lambda (x)
-      (syntax-match x
-        [(,part* ... (,sub-ver* ...))
-         (guard (for-all $identifier? part*))
-         (doparse part* sub-ver*)]
-        [(,part* ...)
-         (guard (for-all $identifier? part*))
-         (doparse part* '())]
-        [,x (syntax-error #f "ill-formed library name" #f x)])))
-
-  #;
-  (define parse-library-name-part
-    (lambda (x)
-      (unless ($identifier? x)
-        (syntax-error #f "invalid library name part" #f x))
-      (identifier->symbol x)))
-
-  #;
-  (define parse-sub-version
-    (lambda (x)
-      (let ([e (syntax-object->datum x)])
-        (unless (exact-nonnegative-integer? e)
-          (syntax-error #f "invalid library sub-version" #f x))
-        e)))
 
 
   )
