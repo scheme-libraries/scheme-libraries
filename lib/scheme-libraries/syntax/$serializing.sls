@@ -18,6 +18,7 @@
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax $marks)
     (scheme-libraries syntax $ribs)
+    (scheme-libraries syntax variables)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax library-collections)
     (scheme-libraries syntax syntax-objects))
@@ -47,7 +48,9 @@
   (define/who library->datum
     (lambda (lib)
       (assert (library? lib))
-      (let ([imports (library-imports lib)])
+      (let ([imports (library-imports lib)]
+            [viscode (expression->datum (library-visit-code lib))]
+            [invcode (expression->datum (library-invoke-code lib))])
         (extend-backquote here
           `($library (,@(library-name lib) ,(library-version lib))
              (uid ,(library-uid lib))
@@ -82,8 +85,8 @@
                                  [else (assert #f)]))
                               (library-bindings lib) ;FIXME: Call this environment.
                               ))
-             (visit-code )
-             (invoke-code ))))))
+             (visit-code ,viscode)
+             (invoke-code ,invcode))))))
 
   (define/who datum->library
     ;; TODO: Check that library names corresponding to uids match.
@@ -183,27 +186,35 @@
         [(quote ,lbl)
          (guard (label? lbl))
          (label->datum lbl)]
-        [(quote ,_) e]
-        [(,[rator] ,[rand*] ...)
-         `(,rator ,rand* ...)]
-        [,_ (assert #f)])))
+        [(quote ,e) `(quote ,e)]
+        [,e (guard (variable? e)) (variable->datum e)]
+        [,e (guard (symbol? e)) e]
+        [(,[e*] ...) e*]
+        [,x
+         ;; XXX FIXME DEBUG
+         (display x) (newline)
+
+         (assert #f)])))
 
   (define datum->expression
     (lambda (e)
       (match e
-        [(quote ,_) e]
-        [,_
+        [(quote ,e) `(quote ,e)]
+        [,e
          (guard (symbol? e) (location-symbol? e))
          (datum->location e)]
-        [,_
+        [,e
          (guard (symbol? e) (label-symbol? e))
          (datum->label e)]
-        [,_
+        [,e
          (guard (symbol? e) (mark-symbol? e))
          (datum->mark e)]
-        [(,[rator] ,[rand*] ...)
-         `(,rator ,rand* ...)]
-        [,_ (assert #f)])))
+        [,e
+         (guard (symbol? e) (variable-symbol? e))
+         (datum->variable e)]
+        [,e (guard (symbol? e)) e]
+        [(,[e*] ...) e*]
+        [,e (assert #f)])))
 
   (define location-symbol?
     (lambda (sym)
@@ -214,6 +225,10 @@
       (string-prefix? "label-" (symbol->string sym))))
 
   (define mark-symbol?
+    (lambda (sym)
+      (string-prefix? "mark-" (symbol->string sym))))
+
+  (define variable-symbol?
     (lambda (sym)
       (string-prefix? "mark-" (symbol->string sym))))
 

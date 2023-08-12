@@ -20,7 +20,9 @@
     mark->datum
     datum->mark
     location->datum
-    datum->location)
+    datum->location
+    variable->datum
+    datum->variable)
   (import
     (rnrs)
     (scheme-libraries parameters)
@@ -30,6 +32,7 @@
     (scheme-libraries uuid)
     (scheme-libraries syntax $environments)
     (scheme-libraries syntax $marks)
+    (scheme-libraries syntax variables)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
@@ -158,4 +161,16 @@
       (assert (symbol? s))
       (symbol->object s (lambda () (make-location s)))))
 
-  )
+  (define variable->datum
+    (lambda (var)
+      (assert (variable? var))
+      (string->symbol
+       (string-append "variable-" (symbol->string var)))))
+
+  (define datum->variable
+    (lambda (s)
+      (assert (symbol? s))
+      (let ([s (symbol->string s)])
+        (string->symbol
+         (substring s (string-length "variable-") (fx- (string-length s)
+                                                       (string-length "variable-"))))))))

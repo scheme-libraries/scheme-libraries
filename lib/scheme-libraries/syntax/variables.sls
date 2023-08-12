@@ -19,4 +19,13 @@
 
   (define variable?
     (lambda (x)
-      (symbol? x))))
+      (and (symbol? x)
+           (call/cc
+            (lambda (k)
+              (string-for-each
+               (lambda (c)
+                 (when (char=? c #\-)
+                   (k #t)))
+               (symbol->string x))
+              (k #f))))))
+  )
