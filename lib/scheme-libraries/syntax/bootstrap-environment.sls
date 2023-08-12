@@ -748,49 +748,6 @@
 
   ;; Library collection serializing
 
-  (define library-collection->datum
-    (lambda (lc)
-      (parameterize ([current-library-collection lc])
-        (define lib* (library-list))
-        (define library->index
-          (let ([ht (make-eq-hashtable)])
-            (do ([i 0 (fx+ i 1)]
-                 [lib* lib* (cdr lib*)])
-                ((null? lib*)
-                 (lambda (idx)
-                   (assert (hashtable-ref ht idx #f))))
-              (hashtable-set! ht (car lib*) i))))
-        (map (lambda (lib)
-               (library->datum library->index lib))
-             lib*))))
-
-  (trace-define library->datum
-    (lambda (library->index lib)
-      (define definition->datum
-        (lambda (def)
-          `(,(definition-var def) ,(definition-expr def))))
-      (define binding->datum
-        (lambda (lbl)
-          (define bdg (label-binding lbl))
-          (cond
-           [(variable-binding? bdg)
-            `(,(label->datum lbl) variable ,(variable-binding-symbol bdg))]
-           [(global-keyword-binding? bdg)
-            ;; XXX: Do we have to save more?
-            `(,(label->datum lbl) keyword)]
-           [else
-            (assert #f)])))
-      (list (library-name lib)
-            (library-version lib)
-            (library-uid lib)
-            (exports->datum (library-exports lib))
-            (vector-map library->index (library-visit-requirements lib))
-            (vector-map library->index (library-invoke-requirements lib))
-            (library-visit-commands lib) ;FIXME: unlink
-            (map definition->datum (library-invoke-definitions lib)) ;FIXME: unlink
-            (map binding->datum (library-bindings lib))      ;FIXME
-            )))
-
   (define exports->datum
     (lambda (exports)
       (rib-map

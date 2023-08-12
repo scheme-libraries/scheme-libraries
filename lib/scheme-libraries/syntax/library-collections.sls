@@ -18,7 +18,9 @@
     object->symbol
     symbol->object
     mark->datum
-    datum->mark)
+    datum->mark
+    location->datum
+    datum->location)
   (import
     (rnrs)
     (scheme-libraries parameters)
@@ -145,5 +147,15 @@
     (lambda (s)
       (assert (symbol? s))
       (symbol->object s (lambda () (make-mark s)))))
+
+  (define/who location->datum
+    (lambda (loc)
+      (assert (location? loc))
+      (location-name loc)))
+
+  (define/who datum->location
+    (lambda (s)
+      (assert (symbol? s))
+      (symbol->object s (lambda () (make-location s)))))
 
   )

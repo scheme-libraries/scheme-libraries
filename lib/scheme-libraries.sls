@@ -224,6 +224,7 @@
 
     ;; (scheme-libraries strings)
     string-split
+    string-prefix?
 
     ;; (scheme-libraries syntactic-monads)
     define-syntactic-monad

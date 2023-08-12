@@ -17,8 +17,8 @@
     library-exports
     library-visit-requirements
     library-invoke-requirements
-    library-visit-commands
-    library-invoke-definitions
+    library-visit-code
+    library-invoke-code
     library-bindings
     library-name=?
     library-visit!
@@ -85,10 +85,10 @@
       visit-requirements
       ;; The invoke requirements as a vector of libraries.
       invoke-requirements
-      ;; Commands for visit code as a list of expressions
-      visit-commands
-      ;; Definitions for invoke code as a list of definitions as above
-      invoke-definitions
+      ;; Begin expression to visit library
+      visit-code
+      ;; Letrec expression to invoke library
+      invoke-code
       ;; The visit procedure of #t if visiting or #f if visited.
       (mutable visiter)
       ;; The invoke procedure or #t if invoking or #f if invoked.
@@ -109,10 +109,8 @@
                        (for-all library? (vector->list visreqs))))
           (assert (and (vector? invreqs)
                        (for-all library? (vector->list invreqs))))
-          (assert (and (list? viscode)
-                       (for-all expression? viscode)))
-          (assert (and (list? invcode)
-                       (for-all definition? invcode)))
+          (assert (expression? viscode))
+          (assert (expression? invcode))
           (assert (or (not visiter) (procedure? visiter)))
           (assert (or (not invoker) (procedure? invoker)))
           (assert (and (list? bdg*)
