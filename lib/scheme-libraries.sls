@@ -205,6 +205,9 @@
     ;; (scheme-libraries strings)
     string-split
 
+    ;; (scheme-libraries syntactic-monads)
+    define-syntactic-monad
+
     ;; (scheme-libraries trees)
     tree->list
 
