@@ -272,6 +272,7 @@
     (scheme-libraries repl)
     (scheme-libraries parameters)
     (scheme-libraries strings)
+    (scheme-libraries syntactic-monads)
     (scheme-libraries thread-parameters)
     (scheme-libraries trees)
     (scheme-libraries unicode)
