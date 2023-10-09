@@ -139,8 +139,8 @@
                 ((not (intraline-whitespace? (peek-char))))
               (read-char))))
         (let f ()
-          (let ([start (position)]
-                [ch (read-char)])
+          (let* ([start (position)]
+                 [ch (read-char)])
             (define skip-line-comment
               (lambda ()
                 (let ([ch (read-char)])
