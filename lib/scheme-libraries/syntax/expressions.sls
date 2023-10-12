@@ -78,6 +78,8 @@
                          (g k)))))])))))
 
   (define/who expression=?
+    ;; XXX: In our tests, we use ordinary symbols for variables.
+    (define variable? symbol?)
     (lambda (x y)
       (unless (expression? x)
         (assertion-violation who "invalid expression argument" x))
