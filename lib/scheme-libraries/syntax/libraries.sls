@@ -40,6 +40,7 @@
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
+    (scheme-libraries exceptions)
     (scheme-libraries boxes)
     (scheme-libraries define-who)
     (scheme-libraries numbers)
@@ -98,7 +99,7 @@
     (protocol
       (lambda (new)
         (define who 'make-library)
-        (lambda (name ver uid imports exports visreqs invreqs viscode invcode visiter invoker bdg*)
+        (lambda (name ver uid imports exports visreqs invreqs viscode invcode bdg*)
           (assert (library-name? name))
           (assert (library-version? ver))
           (assert (symbol? uid))
@@ -111,11 +112,13 @@
                        (for-all library? (vector->list invreqs))))
           (assert (expression? viscode))
           (assert (expression? invcode))
-          (assert (or (not visiter) (procedure? visiter)))
-          (assert (or (not invoker) (procedure? invoker)))
           (assert (and (list? bdg*)
                        (for-all label? bdg*)))
-          (new name ver uid imports exports visreqs invreqs viscode invcode visiter invoker bdg*)))))
+          (assert (not (null? viscode)))
+          (assert (not (null? invcode)))
+          (let ([visiter (and viscode (compile-to-thunk viscode))]
+                [invoker (and invcode (compile-to-thunk invcode))])
+            (new name ver uid imports exports visreqs invreqs viscode invcode visiter invoker bdg*))))))
 
   ;; Library names
 
@@ -152,7 +155,24 @@
 
   (define library-visit!
     (lambda (lib)
-      (put-string (current-error-port) "FIXME: Implement library-visit!\n")))
+      (assert (library? lib))
+      (let ([name (library-name lib)]
+            [visiter (library-visiter lib)])
+        (when visiter
+          (dynamic-wind
+            (lambda ()
+              (library-visiter-set! lib #t))
+            (lambda ()
+              (vector-for-each library-invoke! (library-visit-requirements lib)))
+            (lambda ()
+              (library-visiter-set! lib visiter)))
+          (library-visiter-set! lib
+                                (lambda ()
+                                  (assertion-violationf #f "visit of library ~a did not return" name)))
+          (when (eq? visiter #t)
+            (assertion-violationf "circular visit of library ~a" name))
+          (visiter)
+          (library-visiter-set! lib #f)))))
 
   (define library-invoke!
     (lambda (lib)

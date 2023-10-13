@@ -66,16 +66,20 @@
     make-keyword-binding
     keyword-binding?
     keyword-binding-transformer
+    keyword-binding-library
+    keyword-binding-library-set!
+    keyword-binding-transformer
+    keyword-binding-transformer-set!
     ;; make-global-variable-binding
     ;; global-variable-binding?
     ;; global-variable-binding-library
     ;; global-variable-binding-symbol
     ;; global-variable-binding-location
-    make-global-keyword-binding
-    global-keyword-binding?
-    global-keyword-binding-library
-    global-keyword-binding-library-set!
-    global-keyword-binding-transformer
+    ;; make-global-keyword-binding
+    ;; global-keyword-binding?
+    ;; global-keyword-binding-library
+    ;; global-keyword-binding-library-set!
+    ;; global-keyword-binding-transformer
     make-expander-binding
     expander-binding?
     expander-binding-proc
@@ -193,25 +197,32 @@
     (protocol
       (lambda (pargs->new)
         (define who 'make-variable-binding)
-        (lambda (var)
-          (unless (variable? var)
-            (assertion-violation who "invalid variable argument" var))
-          ((pargs->new) #f var (make-location))))))
+        (rec make
+          (case-lambda
+            [(var)
+             (make var (make-location))]
+            [(var loc)
+             (unless (variable? var)
+               (assertion-violation who "invalid variable argument" var))
+             (unless (location? loc)
+               (assertion-violation who "invalid location argument" loc))
+             ((pargs->new) #f var loc)])))))
 
   (define-record-type keyword-binding
     (nongenerative keyword-binding-032ff78b-c673-47cd-9140-fc52de498e1a)
     (parent binding)
     (sealed #t)
-    (fields transformer)
+    (fields (mutable library) (mutable transformer))
     (protocol
       (lambda (pargs->new)
         (define who 'make-keyword-binding)
         (lambda (proc)
-          (unless (or (procedure? proc)
-                      (variable-transformer? proc))
+          (unless (or (not proc)
+                      (transformer? proc))
             (assertion-violation who "invalid procedure argument" proc))
-          ((pargs->new) proc)))))
+          ((pargs->new) #f proc)))))
 
+  #;
   (define-record-type global-keyword-binding
     (nongenerative global-keyword-binding-ac80d1fa-f521-48df-b1ba-5bae1823e42d)
     (parent binding)
