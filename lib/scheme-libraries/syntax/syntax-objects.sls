@@ -136,7 +136,7 @@
       (lambda (new)
         (case-lambda
           [()
-           (new (uid 'location) (void))]
+           (new (uid '%location) (void))]
           [(name)
            (new name (void))]))))
 

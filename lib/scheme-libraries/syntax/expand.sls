@@ -136,7 +136,7 @@
 
   (define expand-body
     (lambda (x*)
-      (let-values ([(invcmd* def* e lbl*)
+      (let-values ([(viscmd* def* e lbl*)
                     (expand-internal x* (make-ribcage) (expansion-mode body))])
         (if (null? def*)
             e
@@ -167,7 +167,7 @@
          [(definition-binding? t)
           (let-values ([(viscmd* def* nlbl*) ((definition-binding-proc t) x ribs)])
             (expand-form* x* ribs
-                          (append (reverse viscmd*) viscmd*)
+                          (append (reverse viscmd*) rviscmd*)
                           (append (reverse def*) rdef*)
                           (append nlbl* lbl*)))]
          [(splicing-binding? t)
