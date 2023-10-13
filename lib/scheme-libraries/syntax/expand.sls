@@ -136,7 +136,7 @@
 
   (define expand-body
     (lambda (x*)
-      (let-values ([(def* e lbl*)
+      (let-values ([(invcmd* def* e lbl*)
                     (expand-internal x* (make-ribcage) (expansion-mode body))])
         (if (null? def*)
             e
@@ -148,30 +148,33 @@
     (lambda (x* ribs mode)
       (let ([x* (add-substitutions* ribs x*)])
         (parameterize ([current-mode mode])
-          (expand-form* x* ribs '() '())))))
+          (expand-form* x* ribs '() '() '())))))
 
   (define expand-form*
-    (lambda (x* ribs rdef* lbl*)
+    (lambda (x* ribs rviscmd* rdef* lbl*)
       (match x*
         [()
          (unless (top-level-mode?)
            (syntax-error #f "no expressions in body"))
-         (values (expand-definitions (reverse rdef*)) #f lbl*)]
+         (values (reverse rviscmd*) (expand-definitions (reverse rdef*)) #f lbl*)]
         [(,x . ,x*)
-         (expand-form x x* ribs rdef* lbl*)])))
+         (expand-form x x* ribs rviscmd* rdef* lbl*)])))
 
   (define expand-form
-    (lambda (x x* ribs rdef* lbl*)
+    (lambda (x x* ribs rviscmd* rdef* lbl*)
       (let-values ([(x t) (syntax-type x ribs)])
         (cond
          [(definition-binding? t)
-          (let-values ([(def* nlbl*) ((definition-binding-proc t) x ribs)])
-            (expand-form* x* ribs (append (reverse def*) rdef*)
+          (let-values ([(viscmd* def* nlbl*) ((definition-binding-proc t) x ribs)])
+            (expand-form* x* ribs
+                          (append (reverse viscmd*) viscmd*)
+                          (append (reverse def*) rdef*)
                           (append nlbl* lbl*)))]
          [(splicing-binding? t)
-          (expand-splicing x t x* ribs rdef* lbl*)]
+          (expand-splicing x t x* ribs rviscmd* rdef* lbl*)]
          [(library-mode?)
           (expand-form* '() ribs
+                        rviscmd*
                         (cons
                          (lambda ()
                            (make-command
@@ -182,14 +185,15 @@
                         lbl*)]
          [else
           (let ([e* (map expand-expression (cons x x*))])
-            (values (expand-definitions (reverse rdef*))
+            (values (reverse rviscmd*)
+                    (expand-definitions (reverse rdef*))
                     (build-begin ,e* ...)
                     lbl*))]))))
 
   (define expand-splicing
-    (lambda (x t x* ribs rdef* lbl*)
+    (lambda (x t x* ribs rviscmd* rdef* lbl*)
       (let ([e* ((splicing-binding-proc t) x)])
-        (expand-form* (append e* x*) ribs rdef* lbl*))))
+        (expand-form* (append e* x*) ribs rviscmd* rdef* lbl*))))
 
   (define expand-definitions
     (lambda (def*)
@@ -207,9 +211,11 @@
 
   (define apply-transformer
     (lambda (f x ribs)
-      (let ([f (if (variable-transformer? f)
-                   (variable-transformer-proc f)
-                   f)])
+      (let ([f (cond
+                [(variable-transformer? f)
+                 (variable-transformer-proc f)]
+                [(procedure? f) f]
+                [else (assert #f)])])
         (guard (c
                 [(invalid-syntax-object-condition? c)
                  (syntax-error #f (format "encountered invalid object ~s in output of macro"
@@ -225,10 +231,9 @@
           (syntax-type
            (transform (cond
                        [(keyword-binding? bdg)
-                        (keyword-binding-transformer bdg)]
-                       [(global-keyword-binding? bdg)
-                        (library-visit! (global-keyword-binding-library bdg))
-                        (global-keyword-binding-transformer bdg)]
+                        (let ([lib (keyword-binding-library bdg)])
+                          (when lib (library-visit! lib)))
+                        (assert (keyword-binding-transformer bdg))]
                        [else (assert #f)])
                       x
                       ribs)
@@ -244,8 +249,7 @@
                  (definition-binding? bdg)
                  (prim-binding? bdg))
              (values x bdg)]
-            [(or (keyword-binding? bdg)
-                 (global-keyword-binding? bdg))
+            [(keyword-binding? bdg)
              (keyword-type bdg)]
             [else
              (values x (make-application-type))]))]
@@ -260,8 +264,7 @@
                   (cond
                    [(or (variable-binding? bdg))
                     (values x bdg)]
-                   [(or (keyword-binding? bdg)
-                        (global-keyword-binding? bdg))
+                   [(keyword-binding? bdg)
                     (keyword-type bdg)]
                    [(auxiliary-binding? bdg)
                     (syntax-error (auxiliary-binding-who bdg) "invalid use of auxiliary syntax" x)]
@@ -282,6 +285,7 @@
   ;; Libraries
 
   (module (expand-library)
+    ;; TODO: For programs/libs(?): we can have a true body at the end.
     (define expand-library
       (lambda (name ver exp* imp* body*)
         (let ([ribs (make-ribcage)]
@@ -292,50 +296,46 @@
               (import-spec-import! imp rib))
             imp*)
           (with-requirements-collector
-            (let*-values ([(def* e lbl*)
-                           (expand-internal body* ribs (expansion-mode library))]
-                          [(var* lib* ref-lbl*) (current-runtime-globals)]
-                          [(loc*)
-                           (vector-map variable-binding-location
-                                (vector-map label->binding ref-lbl*))])
-              (assert (not e))
-              (let ([exports (make-rib)]
-                    [setters (build-variable-setters lbl*)])
-                (define invoke-code
-                  (build-invoke-code def* setters var* loc*))
-                (define invoker
-                  (compile-to-thunk invoke-code))
-                (for-each
-                  (lambda (exp)
-                    (export-spec-export! exp exports ribs))
-                  exp*)
-                (values
-                  (make-library
-                   ;; Name
-                   name
-                   ;; Version
-                   ver
-                   ;; Uid
-                   (uid (last name))
-                   ;; Imports
-                   '#()                  ;FIXME
-                   ;; Exports
-                   exports
-                   ;; Visit requirements
-                   (collected-visit-requirements)
-                   ;; Invoke requirements
-                   (collected-invoke-requirements)
-                   ;; Visit commands
-                   '()                  ;FIXME
-                   ;; Invoke definitions
-                   invoke-code
-                   ;; Visiter
-                   #f                   ;FIXME
-                   ;; Invoker
-                   invoker
-                   ;; Bindings
-                   lbl*)
-                  lbl*)))))))
+              (let*-values ([(viscmd* def* e lbl*)
+                             (expand-internal body* ribs (expansion-mode library))]
+                            [(var* lib* ref-lbl*) (current-runtime-globals)]
+                            [(loc*)
+                             (vector-map variable-binding-location
+                                         (vector-map label->binding ref-lbl*))])
+                (assert (not e))
+                (let ([exports (make-rib)]
+                      [setters (build-variable-setters lbl*)])
+                  (define invoke-code
+                    (build-invoke-code def* setters var* loc*))
+                  (define viscode
+                    (build-visit-code viscmd*))
+                  (for-each
+                    (lambda (exp)
+                      (export-spec-export! exp exports ribs))
+                    exp*)
+                  (values
+                    (make-library
+                     ;; Name
+                     name
+                     ;; Version
+                     ver
+                     ;; Uid
+                     (uid (last name))
+                     ;; Imports
+                     '#()               ;FIXME
+                     ;; Exports
+                     exports
+                     ;; Visit requirements
+                     (collected-visit-requirements)
+                     ;; Invoke requirements
+                     (collected-invoke-requirements)
+                     ;; Visit commands
+                     viscode
+                     ;; Invoke definitions
+                     invoke-code
+                     ;; Bindings
+                     lbl*)
+                    lbl*)))))))
 
     (define build-variable-setters
       (lambda (lbl*)
@@ -363,14 +363,22 @@
                 ,@setter*
                 (values)))))))
 
+    (define build-visit-code
+      (lambda (viscmd*)
+        (build
+          (begin
+            ,@viscmd*
+            (values)))))
+
+    #;
     (define build-invoker
       (lambda (def* setters vars vals)
         (compile-to-thunk
          (build
            (letrec (,(map (lambda (var loc)
-                             `[,var ',loc])
-                           (vector->list vars)
-                           (vector->list vals))
+                            `[,var ',loc])
+                          (vector->list vars)
+                          (vector->list vals))
                     ...)
              (begin
                ,(map

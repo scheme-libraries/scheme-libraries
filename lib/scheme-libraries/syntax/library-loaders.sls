@@ -57,9 +57,7 @@
              [(variable-binding? bdg)
               (variable-binding-library-set! bdg lib)]
              [(keyword-binding? bdg)
-              (label-binding-set! lbl
-                (make-global-keyword-binding lib
-                                             (keyword-binding-transformer bdg)))]
+              (keyword-binding-library-set! bdg lib)]
              [else
               ;; Only variables and keywords should be defineable at the
               ;; top level of a library.

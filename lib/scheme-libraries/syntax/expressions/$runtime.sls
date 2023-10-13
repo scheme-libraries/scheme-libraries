@@ -31,6 +31,7 @@
     set-box!
     location-box
     location-box-set!
+    keyword-binding-transformer-set!
     syntax-car
     syntax-cdr
     syntax-null?

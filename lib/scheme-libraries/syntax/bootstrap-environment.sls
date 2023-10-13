@@ -226,8 +226,30 @@
 
   ;; Macros
 
+  (define compile-transformer
+    (lambda (x)
+      (let-values ([(vars locs e) (meta-expand x)])
+        (build
+          (letrec ,(map (lambda (var loc)
+                          `[,var (location-box ',loc)])
+                        (vector->list vars)
+                        (vector->list locs))
+            ;; XXX: egg2 uses set!
+            ,e)))))
+
+  (define execute-transformer
+    (lambda (e who)
+      (let ([f (execute e)])
+          (unless (or (procedure? f)
+                      (variable-transformer? f))
+            (assertion-violation who "invalid transformer" f))
+          f)))
+
   (define eval-transformer
     (lambda (x who)
+      (execute-transformer (compile-transformer x) who)
+
+      #;
       (let-values ([(vars locs e) (meta-expand x)])
         (let ([f (execute-transformer vars locs e)])
           (unless (or (procedure? f)
@@ -250,6 +272,7 @@
                var* lib* lbl*)
               (values var* loc* e)))))))
 
+  #;
   (define execute-transformer
     (lambda (vars locs e)
       (execute
@@ -726,12 +749,8 @@
        ;; Invoke requirements
        '#()
        ;; Visit code
-       '()
-       ;; Invoke code
-       '()
-       ;; Visiter
        #f
-       ;; Invoker
+       ;; Invoke code
        #f
        ;; Bindings
        '())))
@@ -756,6 +775,7 @@
          (cons n (label/props->datum l/p)))
        exports)))
 
+  #;
   (define datum->library-collection
     (lambda (rep)
       (define library-table (make-eqv-hashtable))
@@ -773,6 +793,7 @@
         ;; XXX: bind any globals after loading?
         (current-library-collection))))
 
+  #;
   (define datum->library
     (lambda (index->library obj)
       (define datum->definition
@@ -785,31 +806,31 @@
         [(,name ,ver ,uid ,exp* ,visreqs ,invreqs ,viscode ,invcode ((,lbl* . ,type*) ...))
          (let* ([lbl* (map datum->label lbl*)]
                 [lib
-                (make-library
-                 ;; Name
-                 name
-                 ;; Version
-                 ver
-                 ;; Uid
-                 uid
-                 ;; Imports
-                 '#()                    ;FIXME
-                 ;; Export
-                 (datum->exports exp*)
-                 ;; Visit requirements
-                 (vector-map index->library visreqs)
-                 ;; Invoke requirements
-                 (vector-map index->library invreqs)
-                 ;; Visit commands
-                 viscode                       ;FIXME: link
-                 ;; Invoke definitions
-                 (map datum->definition invcode) ;FIXME: link
-                 ;; Visiter
-                 #f
-                 ;; Invoker
-                 #f
-                 ;; Bindings
-                 lbl*)])
+                 (make-library
+                  ;; Name
+                  name
+                  ;; Version
+                  ver
+                  ;; Uid
+                  uid
+                  ;; Imports
+                  '#()                  ;FIXME
+                  ;; Export
+                  (datum->exports exp*)
+                  ;; Visit requirements
+                  (vector-map index->library visreqs)
+                  ;; Invoke requirements
+                  (vector-map index->library invreqs)
+                  ;; Visit commands
+                  viscode                        ;FIXME: link
+                  ;; Invoke definitions
+                  (map datum->definition invcode) ;FIXME: link
+                  ;; Visiter
+                  #f
+                  ;; Invoker
+                  #f
+                  ;; Bindings
+                  lbl*)])
            (for-each
              (lambda (lbl type)
                (match type
@@ -876,6 +897,7 @@
           (unless lbl
             (identifier-error 'define x "trying to redefine the local keyword ~a"))
           (values
+            '()
             (list (lambda ()
                     (make-definition var (expand-expression e))))
             (list lbl))))))
@@ -885,12 +907,16 @@
     (lambda (x ribs)
       (define who 'define-syntax)
       (let-values ([(x e) (parse-define-syntax x)])
-        (let* ([proc (eval-transformer e who)]
-               [bdg (make-keyword-binding proc)]
+        (let* ([transf-expr (compile-transformer e)]
+               [bdg (make-keyword-binding (execute-transformer transf-expr who))]
                [lbl (ribcage-add! ribs x bdg (current-metalevel-for-syntax))])
           (unless lbl
             (identifier-error 'define-syntax x "trying to redefine the local keyword ~a"))
-          (values '() (list lbl))))))
+          (values (list
+                   (build
+                     `(keyword-binding-transformer-set! ',lbl ,transf-expr)))
+                  '()
+                  (list lbl))))))
 
   ;; Splicing syntax
 
@@ -1344,6 +1370,7 @@
   (declare-prim-syntax reverse 1)
   (declare-prim-syntax set-box! 2)
   (declare-prim-syntax location-box-set! 2)
+  (declare-prim-syntax keyword-binding-transformer-set! 2)
   (declare-prim-syntax unbox 1)
   (declare-prim-syntax syntax-car 1)
   (declare-prim-syntax syntax-cdr 1)

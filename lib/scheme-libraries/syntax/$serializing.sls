@@ -83,11 +83,12 @@
                                   `(,lblsym (variable ,(variable-binding-symbol bdg)
                                                       ,(location-name
                                                         (variable-binding-location bdg))))]
-                                 [(global-keyword-binding? bdg)
+                                 [(keyword-binding? bdg)
                                   `(,lblsym (keyword))]
                                  [else (assert #f)]))
                               (library-bindings lib) ;FIXME: Call this environment.
                               ))
+
              (visit-code ,viscode)
              (invoke-code ,invcode))))))
 
@@ -133,9 +134,9 @@
                  ;; Invoke definitions
                  invcode*                      ;FIXME: link
                  ;; Visiter
-                 #f
+                 ;#f
                  ;; Invoker
-                 #f
+                 ;#f
                  ;; Bindings
                  lbl*                   ;XXX:store it under env instead?
                  )])
@@ -143,32 +144,12 @@
              (lambda (lbl type)
                (match type
                  [(variable ,sym ,locname)
-                  ;; FIXME: Lookup location for name.
-
-                  ;; XXX: The idea is to use symbol->object from the
-                  ;; current collection.  The problem is that only
-                  ;; those locations will be interned that will have
-                  ;; been previously loaded. We have to do this for
-                  ;; all locations in all libraries in a library
-                  ;; collection. We can assure this by calculating the
-                  ;; serialized version when a library is created.
-                  ;; This works if only serialized libraries get a uid. :-]
-
-                  ;; What happens if we serialize a library twice?  ->
-                  ;; If we serialize it from different collections,
-                  ;; the library will have different label ids.  When
-                  ;; do we serialize a library? When we precompile.
-                  ;; In principle, we need all previous libs
-                  ;; serialized as well. because of uids.
-
-
-                  (let ([bdg (make-variable-binding sym)])
+                  (let ([bdg (make-variable-binding sym (datum->location locname))])
                     (variable-binding-library-set! bdg lib)
                     (label-binding-set! lbl bdg))]
                  [(keyword)
-                    ;; TODO: Get rid of global-keyword-binding
-                  (let ([bdg (make-global-keyword-binding #f #f)])
-                    (global-keyword-binding-library-set! bdg lib)
+                  (let ([bdg (make-keyword-binding #f)])
+                    (keyword-binding-library-set! bdg lib)
                     (label-binding-set! lbl bdg))]))
              lbl* type*)
            lib)]
