@@ -32,6 +32,7 @@
     location-box
     location-box-set!
     keyword-binding-transformer-set!
+    label-binding
     syntax-car
     syntax-cdr
     syntax-null?
@@ -60,5 +61,6 @@
     (scheme-libraries boxes)
     (scheme-libraries void)
     (scheme-libraries syntax exceptions)
+    (scheme-libraries syntax $labels)
     (scheme-libraries syntax variable-transformers)
     (scheme-libraries syntax syntax-objects)))

@@ -30,7 +30,7 @@
       (lambda (new)
         (define who 'make-mark)
         (case-lambda
-          [() (new (uid 'mark))]
+          [() (new (uid '%mark))]
           [(name)
            (unless (symbol? name)
              (assertion-violation who "not a valid name argument" name))

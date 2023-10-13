@@ -914,7 +914,7 @@
             (identifier-error 'define-syntax x "trying to redefine the local keyword ~a"))
           (values (list
                    (build
-                     `(keyword-binding-transformer-set! ',lbl ,transf-expr)))
+                     (keyword-binding-transformer-set! (label-binding ',lbl) ,transf-expr)))
                   '()
                   (list lbl))))))
 
@@ -1371,6 +1371,7 @@
   (declare-prim-syntax set-box! 2)
   (declare-prim-syntax location-box-set! 2)
   (declare-prim-syntax keyword-binding-transformer-set! 2)
+  (declare-prim-syntax label-binding 1)
   (declare-prim-syntax unbox 1)
   (declare-prim-syntax syntax-car 1)
   (declare-prim-syntax syntax-cdr 1)

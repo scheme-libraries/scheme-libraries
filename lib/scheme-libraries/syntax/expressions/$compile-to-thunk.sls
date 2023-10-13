@@ -8,6 +8,7 @@
   (import
     (rnrs)
     (rnrs eval)
+    (scheme-libraries syntax variables)
     (scheme-libraries atoms)
     (scheme-libraries impure)
     (scheme-libraries match))
@@ -17,8 +18,8 @@
       (let-values ([(e vals) (parse e)])
 
         ;; FIXME
-        ;;(display "Eval: ")
-        ;;(display e) (newline)
+        (display "Eval: ")
+        (display e) (newline)
 
         ((eval `(lambda (vals) (lambda () ,e)) (runtime-environment))
          vals))))
@@ -44,7 +45,10 @@
              `#(,e* ...)]
             [,x
              (guard (atom? x))
-             x])))
+             x]
+            [,x
+             (guard (variable? x))
+             (variable-name x)])))
       (values out
               (list->vector (reverse val*)))))
 

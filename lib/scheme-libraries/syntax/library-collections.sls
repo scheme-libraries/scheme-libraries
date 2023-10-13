@@ -25,6 +25,7 @@
     datum->variable)
   (import
     (rnrs)
+    (scheme-libraries basic-format-strings)
     (scheme-libraries parameters)
     (scheme-libraries thread-parameters)
     (scheme-libraries define-who)
@@ -143,6 +144,7 @@
   (define/who mark->datum
     (lambda (m)
       (assert (mark? m))
+      ;; XXX: We might be able to output an anti-mark.  Check this.
       (assert (not (anti-mark? m)))
       (mark-name m)))
 
@@ -164,13 +166,16 @@
   (define variable->datum
     (lambda (var)
       (assert (variable? var))
-      (string->symbol
-       (string-append "variable-" (symbol->string var)))))
+      (string->symbol (format "variable-~a" (variable-name var)))))
 
   (define datum->variable
     (lambda (s)
       (assert (symbol? s))
-      (let ([s (symbol->string s)])
-        (string->symbol
-         (substring s (string-length "variable-") (fx- (string-length s)
-                                                       (string-length "variable-"))))))))
+      (let ([name
+             (let ([s (symbol->string s)])
+               (string->symbol
+                (substring s
+                           (string-length "variable-")
+                           (fx- (string-length s)
+                                (string-length "variable-")))))])
+        (symbol->object s (lambda () (name->variable name)))))))

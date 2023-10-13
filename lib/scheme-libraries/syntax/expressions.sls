@@ -15,6 +15,7 @@
     (rnrs eval)
     (scheme-libraries atoms)
     (scheme-libraries define-who)
+    (scheme-libraries gensyms)
     (scheme-libraries match)
     (scheme-libraries syntax expressions $compile-to-thunk)
     (scheme-libraries syntax variables)
@@ -79,45 +80,49 @@
 
   (define/who expression=?
     ;; XXX: In our tests, we use ordinary symbols for variables.
-    (define variable? symbol?)
-    (lambda (x y)
-      (unless (expression? x)
-        (assertion-violation who "invalid expression argument" x))
-      (unless (expression? y)
-        (assertion-violation who "invalid expression argument" y))
-      (let ([htx (make-eq-hashtable)]
-            [hty (make-eq-hashtable)])
-        (let f ([x x] [y y])
-          (cond
-           [(variable? x)
-            (and (variable? y)
-                 (cond
-                  [(hashtable-ref htx x #f)
-                   => (lambda (x)
-                        (eq? x y))]
-                  [(hashtable-ref hty y #f) #f]
-                  [else
-                   (hashtable-set! htx x y)
-                   (hashtable-set! hty y x)
-                   #t]))]
-           [(pair? x)
-            (and (pair? y)
-                 (f (car x) (car y))
-                 (f (cdr x) (cdr y)))]
-           [(vector? x)
-            (and (vector? y)
-                 (let ([n (vector-length x)])
-                   (and (fx=? n (vector-length y))
-                        (let g ([k n])
-                          (or (fxzero? k)
-                              (let ([k (fx- k 1)])
-                                (and (f (vector-ref x k)
-                                        (vector-ref y k))
-                                     (g k))))))))]
+    (let ([variable?
+           (lambda (x)
+             (or (variable? x)
+                 (and (symbol? x)
+                      (eqv? (gensym-marker x) #\.))))])
+      (lambda (x y)
+        (unless (expression? x)
+          (assertion-violation who "invalid expression argument" x))
+        (unless (expression? y)
+          (assertion-violation who "invalid expression argument" y))
+        (let ([htx (make-eq-hashtable)]
+              [hty (make-eq-hashtable)])
+          (let f ([x x] [y y])
+            (cond
+             [(variable? x)
+              (and (variable? y)
+                   (cond
+                    [(hashtable-ref htx x #f)
+                     => (lambda (x)
+                          (eq? x y))]
+                    [(hashtable-ref hty y #f) #f]
+                    [else
+                     (hashtable-set! htx x y)
+                     (hashtable-set! hty y x)
+                     #t]))]
+             [(pair? x)
+              (and (pair? y)
+                   (f (car x) (car y))
+                   (f (cdr x) (cdr y)))]
+             [(vector? x)
+              (and (vector? y)
+                   (let ([n (vector-length x)])
+                     (and (fx=? n (vector-length y))
+                          (let g ([k n])
+                            (or (fxzero? k)
+                                (let ([k (fx- k 1)])
+                                  (and (f (vector-ref x k)
+                                          (vector-ref y k))
+                                       (g k))))))))]
 
-           [(atom? y)
-            (atom=? x y)]
-           [else #f])))))
+             [(atom? y)
+              (atom=? x y)]
+             [else #f]))))))
 
 
 

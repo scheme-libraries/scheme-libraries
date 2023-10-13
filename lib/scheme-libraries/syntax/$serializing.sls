@@ -80,7 +80,8 @@
                                 (define lblsym (label->datum lbl))
                                 (cond
                                  [(variable-binding? bdg)
-                                  `(,lblsym (variable ,(variable-binding-symbol bdg)
+                                  `(,lblsym (variable ,(variable-name
+                                                        (variable-binding-symbol bdg))
                                                       ,(location-name
                                                         (variable-binding-location bdg))))]
                                  [(keyword-binding? bdg)
@@ -103,8 +104,8 @@
            (invoke-requirements ,invreq* ...)
            (export ,expexp* ...)
            (environment (,[datum->label -> lbl*] ,type*) ...)
-           (visit-code ,viscode* ...)
-           (invoke-code ,invcode* ...))
+           (visit-code ,viscode)
+           (invoke-code ,invcode))
          (let ([lib
                 (make-library
                  ;; Name
@@ -130,13 +131,9 @@
                  ;; Invoke requirements
                  (vector-map uid->library (list->vector invreq*))
                  ;; Visit commands
-                 viscode*                      ;FIXME: link
+                 (datum->expression viscode)
                  ;; Invoke definitions
-                 invcode*                      ;FIXME: link
-                 ;; Visiter
-                 ;#f
-                 ;; Invoker
-                 ;#f
+                 (datum->expression invcode)
                  ;; Bindings
                  lbl*                   ;XXX:store it under env instead?
                  )])
@@ -144,7 +141,8 @@
              (lambda (lbl type)
                (match type
                  [(variable ,sym ,locname)
-                  (let ([bdg (make-variable-binding sym (datum->location locname))])
+                  (let ([bdg (make-variable-binding (name->variable sym)
+                                                    (datum->location locname))])
                     (variable-binding-library-set! bdg lib)
                     (label-binding-set! lbl bdg))]
                  [(keyword)
@@ -186,13 +184,13 @@
         [(quote ,e) `(quote ,e)]
         [,e
          (guard (symbol? e) (location-symbol? e))
-         (datum->location e)]
+         `(quote ,(datum->location e))]
         [,e
          (guard (symbol? e) (label-symbol? e))
-         (datum->label e)]
+         `(quote ,(datum->label e))]
         [,e
          (guard (symbol? e) (mark-symbol? e))
-         (datum->mark e)]
+         `(quote ,(datum->mark e))]
         [,e
          (guard (symbol? e) (variable-symbol? e))
          (datum->variable e)]
@@ -202,18 +200,18 @@
 
   (define location-symbol?
     (lambda (sym)
-      (string-prefix? "location-" (symbol->string sym))))
+      (string-prefix? "%location-" (symbol->string sym))))
 
   (define label-symbol?
     (lambda (sym)
-      (string-prefix? "label-" (symbol->string sym))))
+      (string-prefix? "%label-" (symbol->string sym))))
 
   (define mark-symbol?
     (lambda (sym)
-      (string-prefix? "mark-" (symbol->string sym))))
+      (string-prefix? "%mark-" (symbol->string sym))))
 
   (define variable-symbol?
     (lambda (sym)
-      (string-prefix? "mark-" (symbol->string sym))))
+      (string-prefix? "%variable-" (symbol->string sym))))
 
   )
