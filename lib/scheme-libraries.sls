@@ -122,6 +122,7 @@
     int64?
 
     ;; (scheme-libraries ports)
+    read-file
     textual-input-port?
     textual-output-port?
 

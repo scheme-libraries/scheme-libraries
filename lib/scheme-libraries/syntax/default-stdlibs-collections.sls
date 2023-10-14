@@ -7,6 +7,7 @@
     make-default-stdlibs-collection)
   (import
     (rnrs)
+    (scheme-libraries ports)
     (scheme-libraries syntax library-locators)
     (scheme-libraries syntax stdlibs-collections))
 
@@ -16,6 +17,8 @@
 
   (define-syntax default-stdlibs-collection
     (lambda (stx)
-      #'(stdlibs-collection (make-library-locator '("stdlib/") '(".sls"))
-                            ((rnrs base) #t)
-                            ((rnrs) #t)))))
+      (syntax-case stx ()
+        [(k)
+         (with-syntax ([(libspec ...) (read-file "config/stdlibs.scm" #'k)])
+           #'(stdlibs-collection (make-library-locator '("stdlib/") '(".sls"))
+                                 (libspec #t) ...))]))))
