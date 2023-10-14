@@ -1,7 +1,7 @@
 (library (test)
   (export foo)
   (import
-    ($system)
+    (rnrs)
     (test2))
 
   (define-syntax foo
