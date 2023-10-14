@@ -12,9 +12,9 @@
 (define stdlibs
   (stdlibs-collection
    (make-library-locator '("stdlib/" "tests/") '(".sls"))
-   ((rnrs base) #t #t)
-   ((rnrs) #t #t)
-   ((test) #t #t)))
+   ((rnrs base) #t)
+   ((rnrs) #t)
+   ((test) #t)))
 
 (test-begin "standard libraries collections")
 
@@ -22,7 +22,7 @@
 
 (current-library-collection stdlibs)
 
-(test-equal 4 (eval '4 (environment '(rnrs base))))
+(test-equal 4 (eval '4 (environment '(rnrs))))
 
 (eval 'foo (environment '(test)))
 

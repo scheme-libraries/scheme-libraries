@@ -100,7 +100,7 @@
       (lambda (new)
         (define who 'make-library)
         (lambda (name ver uid imports exports visreqs invreqs viscode invcode bdg*)
-          (assert (library-name? name))
+          (assert (or (not name) (library-name? name)))
           (assert (library-version? ver))
           (assert (or (not uid) (symbol? uid)))
           (assert (rib? exports))

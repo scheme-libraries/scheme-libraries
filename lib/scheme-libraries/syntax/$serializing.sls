@@ -29,9 +29,9 @@
   ;; Library collections
 
   (trace-define library-collection->datum
-    (lambda (lc)
+    (lambda (lc visible?)
       (parameterize ([current-library-collection lc])
-        `($library-collection ,@(map library->datum (library-list))))))
+        `($library-collection ,@(map (lambda (lib) (library->datum lib visible?)) (library-list))))))
 
   (define/who datum->library-collection
     (lambda (e)
@@ -49,13 +49,16 @@
   ;; Libraries
 
   (define/who library->datum
-    (lambda (lib)
+    (lambda (lib visible?)
       (assert (library? lib))
       (let ([imports (library-imports lib)]
             [viscode (expression->datum (library-visit-code lib))]
             [invcode (expression->datum (library-invoke-code lib))])
         (extend-backquote here
-          `($library (,@(library-name lib) ,(library-version lib))
+          `($library (,@(if (visible? lib)
+                            (library-name lib)
+                            '(#f))
+                      ,(library-version lib))
              (uid ,(library-uid lib))
              (import ,@(vector->list
                         (vector-map
@@ -97,7 +100,7 @@
     ;; TODO: Check that library names corresponding to uids match.
     (lambda (e)
       (match e
-        [($library (,name ... ,version)
+        [($library (,name* ... ,version)
            (uid ,uid)
            (import ((,impname** ... ,impver*) ,impuid*) ...)
            (visit-requirements ,visreq* ...)
@@ -106,37 +109,38 @@
            (environment (,[datum->label -> lbl*] ,type*) ...)
            (visit-code ,viscode)
            (invoke-code ,invcode))
-         (let ([lib
-                (make-library
-                 ;; Name
-                 name
-                 ;; Version
-                 version
-                 ;; Uid
-                 uid
-                 ;; Imports
-                 (vector-map uid->library (list->vector impuid*))
-                 ;; Exports
-                 (let ([rib (make-rib)])
-                   (for-each
-                     (lambda (e)
-                       (match e
-                         [(,n ,l/p)
-                          (rib-set! rib n '() (datum->label/props l/p))]
-                         [,_ (assert #f)]))
-                     expexp*)
-                   rib)
-                 ;; Visit requirements
-                 (vector-map uid->library (list->vector visreq*))
-                 ;; Invoke requirements
-                 (vector-map uid->library (list->vector invreq*))
-                 ;; Visit commands
-                 (datum->expression viscode)
-                 ;; Invoke definitions
-                 (datum->expression invcode)
-                 ;; Bindings
-                 lbl*                   ;XXX:store it under env instead?
-                 )])
+         (let* ([name (if (equal? name* '(#f)) #f name*)]
+                [lib
+                 (make-library
+                  ;; Name
+                  name
+                  ;; Version
+                  version
+                  ;; Uid
+                  uid
+                  ;; Imports
+                  (vector-map uid->library (list->vector impuid*))
+                  ;; Exports
+                  (let ([rib (make-rib)])
+                    (for-each
+                      (lambda (e)
+                        (match e
+                          [(,n ,l/p)
+                           (rib-set! rib n '() (datum->label/props l/p))]
+                          [,_ (assert #f)]))
+                      expexp*)
+                    rib)
+                  ;; Visit requirements
+                  (vector-map uid->library (list->vector visreq*))
+                  ;; Invoke requirements
+                  (vector-map uid->library (list->vector invreq*))
+                  ;; Visit commands
+                  (datum->expression viscode)
+                  ;; Invoke definitions
+                  (datum->expression invcode)
+                  ;; Bindings
+                  lbl*                   ;XXX:store it under env instead?
+                  )])
            (for-each
              (lambda (lbl type)
                (match type
