@@ -2,7 +2,7 @@
 
 ;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (rnrs)
+(library (rnrs (6))
   (export
     quote)
   (import

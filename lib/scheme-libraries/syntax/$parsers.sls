@@ -10,6 +10,7 @@
     parse-sub-version)
   (import
     (rnrs)
+    (scheme-libraries lists)
     (scheme-libraries numbers)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax syntax-match)
@@ -73,7 +74,9 @@
                   [n (length pred?*)])
              (lambda (sub-ver*)
                (and (fx<=? n (length sub-ver*))
-                    (for-all (lambda (pred? sub-ver) (pred? sub-ver)) pred?* sub-ver*))))]
+                    (for-all (lambda (pred? sub-ver) (pred? sub-ver))
+                             pred?*
+                             (take sub-ver* n)))))]
           [,x
             (syntax-error #f "ill-formed version-reference" #f x)]))))
 

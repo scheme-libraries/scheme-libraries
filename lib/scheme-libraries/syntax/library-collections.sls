@@ -166,7 +166,7 @@
   (define variable->datum
     (lambda (var)
       (assert (variable? var))
-      (string->symbol (format "variable-~a" (variable-name var)))))
+      (string->symbol (format "%variable-~a" (variable-name var)))))
 
   (define datum->variable
     (lambda (s)
@@ -175,7 +175,7 @@
              (let ([s (symbol->string s)])
                (string->symbol
                 (substring s
-                           (string-length "variable-")
+                           (string-length "%variable-")
                            (fx- (string-length s)
-                                (string-length "variable-")))))])
+                                (string-length "%variable-")))))])
         (symbol->object s (lambda () (name->variable name)))))))
