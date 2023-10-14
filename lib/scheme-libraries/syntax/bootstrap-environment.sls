@@ -17,6 +17,7 @@
     ;; DEBUG
     (only (chezscheme) pretty-print trace-define)
 
+    (scheme-libraries define-values)
     (scheme-libraries define-who)
     (scheme-libraries helpers)
     (scheme-libraries match)
@@ -247,42 +248,24 @@
 
   (define eval-transformer
     (lambda (x who)
-      (execute-transformer (compile-transformer x) who)
-
-      #;
-      (let-values ([(vars locs e) (meta-expand x)])
-        (let ([f (execute-transformer vars locs e)])
-          (unless (or (procedure? f)
-                      (variable-transformer? f))
-            (assertion-violation who "invalid transformer" f))
-          f))))
+      (execute-transformer (compile-transformer x) who)))
 
   (define meta-expand
     (lambda (x)
-      (with-requirements-collector
-        (parameterize ([current-metalevel (fx+ (current-metalevel) 1)])
-          (let ([e (expand-expression x)])
-            (let-values ([(var* lib* lbl*) (current-runtime-globals)])
-              (define loc* (vector-map variable-binding-location
-                                (vector-map label-binding lbl*)))
-              (vector-for-each
-               (lambda (var lib lbl)
-                 (require-for-expand! lib var lbl)
-                 (library-invoke! lib))
-               var* lib* lbl*)
-              (values var* loc* e)))))))
-
-  #;
-  (define execute-transformer
-    (lambda (vars locs e)
-      (execute
-       (build
-         (letrec ,(map (lambda (var loc)
-                         `[,var (location-box ',loc)])
-                       (vector->list vars)
-                       (vector->list locs))
-           ;; XXX: egg2 uses set!
-           ,e)))))
+      (define-values (e var* lib* lbl*)
+        (with-requirements-collector
+            (parameterize ([current-metalevel (fx+ (current-metalevel) 1)])
+              (let ([e (expand-expression x)])
+                (let-values ([(var* lib* lbl*) (current-runtime-globals)])
+                  (values e var* lib* lbl*))))))
+      (define loc* (vector-map variable-binding-location
+                               (vector-map label-binding lbl*)))
+      (vector-for-each
+       (lambda (var lib lbl)
+         (require-for-expand! lib var lbl)
+         (library-invoke! lib))
+       var* lib* lbl*)
+      (values var* loc* e)))
 
   (define execute
     (lambda (e)
