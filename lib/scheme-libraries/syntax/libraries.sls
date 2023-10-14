@@ -102,7 +102,7 @@
         (lambda (name ver uid imports exports visreqs invreqs viscode invcode bdg*)
           (assert (library-name? name))
           (assert (library-version? ver))
-          (assert (symbol? uid))
+          (assert (or (not uid) (symbol? uid)))
           (assert (rib? exports))
           (assert (and (vector? imports)
                        (for-all library? (vector->list imports))))
