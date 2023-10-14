@@ -289,11 +289,18 @@
     (define expand-library
       (lambda (name ver exp* imp* body*)
         (let ([ribs (make-ribcage)]
-              [rib (make-rib)])
+              [rib (make-rib)]
+              [htimp (make-eq-hashtable)])
+          ;; XXX: Do we need system libraries like ($system) in the
+          ;; set of imports?  These libraries have to be loaded first.
+          ;; We need to check whether $system has the correct id!
+          ;; Original idea: $system is not stored in library
+          ;; collection because it is invisible and no longer needed
+          ;; (-> but see invoke/visit requirements!)
           (ribcage-add-barrier! ribs rib '(()))
           (for-each
             (lambda (imp)
-              (import-spec-import! imp rib))
+              (import-spec-import! imp rib htimp))
             imp*)
           (with-requirements-collector
               (let*-values ([(viscmd* def* e lbl*)
@@ -322,7 +329,7 @@
                      ;; Uid
                      (uid (last name))
                      ;; Imports
-                     '#()               ;FIXME
+                     (hashtable-keys htimp)
                      ;; Exports
                      exports
                      ;; Visit requirements

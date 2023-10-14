@@ -39,20 +39,25 @@
   ;; Importing
 
   (define/who import-spec-import!
-    (lambda (imp-spec rib)
-      (unless (rib? rib)
-        (assertion-violation who "invalid rib argument" rib))
-      (let ([imp-set (expand-import-spec imp-spec)])
-        (rib-for-each (lambda (name marks l/p)
-                        (rib-set! rib name marks l/p))
-                      imp-set))))
+    (case-lambda
+      [(imp-spec rib)
+       (import-spec-import! imp-spec rib (make-eq-hashtable))]
+      [(imp-spec rib htimp)
+       (unless (rib? rib)
+         (assertion-violation who "invalid rib argument" rib))
+       (unless (hashtable? htimp)
+         (assertion-violation who "invalid imports argument" htimp))
+       (let ([imp-set (expand-import-spec imp-spec htimp)])
+         (rib-for-each (lambda (name marks l/p)
+                         (rib-set! rib name marks l/p))
+                       imp-set))]))
 
   (define expand-import-spec
-    (lambda (spec)
+    (lambda (spec htimp)
       (let f ([imp-set (parse-import-spec spec)])
         (syntax-match imp-set
           [(library ,lib-ref)
-           (expand-library-reference lib-ref)]
+           (expand-library-reference lib-ref htimp)]
           [(only ,imp-set ,id* ...)
            (guard (for-all $identifier? id*))
            ;; FIXME
@@ -69,11 +74,13 @@
            (guard (for-all $identifier? orig-id*) (for-all $identifier? new-id*))
            ;; FIXME
            (assert #f)]
-          [,imp-set (expand-library-reference imp-set)]))))
+          [,imp-set (expand-library-reference imp-set htimp)]))))
 
   (define expand-library-reference
-    (lambda (lib-ref)
-      (library-exports (import-library! lib-ref))))
+    (lambda (lib-ref htimp)
+      (let ([lib (import-library! lib-ref)])
+        (when (library-uid lib) (hashtable-set! htimp lib #t))
+        (library-exports lib))))
 
   (define import-library!
     (lambda (lib-ref)

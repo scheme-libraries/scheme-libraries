@@ -739,7 +739,7 @@
        ;; Version
        '()
        ;; Uid
-       (uid '$system)
+       #f ;(uid '$system)
        ;; Imports
        '#()
        ;; Exports

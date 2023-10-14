@@ -99,7 +99,7 @@
       (match e
         [($library (,name ... ,version)
            (uid ,uid)
-           (import ((,impname* ,impver*) ,impuid*) ...)
+           (import ((,impname** ... ,impver*) ,impuid*) ...)
            (visit-requirements ,visreq* ...)
            (invoke-requirements ,invreq* ...)
            (export ,expexp* ...)
