@@ -9,7 +9,8 @@
     filter-map
     make-list
     length+
-    split-at)
+    split-at
+    take)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -100,4 +101,17 @@
             (rv '() (cons fill rv))]
            ((fxzero? k)
             rv))]
-      [(k) (make-list k (void))])))
+      [(k) (make-list k (void))]))
+
+  (define/who take
+    (lambda (x i)
+      (unless (nonnegative-fixnum? i)
+        (assertion-violation who "invalid length argument" i))
+      (let f ([x x] [i i])
+        (cond
+         [(fxzero? i) '()]
+         [(null? x)
+          (assertion-violation who "index out of range" x i)]
+         [else
+          (cons (car x) (f (cdr x) (fx- i 1)))]))))
+  )

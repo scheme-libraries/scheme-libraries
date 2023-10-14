@@ -87,6 +87,7 @@
     make-list
     length+
     split-at
+    take
 
     ;; (scheme-libraries match)
     match
