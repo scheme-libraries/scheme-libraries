@@ -33,6 +33,7 @@
               (let ([x (annotated-datum->syntax-object e (system-environment))])
                 (let-values ([(n ver exp* imp* body*)
                               (parse-library-definition x)])
+                  ;(display n) (newline)
                   (when (and (library-name=? name n) (pred? ver))
                     (let-values ([(lib lbl*)
                                   ;; XXX: Can we extract lbl* from lib?
