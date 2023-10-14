@@ -52,9 +52,11 @@
       	  (put 'with-syntax 'scheme-indent-function 1)
           (put 'syntax-match 'scheme-indent-function 1)
           (put 'syntax-error 'scheme-indent-function 'defun)
+          (put '$library 'scheme-indent-function 'defun)
 	  (font-lock-add-keywords
 	   nil
-	   '(("(\\(define-values2\\) (\\([^()]*\\))"
+	   '(("(\\($library\\)\\>" 1 font-lock-keyword-face)
+             ("(\\(define-values2\\) (\\([^()]*\\))"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
              ("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"

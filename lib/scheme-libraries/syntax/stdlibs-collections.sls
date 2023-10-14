@@ -16,9 +16,6 @@
   ;; which is also used by the library locator to retrieve its source
   ;; code.
 
-  ;; A library is *visible* if it can later be imported from the
-  ;; library collection by its name.
-
   ;; All system libraries are compiled together and are later invoked
   ;; together.  A library, on which a system library depends must also
   ;; be a system library.  It is an error if this is not fulfilled.

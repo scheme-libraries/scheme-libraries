@@ -4,6 +4,9 @@
 
 (library (rnrs base (6))
   (export
+    define
+    define-syntax
+    lambda
     quote)
   (import
     ($system)))

@@ -4,6 +4,12 @@
 
 (library (rnrs (6))
   (export
-    quote)
+    define
+    define-syntax
+    lambda
+    quote
+    syntax
+    syntax-case)
   (import
-    (rnrs base)))
+    (rnrs base)
+    (rnrs syntax-case)))

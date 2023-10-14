@@ -2,7 +2,7 @@
   (export
     id)
   (import
-    ($system))
+    (rnrs))
 
   (define id
     (lambda (x)
