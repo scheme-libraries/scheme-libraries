@@ -26,26 +26,23 @@
   (define make-default-library-loader
     (lambda (loc)
       (lambda (name pred?)
-        ;; TODO: Change it into a regular for-each interface and use
-        ;; call/cc here.
-        (library-locator-search
-          loc
-          name pred?
-          (lambda (e k)
-            (let ([x (annotated-datum->syntax-object e (system-environment))])
-              (let-values ([(n ver exp* imp* body*)
-                            (parse-library-definition x)])
-                (unless (and (library-name=? name n) (pred? ver))
-                  (k))
-                (let-values ([(lib lbl*)
-                              ;; XXX: Can we extract lbl* from lib?
-                              (parameterize ([current-form x])
-                                (expand-library name ver exp* imp* body*))])
-                  (library-list-append! lib)
-                  (library-bind-globals! lib lbl*)
-                  lib))))
-          (lambda ()
-            #f)))))
+        (call/cc
+         (lambda (return)
+           (library-locator-for-each
+            (lambda (e)
+              (let ([x (annotated-datum->syntax-object e (system-environment))])
+                (let-values ([(n ver exp* imp* body*)
+                              (parse-library-definition x)])
+                  (when (and (library-name=? name n) (pred? ver))
+                    (let-values ([(lib lbl*)
+                                  ;; XXX: Can we extract lbl* from lib?
+                                  (parameterize ([current-form x])
+                                    (expand-library name ver exp* imp* body*))])
+                      (library-list-append! lib)
+                      (library-bind-globals! lib lbl*)
+                      (return lib))))))
+            loc name pred?)
+           #f)))))
 
   (define library-bind-globals!
     (lambda (lib lbl*)
