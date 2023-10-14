@@ -6,11 +6,10 @@
   (export
     make-library-locator
     library-locator?
-    library-locator-search)
+    library-locator-for-each)
   (import
     (rnrs)
     (scheme-libraries define-who)
-    (scheme-libraries continuation-prompts)
     (scheme-libraries reading readers))
 
   (define-record-type library-locator
@@ -29,35 +28,27 @@
             (assertion-violation who "invalid extension list argument" ext*))
           (new dir* ext*)))))
 
-  (define/who library-locator-search
-    (lambda (loc name pred? succ fail)
+  (define/who library-locator-for-each
+    (lambda (proc loc name pred?)
+      (define locate-in-file
+        (lambda (filename)
+          (guard (c [(i/o-file-does-not-exist-error? c)])
+            (call-with-input-file filename
+              (lambda (in)
+                (let ([reader (make-reader in filename)])
+                  (do ([form (reader-get-annotated-datum reader)])
+                      ((eof-object? form))
+                    (proc form))))))))
+      (assert (procedure? proc))
       (unless (library-locator? loc)
         (assertion-violation who "invalid library locator argument" loc))
-      (let ([tag (make-continuation-prompt-tag 'library-locator-search)])
-        (define locate-in-file
-          (lambda (filename)
-            (guard (c [(i/o-file-does-not-exist-error? c)])
-              (call-with-input-file filename
-                (lambda (in)
-                  (let ([reader (make-reader in filename)])
-                    (do ([form (reader-get-annotated-datum reader)])
-                        ((eof-object? form))
-                      (call/cc
-                       (lambda (k)
-                         (abort-current-continuation tag
-                           (lambda ()
-                             (succ form k))))))))))))
-        (call-with-continuation-prompt
-          (lambda ()
-            (for-each
-              (lambda (dir)
-                (for-each
-                  (lambda (ext)
-                    (locate-in-file (library-name->filename dir name ext)))
-                  (library-locator-extensions loc)))
-              (library-locator-directories loc))
-            (abort-current-continuation tag fail))
-          tag (lambda (thunk) (thunk))))))
+      (for-each
+        (lambda (dir)
+          (for-each
+            (lambda (ext)
+              (locate-in-file (library-name->filename dir name ext)))
+            (library-locator-extensions loc)))
+        (library-locator-directories loc))))
 
   (define library-name->filename
     (lambda (dir name ext)
