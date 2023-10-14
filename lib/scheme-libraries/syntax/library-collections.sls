@@ -73,7 +73,8 @@
 
   (define library-set!
     (lambda (name lib)
-      (library-table-set! (current-library-table) name lib)
+      (when name
+        (library-table-set! (current-library-table) name lib))
       (hashtable-update! (library-collection-uid-table (current-library-collection))
                          (library-uid lib)
                          (lambda (old-val)

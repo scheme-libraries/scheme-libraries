@@ -9,8 +9,7 @@
     stdlib?
     stdlib-name
     stdlib-pred
-    stdlib-system?
-    stdlib-visible?)
+    stdlib-system?)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -26,11 +25,15 @@
   (define-record-type stdlib
     (nongenerative stdlib-78444666-3654-446f-8cb5-5d2764763191)
     (sealed #t)
-    (fields name pred system? visible?))
+    (fields name pred system?))
 
   (define make-stdlibs-collection-expr
     (lambda (loc stdlib*)
       (define who 'stdlibs-collection)
+      (define visible-libs (make-eq-hashtable))
+      (define visible?
+        (lambda (lib)
+          (hashtable-contains? visible-libs lib)))
       (parameterize ([current-library-loader (make-default-library-loader loc)]
                      [current-library-collection (bootstrap-library-collection)])
         (for-each
@@ -40,12 +43,14 @@
             ;; Need something like ensure-loaded.
             (cond
              [(load-library name (stdlib-pred stdlib))
-              => (lambda (lib) (library-set! name lib))]
+              => (lambda (lib)
+                   (hashtable-set! visible-libs lib #t)
+                   (library-set! name lib))]
              [else
               (assertion-violation who "library not found" name)]))
           stdlib*)
         #`(datum->library-collection
-           #,(syntax-quote (library-collection->datum (current-library-collection))))
+           #,(syntax-quote (library-collection->datum (current-library-collection) visible?)))
 
 
 

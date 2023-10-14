@@ -49,18 +49,17 @@
   (define-syntax/who stdlibs-collection
     (lambda (x)
       (syntax-case x ()
-        [(_ loc-expr [lib-ref sys? vis?] ...)
-         (for-all boolean? (map syntax->datum #'(sys? ... vis? ...)))
+        [(_ loc-expr [lib-ref sys?] ...)
+         (for-all boolean? (map syntax->datum #'(sys? ... )))
          (metalet ([loc loc-expr]
                    [lib-ref* (list (syntax-extend-backquote here `lib-ref) ...)]
-                   [sys?* (list sys? ...)]
-                   [vis?* (list vis? ...)])
+                   [sys?* (list sys? ...)])
            (let ([stdlib*
-                  (map (lambda (lib-ref-expr sys?-expr vis?-expr)
+                  (map (lambda (lib-ref-expr sys?-expr)
                          (let-values ([(name pred)
                                        (parse-library-reference lib-ref-expr)])
-                           (make-stdlib name pred (syntax->datum sys?-expr) (syntax->datum vis?-expr))))
-                       lib-ref* sys?* vis?*)])
+                           (make-stdlib name pred (syntax->datum sys?-expr) )))
+                       lib-ref* sys?*)])
              (make-stdlibs-collection-expr loc stdlib*)))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
