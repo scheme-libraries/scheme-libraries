@@ -62,7 +62,6 @@
       (guard (c [(syntax-error? c)
                  (raise-continuable
                   (condition c (make-undefined-violation)))])
-        (display id)
         (syntax-error #f (format msg (identifier->symbol id)) id))))
 
 
