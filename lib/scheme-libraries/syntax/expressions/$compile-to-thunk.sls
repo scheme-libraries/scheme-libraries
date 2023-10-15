@@ -18,8 +18,8 @@
       (let-values ([(e vals) (parse e)])
 
         ;; FIXME
-        ;(display "Eval: ")
-        ;(display e) (newline)
+        ;;(display "Eval: ")
+        ;;(display e) (newline)
 
         ((eval `(lambda (vals) (lambda () ,e)) (runtime-environment))
          vals))))

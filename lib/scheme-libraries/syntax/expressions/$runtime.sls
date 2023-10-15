@@ -19,6 +19,7 @@
     <=
     >=
     append
+    call-with-values
     car
     cdr
     eq?
