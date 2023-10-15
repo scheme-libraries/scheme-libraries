@@ -12,7 +12,7 @@
   (define/who void
     (define-record-type void
       (nongenerative void-e509d690-c552-4ca5-b05b-dde166eb3b56)
-      (sealed #t))
+      (opaque #t) (sealed #t))
     (let ([void (make-void)])
       (lambda ()
         void))))
