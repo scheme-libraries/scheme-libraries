@@ -4,15 +4,17 @@
 
 (library (rnrs base (6))
   (export
-    ;; 11.2
+    ;; Definitions
     define
     define-syntax
-    ;; 11.4
+    ;; Expressions
     quote
     lambda
     if
     set!
     cond
+    =>
+    else
     case
     and
     or
@@ -22,7 +24,22 @@
     letrec*
     let-values
     let*-values
-    list values
+    begin
+
+    list
+    values
     )
   (import
-    ($system)))
+    (rename ($system)
+      (values $values)))
+
+  ;; todo: how to define variadic procedures with primitives?
+  ;; todo: how to compile everything together (including memv ...)
+
+  (define values
+    (lambda x*
+
+
+      ))
+
+  )

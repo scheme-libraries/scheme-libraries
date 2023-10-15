@@ -22,7 +22,8 @@
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax $marks)
     (scheme-libraries syntax $ribs)
-    (scheme-libraries rec))
+    (scheme-libraries rec)
+    (scheme-libraries record-writer))
 
   (define/who ribcage-ref
     (lambda (r n m fail)
@@ -153,6 +154,10 @@
     make-duplicate-definition-condition duplicate-definition-condition?
     (name duplicate-definition-name))
 
+  ;; Record writers
 
+  (record-writer (record-type-descriptor ribcage)
+    (lambda (r p wr)
+      (put-string p "#<ribcage>")))
 
   )
