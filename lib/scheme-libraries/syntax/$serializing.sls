@@ -28,7 +28,7 @@
 
   ;; Library collections
 
-  (trace-define library-collection->datum
+  (define library-collection->datum
     (lambda (lc visible?)
       (parameterize ([current-library-collection lc])
         `($library-collection ,@(map (lambda (lib) (library->datum lib visible?)) (library-list))))))
