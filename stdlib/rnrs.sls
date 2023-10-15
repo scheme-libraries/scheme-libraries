@@ -8,6 +8,11 @@
     define-syntax
     lambda
     quote
+    if
+    set!
+    cond
+    let-values
+    let*-values
     syntax
     syntax-case)
   (import

@@ -32,4 +32,24 @@
 
 (test-equal 12 (eval 'foo (environment '(test))))
 
+(test-equal 10
+  (eval '(let ([x 10]) x) (environment '(rnrs base))))
+
+(test-equal 13
+  (eval '(let*-values ([(x) 13]) x) (environment '(rnrs base))))
+
+(test-equal 14
+  (eval '(let*-values () 14) (environment '(rnrs base))))
+
+(test-equal '(1 2 3)
+  (eval '(let*-values ([(x y z) (values 1 2 3)]) (list x y z)) (environment '(rnrs base))))
+
+(test-equal '(1 (2 3) 5)
+  (eval '(let ([x 5])
+           (let-values ([(x . y) (values 1 2 3)]
+                        [(z) x])
+             (list x y z)))
+        (environment '(rnrs base))))
+
+
 (test-end "eval")

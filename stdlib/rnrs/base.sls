@@ -4,9 +4,25 @@
 
 (library (rnrs base (6))
   (export
+    ;; 11.2
     define
     define-syntax
+    ;; 11.4
+    quote
     lambda
-    quote)
+    if
+    set!
+    cond
+    case
+    and
+    or
+    let
+    let*
+    letrec
+    letrec*
+    let-values
+    let*-values
+    list values
+    )
   (import
     ($system)))

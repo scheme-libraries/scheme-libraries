@@ -31,6 +31,7 @@
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax library-collections)
+    (scheme-libraries syntax identifiers)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries syntax variables)
@@ -446,20 +447,19 @@
         (expand-expression
          (let ([t (generate-temporary)]
                [f (generate-temporary)])
-           (dlog
-            (syntax-extend-backquote here
-              `(let ([,t ,e])
-                 ,(fold-right
-                    (lambda (cl rest)
-                      `(let ([,f (lambda () ,rest)])
-                         ,(gen-clause cl t (lambda () `(,f)))))
-                    `(syntax-violation #f "invalid syntax" ,t)
-                    cl*)))))))))
+           (syntax-extend-backquote here
+             `(let ([,t ,e])
+                ,(fold-right
+                   (lambda (cl rest)
+                     `(let ([,f (lambda () ,rest)])
+                        ,(gen-clause cl t (lambda () `(,f)))))
+                   `(syntax-violation #f "invalid syntax" ,t)
+                   cl*))))))))
 
   ;; FIXME: DEBUG: XXX: LOG
   ;; Move this into execute-transformer code.
   (define dlog (lambda (x)
-                 #;
+
                  (pretty-print (syntax-object->datum x))
                 x))
 
@@ -694,7 +694,7 @@
           [(,k ,tmpl)
            (let-values ([(out env* var?)
                          (gen-template tmpl depth)])
-             (expand-expression (dlog out)))]
+             (expand-expression out))]
           [,x
            (syntax-error #f "invalid syntax" x)]))))
 
@@ -750,6 +750,7 @@
 
   ;; Library collection serializing
 
+  #;
   (define exports->datum
     (lambda (exports)
       (rib-map
@@ -759,78 +760,6 @@
        exports)))
 
   #;
-  (define datum->library-collection
-    (lambda (rep)
-      (define library-table (make-eqv-hashtable))
-      (define index->library
-        (lambda (idx)
-          (assert (hashtable-ref library-table idx #f))))
-      (assert (list? rep))
-      (parameterize ([current-library-collection (make-library-collection)])
-        (do ([i 0 (fx+ i 1)]
-             [lib* rep (cdr lib*)])
-            ((null? lib*))
-          (let ([lib (datum->library index->library (car lib*))])
-            (hashtable-set! library-table i lib)
-            (library-set! (library-name lib) lib)))
-        ;; XXX: bind any globals after loading?
-        (current-library-collection))))
-
-  #;
-  (define datum->library
-    (lambda (index->library obj)
-      (define datum->definition
-        (lambda (e)
-          (match e
-            [(,var ,expr) (make-definition var expr)])))
-      ;; XXX: The library needs to know its runtime globals (for the later invoker).
-      ;; This should just be a list of labels!
-      (match obj
-        [(,name ,ver ,uid ,exp* ,visreqs ,invreqs ,viscode ,invcode ((,lbl* . ,type*) ...))
-         (let* ([lbl* (map datum->label lbl*)]
-                [lib
-                 (make-library
-                  ;; Name
-                  name
-                  ;; Version
-                  ver
-                  ;; Uid
-                  uid
-                  ;; Imports
-                  '#()                  ;FIXME
-                  ;; Export
-                  (datum->exports exp*)
-                  ;; Visit requirements
-                  (vector-map index->library visreqs)
-                  ;; Invoke requirements
-                  (vector-map index->library invreqs)
-                  ;; Visit commands
-                  viscode                        ;FIXME: link
-                  ;; Invoke definitions
-                  (map datum->definition invcode) ;FIXME: link
-                  ;; Visiter
-                  #f
-                  ;; Invoker
-                  #f
-                  ;; Bindings
-                  lbl*)])
-           (for-each
-             (lambda (lbl type)
-               (match type
-                 [(variable ,sym)
-                  (let ([bdg (make-variable-binding sym)])
-                    (variable-binding-library-set! bdg lib)
-                    (label-binding-set! lbl bdg))]
-                 [(keyword)
-                  ;; TODO: Get rid of global-keyword-binding
-                  (let ([bdg (make-global-keyword-binding #f #f)])
-                    (global-keyword-binding-library-set! bdg lib)
-                    (label-binding-set! lbl bdg))]))
-             lbl* type*)
-
-           ;; FIXME: set visiter & invoker! (use lib) (using procedure on lib!
-           lib)])))
-
   (define datum->exports
     (lambda (obj)
       (assert (list? obj))
@@ -1037,10 +966,54 @@
          (guard (for-all $identifier? x*))
          (let f ([x x] [x* x*] [e e] [e* e*])
            (if (null? x*)
-               (expand `(let ([,x ,e]) ,b* ... ,b))
-               (expand `(let ([,x ,e])
-                          ,(f (car x*) (cdr x*)
-                              (car e*) (cdr e*))))))]
+               (expand-expression
+                `(let ([,x ,e]) ,b* ... ,b))
+               (expand-expression
+                `(let ([,x ,e])
+                   ,(f (car x*) (cdr x*)
+                       (car e*) (cdr e*))))))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax let-values
+    (lambda (x)
+      (define who 'let-values)
+      (syntax-match x
+        [(,k ([,f* ,e*] ...) ,b* ... ,b)
+         (let-values ([(x* t* f*)
+                       (let g ([f* f*])
+                         (match f*
+                           [()
+                            (values '() '() '())]
+                           [(,f . ,[y* u* f*])
+                            (syntax-match f
+                              [(,x* ...)
+                               (let ([t* ($generate-temporaries x*)])
+                                 (values (append x* y*) (append t* u*) (cons t* f*)))]
+                              [(,x* ... . ,x)
+                               (let ([t (generate-temporary)]
+                                     [t* ($generate-temporaries x*)])
+                                 (values (cons x (append x* y*))
+                                         (cons t (append t* u*))
+                                         (cons `(,t* ... . ,t) f*)))]
+                              [,x (syntax-error who "invalid syntax" x)])]))])
+           (unless (valid-bound-identifiers? x*)
+             (syntax-error who "invalid syntax" x))
+           (expand-expression `(let*-values ([,f* ,e*] ...)
+                                 (let ([,x* ,t*] ...)
+                                   ,b* ... ,b))))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax let*-values
+    (lambda (x)
+      (define who 'let*-values)
+      (syntax-match x
+        [(,k ([,f* ,e*] ...) ,b* ... ,b)
+         (expand-expression
+           (fold-right
+             (lambda (f e body)
+               `(call-with-values (lambda () ,e)
+                  (lambda ,f ,body)))
+             `(let* () ,b* ... ,b) f* e*))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax cond
@@ -1367,6 +1340,7 @@
   (declare-prim-syntax syntax-vector? 1)
   (declare-prim-syntax syntax-vector->list 1)
   (declare-prim-syntax syntax-violation (fxnot 3))
+  (declare-prim-syntax call-with-values 2)
 
   ;; DEBUG
   (declare-prim-syntax display 1)
