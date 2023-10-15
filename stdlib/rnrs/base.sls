@@ -27,19 +27,8 @@
     begin
 
     list
-    values
-    )
+    values)
   (import
-    (rename ($system)
-      (values $values)))
-
-  ;; todo: how to define variadic procedures with primitives?
-  ;; todo: how to compile everything together (including memv ...)
-
-  (define values
-    (lambda x*
-
-
-      ))
+    ($system))
 
   )

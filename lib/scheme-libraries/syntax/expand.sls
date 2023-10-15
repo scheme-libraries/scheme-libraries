@@ -94,6 +94,7 @@
              [else
               (build ,(variable-binding-symbol t))])]
            [else
+            ;; FIXME
             (display x) (newline)
             (syntax-error #f "invalid syntax in expression context" x)])))))
 
@@ -121,6 +122,9 @@
   (define expand-primop
     (lambda (t x)
       (syntax-match x
+        [,k
+         (guard ($identifier? k))
+         (prim-binding-name t)]
         [(,k ,[expand-expression -> e*] ...)
          (let ([arity (prim-binding-arity t)]
                [name (prim-binding-name t)]
@@ -262,7 +266,8 @@
            => (lambda (lbl)
                 (let ([bdg (label->binding lbl)])
                   (cond
-                   [(or (variable-binding? bdg))
+                   [(or (variable-binding? bdg)
+                        (prim-binding? bdg))
                     (values x bdg)]
                    [(keyword-binding? bdg)
                     (keyword-type bdg)]

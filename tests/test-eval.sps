@@ -51,5 +51,7 @@
              (list x y z)))
         (environment '(rnrs base))))
 
+(test-assert (eval 'list (environment '(rnrs base))))
+
 
 (test-end "eval")
