@@ -34,6 +34,8 @@
       (define visible?
         (lambda (lib)
           (hashtable-contains? visible-libs lib)))
+      (define system?
+        (lambda (lib) #t))
       (parameterize ([current-library-loader (make-default-library-loader loc)]
                      [current-library-collection (bootstrap-library-collection)])
         (for-each
@@ -50,24 +52,24 @@
               (assertion-violation who "library not found" name)]))
           stdlib*)
         #`(datum->library-collection
-           #,(syntax-quote (library-collection->datum (current-library-collection) visible?)))
+           #,(syntax-quote (library-collection->datum (current-library-collection) system? visible?)))
 
 
 
 
 
 
-          ;; The stdlibs are now in the library collection.  Now
-          ;; serialize the library collection.
-          ;; what to do with the non-visible collections?
-          ;; -> what did I mean with system?
-          ;;
-          ;; some libraries may be needed by instantiation of other libraries.
-          ;; do we want all libraries initialized?
-          ;; -> no, this is not what r6rs says.  but it could still work for stdlibs... ?
-          ;; -> each library knows which have to be inven
+        ;; The stdlibs are now in the library collection.  Now
+        ;; serialize the library collection.
+        ;; what to do with the non-visible collections?
+        ;; -> what did I mean with system?
+        ;;
+        ;; some libraries may be needed by instantiation of other libraries.
+        ;; do we want all libraries initialized?
+        ;; -> no, this is not what r6rs says.  but it could still work for stdlibs... ?
+        ;; -> each library knows which have to be inven
 
-          )))
+        )))
 
 
 

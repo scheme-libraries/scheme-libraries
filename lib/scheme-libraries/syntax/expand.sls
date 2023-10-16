@@ -380,32 +380,7 @@
         (build
           (begin
             ,@viscmd*
-            (values)))))
-
-    #;
-    (define build-invoker
-      (lambda (def* setters vars vals)
-        (compile-to-thunk
-         (build
-           (letrec (,(map (lambda (var loc)
-                            `[,var ',loc])
-                          (vector->list vars)
-                          (vector->list vals))
-                    ...)
-             (begin
-               ,(map
-                  (lambda (var)
-                    `(set! ,var (location-box ,var)))
-                  (vector->list vars))
-               ...
-               (letrec* (,(map (lambda (def)
-                                 `[,(definition-var def)
-                                   ,(definition-expr def)])
-                               def*)
-                         ...)
-                 (begin
-                   ,setters ...
-                   (values))))))))))
+            (values))))))
 
   (define/who export-spec-export!
     (define parse-export-spec
