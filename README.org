@@ -69,6 +69,8 @@ the ~(srfi :244)~ library of SRFI 244.
 
 ** Ports
 
+** Syntax without pattern variables
+
 ** Random numbers
 
 ** Reading

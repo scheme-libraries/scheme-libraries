@@ -109,6 +109,9 @@
     textual-input-port?
     textual-output-port?
 
+    ;; (scheme-libraries quote-syntax)
+    quote-syntax
+
     ;; (scheme-libraries random-numbers)
     random
     random-seed
@@ -272,6 +275,7 @@
     (scheme-libraries record-writer)
     (scheme-libraries repl)
     (scheme-libraries parameters)
+    (scheme-libraries quote-syntax)
     (scheme-libraries strings)
     (scheme-libraries syntactic-monads)
     (scheme-libraries thread-parameters)
