@@ -83,7 +83,8 @@
              (visit-requirements ,@(if system?
                                        (list init-uid)
                                        (vector->list
-                                        (vector-map library-uid
+                                        (vector-map (lambda (lib)
+                                                      (and lib (library-uid lib)))
                                                     (library-visit-requirements lib)))))
              (invoke-requirements ,@(if system?
                                         (list init-uid)
@@ -156,7 +157,9 @@
                       expexp*)
                     rib)
                   ;; Visit requirements
-                  (vector-map uid->library (list->vector visreq*))
+                  (vector-map (lambda (uid)
+                                (and uid (uid->library uid)))
+                              (list->vector visreq*))
                   ;; Invoke requirements
                   (vector-map uid->library (list->vector invreq*))
                   ;; Visit commands
@@ -192,7 +195,7 @@
       (define init-uid (uid '$init))
       (define imports '#())
       (define exports (make-rib))
-      (define visreqs (vector #f))
+      (define visreqs '#(#f))           ;#f means to invoke itself.
       (define invreqs '#())
       (define viscode
         (build (begin
@@ -207,10 +210,7 @@
                 (values))))))
       (define env
         (apply append (map library-bindings libs)))
-      (define lib
-        (make-library name version init-uid imports exports visreqs invreqs viscode invcode env))
-      (vector-set! visreqs 0 lib)
-      lib))
+      (make-library name version init-uid imports exports visreqs invreqs viscode invcode env)))
 
   (define library-visit-commands
     (lambda (lib)
