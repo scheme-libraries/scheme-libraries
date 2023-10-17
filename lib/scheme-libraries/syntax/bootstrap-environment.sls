@@ -1269,6 +1269,17 @@
                   [,id (identifier? #',id) #',exp1]))))]
           [,x (syntax-error who "invalid syntax" x)]))))
 
+  (declare-expander-syntax assert
+    (lambda (stx)
+      (define who 'assert)
+      (syntax-match stx
+        [(,k ,e)
+         ;; TODO: Add source location information.
+         (expand-expression
+          `(or ,e (assertion-violation #f ',e)))
+         ]
+        [,x (syntax-error who "invalid syntax" x)])))
+
   ;; Internal syntax
 
   (declare-expander-syntax $syntax
@@ -1317,16 +1328,12 @@
   ;; prims
 
   (declare-system-procedures)
-
+  (declare-prim-syntax cons* (fxnot 1))
   (declare-prim-syntax void 0)
-  (declare-prim-syntax list (fxnot 0))
   (declare-prim-syntax make-variable-transformer 1)
-  (declare-prim-syntax map (fxnot 1))
   (declare-prim-syntax memv 2)
-  (declare-prim-syntax not 1)
   (declare-prim-syntax identifier? 1)
   (declare-prim-syntax free-identifier=? 2)
-  (declare-prim-syntax reverse 1)
   (declare-prim-syntax set-box! 2)
   (declare-prim-syntax location-box-set! 2)
   (declare-prim-syntax keyword-binding-transformer-set! 2)
@@ -1343,8 +1350,6 @@
   (declare-prim-syntax syntax-vector? 1)
   (declare-prim-syntax syntax-vector->list 1)
   (declare-prim-syntax syntax-violation (fxnot 3))
-  (declare-prim-syntax call-with-values 2)
 
   ;; DEBUG
-  (declare-prim-syntax display 1)
-  (declare-prim-syntax newline 0))
+)
