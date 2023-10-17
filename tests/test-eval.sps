@@ -28,8 +28,6 @@
 
 (test-equal 1 (eval 1 (environment '(rnrs base))))
 
-(eval 'foo (environment '(test)))
-
 (test-equal 12 (eval 'foo (environment '(test))))
 
 (test-equal 10
