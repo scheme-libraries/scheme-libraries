@@ -25,6 +25,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries gensyms)
     (scheme-libraries hashtables)
+    (scheme-libraries ports)
     (scheme-libraries uuid)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax expand)
@@ -76,6 +77,16 @@
     (syntax-rules ()
       [(declare-expander-syntax name arity)
        (declare-syntax name (make-prim-binding 'name arity))]))
+
+  (define-syntax declare-system-procedures
+    (lambda (x)
+      (syntax-case x ()
+        [(k)
+         (with-syntax ([((library-name prim ...) ...) (read-file "config/system-procedures.scm" #'k)])
+           #'(begin
+               ;; TODO: Remove arity.
+               (declare-prim-syntax prim -1)
+               ... ...))])))
 
   ;; Conversions
 
@@ -1305,16 +1316,8 @@
 
   ;; prims
 
-  (declare-prim-syntax >= (fxnot 1))
-  (declare-prim-syntax <= (fxnot 1))
-  (declare-prim-syntax append (fxnot 0))
-  (declare-prim-syntax car 1)
-  (declare-prim-syntax cdr 1)
-  (declare-prim-syntax cons 2)
-  (declare-prim-syntax cons* (fxnot 1))
-  (declare-prim-syntax eq? 2)
-  (declare-prim-syntax equal? 2)
-  (declare-prim-syntax values (fxnot 0))
+  (declare-system-procedures)
+
   (declare-prim-syntax void 0)
   (declare-prim-syntax list (fxnot 0))
   (declare-prim-syntax make-variable-transformer 1)
@@ -1344,6 +1347,4 @@
 
   ;; DEBUG
   (declare-prim-syntax display 1)
-  (declare-prim-syntax newline 0)
-
-  )
+  (declare-prim-syntax newline 0))
