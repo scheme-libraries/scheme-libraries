@@ -73,8 +73,8 @@ the ~(srfi :244)~ library of SRFI 244.
 
 ** R7RS compatibility library
 
-The ~(scheme-libraries r7rs)~ exports an R7RS-compatible version of
-~syntax-rules~ and ~syntax-error~.
+The ~(scheme-libraries r7rs)~ library exports an R7RS-compatible
+version of ~syntax-rules~ and ~syntax-error~.
 
 ** Random numbers
 
