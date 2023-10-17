@@ -10,9 +10,6 @@
     datum->library)
   (import
     (rnrs)
-
-    (only (chezscheme) trace-define)    ;FIXME DEBUG
-
     (scheme-libraries define-who)
     (scheme-libraries match)
     (scheme-libraries parameters)
@@ -30,7 +27,7 @@
 
   ;; Library collections
 
-  (trace-define library-collection->datum
+  (define library-collection->datum
     (lambda (lc system? visible?)
       (parameterize ([current-library-collection lc])
         (define libs (library-list))
