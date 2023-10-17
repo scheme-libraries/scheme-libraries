@@ -9,7 +9,7 @@ prove = prove --exec '$(scheme-script)' --ext '.sps' --failures
 all:
 
 check:
-	$(prove) tests
+	$(prove) tests/test-*.sps
 
 repl:
 	@$(scheme) schemerc
