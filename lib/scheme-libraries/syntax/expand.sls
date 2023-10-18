@@ -8,6 +8,7 @@
     expand-body
     expand-expression
     expand-library
+    expand-program
     transform)
   (import
     (rnrs)
@@ -58,6 +59,11 @@
     (lambda ()
       (enum-set-member? (current-mode)
                         (expansion-modes library))))
+
+  (define program-mode?
+    (lambda ()
+      (enum-set-member? (current-mode)
+                        (expansion-modes program))))
 
   ;; Expander
 
@@ -152,52 +158,58 @@
     (lambda (x* ribs mode)
       (let ([x* (add-substitutions* ribs x*)])
         (parameterize ([current-mode mode])
-          (expand-form* x* ribs '() '() '())))))
+          (expand-form* x* ribs '() '() '() '())))))
 
   (define expand-form*
-    (lambda (x* ribs rviscmd* rdef* lbl*)
+    (lambda (x* ribs rviscmd* rdef* lbl* rdeferred*)
       (match x*
         [()
-         (unless (top-level-mode?)
-           (syntax-error #f "no expressions in body"))
-         (values (reverse rviscmd*) (expand-definitions (reverse rdef*)) #f lbl*)]
+         (let* ([rcmd* (map expand-expression rdeferred*)]
+                [rcmd* (if (top-level-mode?)
+                           (cons (build (values)) rcmd*)
+                           rcmd*)])
+           (when (null? rcmd*)
+             (syntax-error #f "no expressions in body"))
+           (values (reverse rviscmd*)
+                   (expand-definitions (reverse rdef*))
+                   (build-begin ,@(reverse rcmd*))
+                   lbl*))]
         [(,x . ,x*)
-         (expand-form x x* ribs rviscmd* rdef* lbl*)])))
+         (expand-form x x* ribs rviscmd* rdef* lbl* rdeferred*)])))
 
   (define expand-form
-    (lambda (x x* ribs rviscmd* rdef* lbl*)
+    (lambda (x x* ribs rviscmd* rdef* lbl* rdeferred*)
       (let-values ([(x t) (syntax-type x ribs)])
         (cond
          [(definition-binding? t)
-          (let-values ([(viscmd* def* nlbl*) ((definition-binding-proc t) x ribs)])
-            (expand-form* x* ribs
-                          (append (reverse viscmd*) rviscmd*)
-                          (append (reverse def*) rdef*)
-                          (append nlbl* lbl*)))]
+          (when (and (not (program-mode?))
+                     (not (null? rdeferred*)))
+            (syntax-error #f "definition after expression in body" x))
+          (let ([rdef*
+                 (append
+                  (map
+                    (lambda (x)
+                      (lambda ()
+                        (make-command
+                         (expand-expression x))))
+                    rdeferred*)
+                  rdef*)])
+            (let-values ([(viscmd* def* nlbl*) ((definition-binding-proc t) x ribs)])
+              (expand-form* x* ribs
+                            (append (reverse viscmd*) rviscmd*)
+                            (append (reverse def*) rdef*)
+                            (append nlbl* lbl*)
+                            '())))]
          [(splicing-binding? t)
-          (expand-splicing x t x* ribs rviscmd* rdef* lbl*)]
-         [(library-mode?)
-          (expand-form* '() ribs
-                        rviscmd*
-                        (cons
-                         (lambda ()
-                           (make-command
-                            (expand-expression
-                             (syntax-extend-backquote here
-                               `(begin ,x ,x* ... (void))))))
-                         rdef*)
-                        lbl*)]
+          (expand-splicing x t x* ribs rviscmd* rdef* lbl* rdeferred*)]
          [else
-          (let ([e* (map expand-expression (cons x x*))])
-            (values (reverse rviscmd*)
-                    (expand-definitions (reverse rdef*))
-                    (build-begin ,e* ...)
-                    lbl*))]))))
+          (expand-form* x* ribs rviscmd* rdef* lbl*
+                        (cons x rdeferred*))]))))
 
   (define expand-splicing
-    (lambda (x t x* ribs rviscmd* rdef* lbl*)
+    (lambda (x t x* ribs rviscmd* rdef* lbl* rdeferred*)
       (let ([e* ((splicing-binding-proc t) x)])
-        (expand-form* (append e* x*) ribs rviscmd* rdef* lbl*))))
+        (expand-form* (append e* x*) ribs rviscmd* rdef* lbl* rdeferred*))))
 
   (define expand-definitions
     (lambda (def*)
@@ -287,6 +299,27 @@
              (syntax-error #f "invalid expression syntax" x))
            (values x (make-constant-type e)))])))
 
+  ;; Programs
+
+  (module (expand-program)
+    (define expand-program
+      (lambda (imp* body*)
+        (define ribs (make-ribcage))
+        (define rib (make-rib))
+        (ribcage-add-barrier! ribs rib '())
+        (for-each
+          (lambda (imp)
+            ;; TODO: Start with the standard library collection and
+            ;; write it together with the program.  At least for WPO
+            ;; compilation.
+            (import-spec-import! imp rib))
+          imp*)
+        (with-requirements-collector
+            (let*-values ([(viscmd* def* e lbl*)
+                           (expand-internal body* ribs (expansion-mode program))])
+              (build (letrec* (,def*)
+                       ,e)))))))
+
   ;; Libraries
 
   (module (expand-library)
@@ -308,17 +341,16 @@
               (import-spec-import! imp rib htimp))
             imp*)
           (with-requirements-collector
-              (let*-values ([(viscmd* def* e lbl*)
+              (let*-values ([(viscmd* def* body lbl*)
                              (expand-internal body* ribs (expansion-mode library))]
                             [(var* lib* ref-lbl*) (current-runtime-globals)]
                             [(loc*)
                              (vector-map variable-binding-location
                                          (vector-map label->binding ref-lbl*))])
-                (assert (not e))
                 (let ([exports (make-rib)]
                       [setters (build-variable-setters lbl*)])
                   (define invoke-code
-                    (build-invoke-code def* setters var* loc*))
+                    (build-invoke-code def* setters var* loc* body))
                   (define viscode
                     (build-visit-code viscmd*))
                   (for-each
@@ -362,7 +394,7 @@
           '() lbl*)))
 
     (define build-invoke-code
-      (lambda (def* setter* vars locs)
+      (lambda (def* setter* vars locs body)
         (build
           (letrec ,(map (lambda (var loc)
                           `[,var (location-box ',loc)])
@@ -373,7 +405,7 @@
                            def*)
               (begin
                 ,@setter*
-                (values)))))))
+                ,body))))))
 
     (define build-visit-code
       (lambda (viscmd*)
