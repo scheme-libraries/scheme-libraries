@@ -3,6 +3,8 @@
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
 ((scheme-libraries syntax expressions $runtime)
+
+ ;; (rnrs base)
  eqv?
  eq?
  equal?
@@ -164,6 +166,37 @@
  values
  call-with-values
  dynamic-wind
+
+ ;; (rnrs unicode)
+ char-upcase
+ char-downcase
+ char-titlecase
+ char-foldcase
+ char-ci=?
+ char-ci<?
+ char-ci>?
+ char-ci<=?
+ char-ci>=?
+ char-alphabetic?
+ char-numeric?
+ char-whitespace?
+ char-upper-case?
+ char-lower-case?
+ char-title-case?
+ char-general-category
+ string-upcase
+ string-downcase
+ string-titlecase
+ string-foldcase
+ string-ci=?
+ string-ci<?
+ string-ci>?
+ string-ci<=?
+ string-ci>=?
+ string-normalize-nfd
+ string-normalize-nfkd
+ string-normalize-nfc
+ string-normalize-nfkc
 
  display
  newline)
