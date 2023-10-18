@@ -316,9 +316,19 @@
           imp*)
         (with-requirements-collector
             (let*-values ([(viscmd* def* e lbl*)
-                           (expand-internal body* ribs (expansion-mode program))])
-              (build (letrec* (,def*)
-                       ,e)))))))
+                           (expand-internal body* ribs (expansion-mode program))]
+                          [(vars _libs lbls) (current-runtime-globals)])
+              (define locs (vector-map variable-binding-location
+                                       (vector-map label-binding lbls)))
+              (values
+                (build
+                  (letrec ,(map (lambda (var loc)
+                                  `[,var ',(location-box loc)])
+                                (vector->list vars)
+                                (vector->list locs))
+                    (letrec* (,def*)
+                      ,e)))
+                (current-invoke-requirements)))))))
 
   ;; Libraries
 

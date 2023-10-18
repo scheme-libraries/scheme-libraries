@@ -11,6 +11,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading readers)
     (scheme-libraries syntax exceptions)
+    (scheme-libraries syntax libraries)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
@@ -22,13 +23,13 @@
       (let ([x (read-program filename)])
         (define-values (imp* body*)
           (parse-program x))
-        (define e
-          (expand-program imp* body*))
-
-        ;; TODO: e should always include a values.
-        ;; TODO: If we add better bodies to libraries, we need a better parser in $serializing.
+        (define-values ([(e invreqs)
+                         (expand-program imp* body*)]))
+        (vector-for-each library-invoke! invreqs)
         (display e)
         (newline)
+
+
 
         ;; Do something with the expanded program.
         (assert #f))))
