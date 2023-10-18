@@ -43,7 +43,14 @@
                         #'(constructor '(x (... ...))))])))))]
         [_ (syntax-violation 'define-enumeration "invalid syntax" stx)])))
 
-  (define endianness
-    ;; FIXME
-    #f)
-  )
+  (define-syntax endianness
+    (let ([enum-set (make-enumeration (cons (native-endianness) '(big little)))])
+      (lambda (stx)
+        (syntax-case stx ()
+          [(_ symbol)
+           (identifier? #'symbol)
+           (begin
+             (unless (enum-set-member? (syntax->datum #'symbol) enum-set)
+               (syntax-violation 'endianness "invalid endianness" stx #'symbol))
+             #''symbol)]
+          [_ (syntax-violation 'endianness "invalid syntax" stx)])))))
