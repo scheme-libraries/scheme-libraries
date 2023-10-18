@@ -2,10 +2,11 @@
 
 ;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (rnrs sorting (6))
+(library (rnrs control (6))
   (export
-    list-sort
-    vector-sort
-    vector-sort!)
+    when
+    unless
+    do
+    case-lambda)
   (import
     ($system)))

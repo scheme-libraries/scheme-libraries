@@ -7,6 +7,7 @@
 (rnrs bytevectors)
 (rnrs lists)
 (rnrs sorting)
+(rnrs control)
 (rnrs syntax-case)
 (rnrs enums)
 (rnrs)

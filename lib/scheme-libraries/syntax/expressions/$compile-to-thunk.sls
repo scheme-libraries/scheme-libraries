@@ -21,7 +21,7 @@
         ;;(display "Eval: ")
         ;;(display e) (newline)
 
-        ((eval `(lambda (vals) (lambda () ,e)) (runtime-environment))
+        ((eval `(case-lambda [(vals) (case-lambda [() ,e])]) (runtime-environment))
          vals))))
 
   (define parse
