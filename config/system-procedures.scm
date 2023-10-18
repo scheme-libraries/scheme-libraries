@@ -230,6 +230,15 @@
  assq
  cons*
 
+ ;; (rnrs syntax-case)
+ make-variable-transformer
+ identifier?
+ bound-identifier=?
+ free-identifier=?
+ syntax->datum
+ datum->syntax
+ generate-temporaries
+
  ;; (rnrs enums)
  make-enumeration
  enum-set-universe

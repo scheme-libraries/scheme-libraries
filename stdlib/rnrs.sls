@@ -260,8 +260,22 @@
     cons*
 
     ;; (rnrs syntax-case)
-    syntax
+    make-variable-transformer
     syntax-case
+    _
+    ...
+    syntax
+    identifier?
+    bound-identifier=?
+    free-identifier=?
+    syntax->datum
+    datum->syntax
+    generate-temporaries
+    with-syntax
+    quasisyntax
+    unsyntax
+    unsyntax-splicing
+    syntax-violation
 
     ;; (rnrs enums)
     make-enumeration
