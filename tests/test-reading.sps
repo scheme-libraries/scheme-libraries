@@ -52,4 +52,8 @@
 
 (test-datums #vu8(2 24 123) "#vu8(2 24 123)")
 
+;;; Random examples
+
+(test-datums (unsyntax foo) (unsyntax-splicing bar) "#,foo #,@bar")
+
 (test-end "reading")

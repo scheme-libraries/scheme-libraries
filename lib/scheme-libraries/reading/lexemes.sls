@@ -134,7 +134,7 @@
         (lambda (symbol start end)
           (unless (symbol? symbol)
             (assertion-violation who "invalid symbol argument" symbol))
-          ((pargs->new start end) symbol)))))
+          ((pargs->new who start end) symbol)))))
 
   (define-record-type dot
     (nongenerative dot-2c1a4b1f-190a-475a-a52b-7ff1c2b16945)

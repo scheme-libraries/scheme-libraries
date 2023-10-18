@@ -327,7 +327,7 @@
                [(char=? (peek-char) #\@)
                 (read-char)
                 (make-abbreviation 'unquote-splicing start (position))]
-               [else (make-abbreviation 'unquote)])]
+               [else (make-abbreviation 'unquote start (position))])]
              ;; .
              [(char=? ch #\.)
               (let ([ch (peek-char)])
@@ -368,12 +368,12 @@
                  ;; #`
                  [(char=? ch #\`) (make-abbreviation 'quasisyntax start (position))]
                  ;; ,
-                 [(char=? ch #\')
+                 [(char=? ch #\,)
                   (cond
                    [(char=? (peek-char) #\@)
                     (read-char)
                     (make-abbreviation 'unsyntax-splicing start (position))]
-                   [else (make-abbreviation 'unsyntax)])]
+                   [else (make-abbreviation 'unsyntax start (position))])]
                  ;; #;
                  [(char=? ch #\;)
                   (when (eof-object? (read))
