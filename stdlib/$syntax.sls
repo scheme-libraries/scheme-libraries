@@ -49,8 +49,49 @@
 
   (define-syntax define-record-type
     (lambda (x)
-      ;; FIXME
-      #f))
+      (define parse-name-spec
+        (lambda (name-spec)
+          (syntax-case name-spec ()
+            [(record-name constructor-name predicate-name)
+             (for-all identifier? #'(record-name constructor-name predicate-name))
+             (values #'record-name #'constructor-name #'predicate-name)]
+            [record-name
+             (identifier? #'record-name)
+             (values #'record-name
+                     (construct-name #'record-name "make-" #'record-name)
+                     (construct-name #'record-name #'record-name "?"))]
+            [_ (syntax-violation #f "invalid name spec syntax" x name-spec)])))
+      (syntax-case x ()
+        [(_ name-spec record-clause ...)
+         (let-values ([(record-name constructor-name predicate-name)
+                       (parse-name-spec #'name-spec)])
+           (with-syntax ([record-name record-name]
+                         [constructor-name constructor-name]
+                         [predicate-name predicate-name])
+             #'(begin
+                 (define record-type-descriptor
+                   (make-record-type-descriptor
+                    'record-name
+                    #f                    ;parent
+                    #f                    ;uid
+                    #f                    ;sealed?
+                    #f                    ;opaque?
+                    '#()                  ;fields
+                    ))
+                 (define record-constructor-descriptor
+                   (make-record-constructor-descriptor
+                    record-type-descriptor
+                    #f                    ;parent cd
+                    #f                    ;protocol
+                    ))
+                 (define constructor-name
+                   (record-constructor record-constructor-descriptor))
+                 (define predicate-name
+                   (record-predicate record-type-descriptor))
+                 ;; TODO: parse record fields
+                 ;; TODO: bind record-name
+                 )))]
+        [_ (syntax-violation #f "invalid syntax" x)])))
 
   (define-syntax record-type-descriptor
     (lambda (x)

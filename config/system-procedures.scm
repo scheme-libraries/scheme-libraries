@@ -334,4 +334,9 @@
  enum-set-projection
 
  display
- newline)
+ newline
+
+ ;; (scheme-libraries)
+ construct-name
+
+ )
