@@ -675,7 +675,7 @@
                  (syntax-error who "misplaced unsyntax-splicing in template" tmpl)]
                 ;; unsyntax
                 [,ell
-                 (guard ($ellipsis? ell))
+                 (guard (ell? ell))
                  (syntax-error who "misplaced ellipsis in template" tmpl)]
                 ;; <identifier>
                 [,tmpl
@@ -1328,10 +1328,8 @@
   ;; prims
 
   (declare-system-procedures)
-  (declare-prim-syntax cons* (fxnot 1))
   (declare-prim-syntax void 0)
   (declare-prim-syntax make-variable-transformer 1)
-  (declare-prim-syntax memv 2)
   (declare-prim-syntax identifier? 1)
   (declare-prim-syntax free-identifier=? 2)
   (declare-prim-syntax set-box! 2)
