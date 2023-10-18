@@ -13,6 +13,7 @@
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax libraries)
     (scheme-libraries syntax expand)
+    (scheme-libraries syntax expressions)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
@@ -23,16 +24,10 @@
       (let ([x (read-program filename)])
         (define-values (imp* body*)
           (parse-program x))
-        (define-values ([(e invreqs)
-                         (expand-program imp* body*)]))
+        (define-values (e invreqs)
+          (expand-program imp* body*))
         (vector-for-each library-invoke! invreqs)
-        (display e)
-        (newline)
-
-
-
-        ;; Do something with the expanded program.
-        (assert #f))))
+        ((compile-to-thunk e)))))
 
   (define read-program
     (lambda (filename)

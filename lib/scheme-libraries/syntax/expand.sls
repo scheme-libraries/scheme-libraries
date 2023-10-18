@@ -326,9 +326,9 @@
                                   `[,var ',(location-box loc)])
                                 (vector->list vars)
                                 (vector->list locs))
-                    (letrec* (,def*)
+                    (letrec* (,@def*)
                       ,e)))
-                (current-invoke-requirements)))))))
+                (collected-invoke-requirements)))))))
 
   ;; Libraries
 
