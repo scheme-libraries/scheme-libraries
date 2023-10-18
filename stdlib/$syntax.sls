@@ -101,7 +101,7 @@
         [(_ name)
          (identifier? #'name)
          (lambda (lookup)
-           ;; TODO: Lookup record-type-descriptor as propert.
+           ;; TODO: Lookup record-type-descriptor as property.
            ;; FIXME
            (assert #f))]
         [_ (syntax-violation who "invalid syntax" x)])))
