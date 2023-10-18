@@ -284,7 +284,7 @@
                    [(keyword-binding? bdg)
                     (keyword-type bdg)]
                    [(auxiliary-binding? bdg)
-                    (syntax-error (auxiliary-binding-who bdg) "invalid use of auxiliary syntax" x)]
+                    (syntax-error (auxiliary-binding-name bdg) "invalid use of auxiliary syntax" x)]
                    [(out-of-phase-binding? bdg)
                     (syntax-error #f "identifier referenced out of phase" x)]
                    [(displaced-binding? bdg)

@@ -822,12 +822,27 @@
                [bdg (make-keyword-binding (execute-transformer transf-expr who))]
                [lbl (ribcage-add! ribs x bdg (current-metalevel-for-syntax))])
           (unless lbl
-            (identifier-error 'define-syntax x "trying to redefine the local keyword ~a"))
+            (identifier-error who x "trying to redefine the local keyword ~a"))
           (values (list
                    (build
                      (keyword-binding-transformer-set! (label-binding ',lbl) ,transf-expr)))
                   '()
                   (list lbl))))))
+
+  (declare-definition-syntax define-auxiliary-syntax
+    (lambda (x ribs)
+      (define who 'define-auxiliary-syntax)
+      (syntax-match x
+        [(,k ,name)
+         (guard ($identifier? name))
+         (let* ([bdg (make-auxiliary-binding (syntax-object->datum name))]
+                [lbl (ribcage-add! ribs name bdg (current-metalevel-for-syntax))])
+           (unless lbl
+             (identifier-error who x "trying to redefine the local keyword ~a"))
+           (values (list)
+                   '()
+                   (list lbl)))]
+        [,x (syntax-error who "invalid syntax" x)])))
 
   ;; Splicing syntax
 
@@ -1347,9 +1362,6 @@
 
   (declare-system-procedures)
   (declare-prim-syntax void 0)
-  (declare-prim-syntax make-variable-transformer 1)
-  (declare-prim-syntax identifier? 1)
-  (declare-prim-syntax free-identifier=? 2)
   (declare-prim-syntax set-box! 2)
   (declare-prim-syntax location-box-set! 2)
   (declare-prim-syntax keyword-binding-transformer-set! 2)
@@ -1365,7 +1377,6 @@
   (declare-prim-syntax syntax-split 4)
   (declare-prim-syntax syntax-vector? 1)
   (declare-prim-syntax syntax-vector->list 1)
-  (declare-prim-syntax syntax-violation (fxnot 3))
 
   ;; DEBUG
 )

@@ -316,6 +316,7 @@
  syntax->datum
  datum->syntax
  generate-temporaries
+ syntax-violation
 
  ;; (rnrs enums)
  make-enumeration

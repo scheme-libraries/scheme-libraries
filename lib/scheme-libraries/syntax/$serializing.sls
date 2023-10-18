@@ -107,6 +107,9 @@
                                                             (variable-binding-location bdg))))]
                                      [(keyword-binding? bdg)
                                       `(,lblsym (keyword))]
+                                     [(auxiliary-binding? bdg)
+                                      `(,lblsym (auxiliary-syntax
+                                                 ,(auxiliary-binding-name bdg)))]
                                      [else (assert #f)]))
                                   (library-bindings lib)) ;FIXME: Call this environment.
                                 ))
@@ -177,7 +180,10 @@
                  [(keyword)
                   (let ([bdg (make-keyword-binding #f)])
                     (keyword-binding-library-set! bdg lib)
-                    (label-binding-set! lbl bdg))]))
+                    (label-binding-set! lbl bdg))]
+                 [(auxiliary-syntax ,name)
+                  (guard (symbol? name))
+                  (make-auxiliary-binding name)]))
              lbl* type*)
            lib)]
         [,_

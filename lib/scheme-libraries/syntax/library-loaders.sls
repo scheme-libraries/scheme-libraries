@@ -56,9 +56,10 @@
               (variable-binding-library-set! bdg lib)]
              [(keyword-binding? bdg)
               (keyword-binding-library-set! bdg lib)]
+             [(auxiliary-binding? bdg)]
              [else
-              ;; Only variables and keywords should be defineable at the
-              ;; top level of a library.
+              ;; Only variables, keywords, and auxiliary syntax should
+              ;; be defineable at the top level of a library.
               (assert #f)]))))
       (for-each dobind! lbl*)))
 
