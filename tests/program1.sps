@@ -2,3 +2,5 @@
 
 (import
   (rnrs base))
+
+(assert #t)

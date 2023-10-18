@@ -212,7 +212,7 @@
   (define library-visit-commands
     (lambda (lib)
       (match (library-visit-code lib)
-        [(begin ,viscmd* ... (values))
+        [(begin ,viscmd* ... ,body)
          viscmd*])))
 
   (define library-invoke-bindings
@@ -233,7 +233,7 @@
       (match (library-invoke-code lib)
         [(letrec ,bdg*
            (letrec* ,def*
-             (begin ,cmd* ... (values))))
+             (begin ,cmd* ... ,body)))
          cmd*])))
 
   ;; Code serialization

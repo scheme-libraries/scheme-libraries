@@ -11,9 +11,7 @@
     (scheme-libraries reading annotated-datums)
     (scheme-libraries reading readers)
     (scheme-libraries syntax exceptions)
-    (scheme-libraries syntax import-specs)
-    (scheme-libraries syntax $ribs)
-    (scheme-libraries syntax $ribcages)
+    (scheme-libraries syntax expand)
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
@@ -24,17 +22,15 @@
       (let ([x (read-program filename)])
         (define-values (imp* body*)
           (parse-program x))
-        (define ribs (make-ribcage))
-        (define rib (make-rib))
-        (ribcage-add-barrier! ribs rib '())
-        (for-each
-          (lambda (imp)
-            ;; TODO: Start with the standard library collection and
-            ;; write it together with the program.  At least for WPO
-            ;; compilation.
-            (import-spec-import! imp rib #f))
-          imp*)
-        ;; FIXME: expand body!
+        (define e
+          (expand-program imp* body*))
+
+        ;; TODO: e should always include a values.
+        ;; TODO: If we add better bodies to libraries, we need a better parser in $serializing.
+        (display e)
+        (newline)
+
+        ;; Do something with the expanded program.
         (assert #f))))
 
   (define read-program
