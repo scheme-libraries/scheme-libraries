@@ -5,6 +5,7 @@
 (import
   (rename (rnrs)
     (syntax-rules r6rs:syntax-rules))
+  (rnrs eval)
   (scheme-libraries r7rs)
   (scheme-libraries testing))
 
@@ -76,6 +77,7 @@
 
 (test-group "syntax-error"
 
-  (test-error  (syntax-error "identifier expected, got" 42)))
+  (test-error #t (eval '(syntax-error "identifier expected, got" 42)
+                       (environment '(rnrs) '(rnrs eval) '(scheme-libraries r7rs)))))
 
 (test-end "r7rs")
