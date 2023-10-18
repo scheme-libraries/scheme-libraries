@@ -88,7 +88,7 @@
     splicing-binding-proc
     make-auxiliary-binding
     auxiliary-binding?
-    auxiliary-binding-who
+    auxiliary-binding-name
     make-definition-binding
     definition-binding?
     definition-binding-proc
@@ -252,7 +252,7 @@
   (define-record-type auxiliary-binding
     (nongenerative auxiliary-binding-90472bac-e875-4218-bc1c-f856e1587073)
     (parent binding) (sealed #t)
-    (fields who)
+    (fields name)
     (protocol
       (lambda (pargs->new)
         (define who 'make-auxiliary-binding)

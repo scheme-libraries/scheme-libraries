@@ -322,6 +322,20 @@
     do
     case-lambda
 
+    ;; (rnrs records syntactic)
+    define-record-type
+    fields
+    mutable
+    immutable
+    parent
+    protocol
+    sealed
+    opaque
+    nongenerative
+    parent-rtd
+    record-type-descriptor
+    record-constructor-descriptor
+
     ;; (rnrs records procedural)
     make-record-type-descriptor
     record-type-descriptor?
@@ -383,6 +397,7 @@
     (rnrs lists)
     (rnrs sorting)
     (rnrs control)
+    (rnrs records syntactic)
     (rnrs records procedural)
     (rnrs records inspection)
     (rnrs syntax-case)
