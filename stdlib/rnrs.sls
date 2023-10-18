@@ -316,6 +316,12 @@
     vector-sort
     vector-sort!
 
+    ;; (rnrs control)
+    when
+    unless
+    do
+    case-lambda
+
     ;; (rnrs syntax-case)
     make-variable-transformer
     syntax-case
@@ -348,14 +354,13 @@
     enum-set-difference
     enum-set-complement
     enum-set-projection
-    define-enumeration
-
-    )
+    define-enumeration)
   (import
     (rnrs base)
     (rnrs unicode)
     (rnrs bytevectors)
     (rnrs lists)
     (rnrs sorting)
+    (rnrs control)
     (rnrs syntax-case)
     (rnrs enums)))

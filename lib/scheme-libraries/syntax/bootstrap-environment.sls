@@ -156,12 +156,24 @@
          `(,x* ... . ,x)]
         [,x (syntax-error who "invalid syntax")])))
 
+  (define parse-formals*
+    (lambda (who form x*)
+      (map (lambda (x)
+             (parse-formals who form x))
+           x*)))
+
   (define formals-map
     (lambda (proc formals)
       (match formals
         [() '()]
         [(,x . ,[x*]) `(,(proc x) . ,x*)]
         [,x (proc x)])))
+
+  (define formals-map*
+    (lambda (proc formals*)
+      (map (lambda (formals)
+             (formals-map proc formals))
+           formals*)))
 
   (define formals->list
     (lambda (formals)
@@ -759,30 +771,6 @@
             lib*)
           lc))))
 
-  ;; Library collection serializing
-
-  #;
-  (define exports->datum
-    (lambda (exports)
-      (rib-map
-       (lambda (n m l/p)
-         (assert (null? m))
-         (cons n (label/props->datum l/p)))
-       exports)))
-
-  #;
-  (define datum->exports
-    (lambda (obj)
-      (assert (list? obj))
-      (let ([rib (make-rib)])
-        (for-each
-          (lambda (obj)
-            (match obj
-              [(,n . ,l/p)
-               (rib-set! rib n '() (datum->label/props l/p))]))
-          obj)
-        rib)))
-
   ;; Syntax
 
   ;; Auxiliary syntax
@@ -879,7 +867,37 @@
                      (expand-body form*))])
            (for-each label-kill! lbl*)
            (build
-             (lambda ,vars ,e)))]
+             (case-lambda [,vars ,e])))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
+  (declare-expander-syntax case-lambda
+    (lambda (x)
+      (define who 'case-lambda)
+      (syntax-match x
+        [(,k [,formals* ,body** ... ,body*] ...)
+         ;; TODO: Simplify this by expanding each clause individually.
+         (let* ([formals* (parse-formals* who x formals*)]
+                [names* (formals-map* identifier->symbol formals*)]
+                [vars* (formals-map* make-variable names*)]
+                [id** (map formals->list formals*)]
+                [bdg** (map (lambda (vars)
+                              (map make-variable-binding (formals->list vars)))
+                            vars*)]
+                [lbl** (map (lambda (bdg*)
+                              (map make-label bdg*))
+                            bdg**)]
+                [ribs* (map ribcage id** lbl**)]
+                [form** (map (lambda (ribs body* body)
+                               (add-substitutions* ribs `(,body* ... ,body)))
+                             ribs* body** body*)]
+                [e* (parameterize ([current-who who]
+                                   [current-form x])
+                      (map (lambda (form* lbl*)
+                             (let ([x (expand-body form*)])
+                               (for-each label-kill! lbl*)))
+                           form** lbl**))])
+           (build
+             (case-lambda [,vars* ,e*] ...)))]
         [,x (syntax-error who "invalid syntax" x)])))
 
   (declare-expander-syntax if

@@ -6,12 +6,9 @@
   (export
     ;; Keywords
     begin
-    cons
-    cons*
-    lambda
+    case-lambda
     letrec
     letrec*
-    memv
     if
     quote
     set!

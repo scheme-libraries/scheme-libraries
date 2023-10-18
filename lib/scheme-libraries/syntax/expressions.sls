@@ -44,7 +44,7 @@
            #'(extend-backquote k
                (match `b
                  [([,x* ,e*] (... ...))
-                  (build ((lambda ,x* ,(build-begin e1 ... e2)) ,e* (... ...)))]
+                  (build ((case-lambda [,x* ,(build-begin e1 ... e2)]) ,e* (... ...)))]
                  [,x (assertion-violation 'who "invalid bindings" x)])))]
         [,_ (syntax-violation who "invalid syntax" x)])))
 
