@@ -49,6 +49,7 @@
 
   (define-syntax define-record-type
     (lambda (x)
+      (define who 'define-record-type)
       (define parse-name-spec
         (lambda (name-spec)
           (syntax-case name-spec ()
@@ -60,7 +61,7 @@
              (values #'record-name
                      (construct-name #'record-name "make-" #'record-name)
                      (construct-name #'record-name #'record-name "?"))]
-            [_ (syntax-violation #f "invalid name spec syntax" x name-spec)])))
+            [_ (syntax-violation who "invalid name spec syntax" x name-spec)])))
       (syntax-case x ()
         [(_ name-spec record-clause ...)
          (let-values ([(record-name constructor-name predicate-name)
@@ -91,12 +92,19 @@
                  ;; TODO: parse record fields
                  ;; TODO: bind record-name
                  )))]
-        [_ (syntax-violation #f "invalid syntax" x)])))
+        [_ (syntax-violation who "invalid syntax" x)])))
 
   (define-syntax record-type-descriptor
     (lambda (x)
-      ;; FIXME
-      #f))
+      (define who 'record-type-descriptor)
+      (syntax-case x ()
+        [(_ name)
+         (identifier? #'name)
+         (lambda (lookup)
+           ;; TODO: Lookup record-type-descriptor as propert.
+           ;; FIXME
+           (assert #f))]
+        [_ (syntax-violation who "invalid syntax" x)])))
 
   (define-syntax record-constructor-descriptor
     (lambda (x)
