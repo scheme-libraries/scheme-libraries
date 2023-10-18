@@ -4,9 +4,11 @@
 
 (library (rnrs base (6))
   (export
+
     ;; Definitions
     define
     define-syntax
+
     ;; Expressions
     quote
     lambda
@@ -25,10 +27,12 @@
     let-values
     let*-values
     begin
+
     ;; Equivalence predicates
     eqv?
     eq?
     equal?
+
     ;; Arithmetic
     number?
     complex?
@@ -96,10 +100,12 @@
     angle
     number->string
     string->number
+
     ;; Booleans
     not
     boolean?
     boolean=?
+
     ;; Pairs
     pair?
     cons
@@ -143,11 +149,13 @@
     list-ref
     map
     for-each
+
     ;; Symbols
     symbol?
     symbol->string
     symbol=?
     string->symbol
+
     ;; Characters
     char?
     char->integer
@@ -157,6 +165,7 @@
     char>?
     char<=?
     char>=?
+
     ;; Strings
     string?
     make-string
@@ -174,6 +183,7 @@
     list->string
     string-for-each
     string-copy
+
     ;; Vectors
     vector?
     make-vector
@@ -186,10 +196,12 @@
     vector-fill!
     vector-map
     vector-for-each
+
     ;; Errors and violations
     error
     assertion-violation
     assert
+
     ;; Control features
     apply
     call-with-current-continuation
@@ -197,15 +209,19 @@
     values
     call-with-values
     dynamic-wind
+
     ;; Quasiquotation
     quasiquote
     unquote
     unquote-splicing
+
     ;; Binding constructs for syntactic keywords
     let-syntax
     letrec-syntax
+
     ;; Macro transformers
     syntax-rules
     identifier-syntax)
+
   (import
     ($system)))
