@@ -287,6 +287,27 @@
  vector-sort
  vector-sort!
 
+ ;; (rnrs records procedural)
+ make-record-type-descriptor
+ record-type-descriptor?
+ make-record-constructor-descriptor
+ record-constructor
+ record-predicate
+ record-accessor
+ record-mutator
+
+ ;; (rnrs records inspection)
+ record?
+ record-rtd
+ record-type-name
+ record-type-parent
+ record-type-uid
+ record-type-generative?
+ record-type-sealed?
+ record-type-opaque?
+ record-type-field-names
+ record-field-mutable?
+
  ;; (rnrs syntax-case)
  make-variable-transformer
  identifier?

@@ -270,21 +270,6 @@
     utf16->string
     utf32->string
 
-    ;; (rnrs enums)
-    make-enumeration
-    enum-set-universe
-    enum-set-indexer
-    enum-set-constructor
-    enum-set->list
-    enum-set-member?
-    enum-set-subset?
-    enum-set=?
-    enum-set-union
-    enum-set-intersection
-    enum-set-difference
-    enum-set-complement
-    enum-set-projection
-
     ;; (rnrs lists)
     find
     for-all
@@ -311,6 +296,42 @@
     list-sort
     vector-sort
     vector-sort!
+
+    ;; (rnrs records procedural)
+    make-record-type-descriptor
+    record-type-descriptor?
+    make-record-constructor-descriptor
+    record-constructor
+    record-predicate
+    record-accessor
+    record-mutator
+
+    ;; (rnrs records inspection)
+    record?
+    record-rtd
+    record-type-name
+    record-type-parent
+    record-type-uid
+    record-type-generative?
+    record-type-sealed?
+    record-type-opaque?
+    record-type-field-names
+    record-field-mutable?
+
+    ;; (rnrs enums)
+    make-enumeration
+    enum-set-universe
+    enum-set-indexer
+    enum-set-constructor
+    enum-set->list
+    enum-set-member?
+    enum-set-subset?
+    enum-set=?
+    enum-set-union
+    enum-set-intersection
+    enum-set-difference
+    enum-set-complement
+    enum-set-projection
 
     set-box!
     location-box
