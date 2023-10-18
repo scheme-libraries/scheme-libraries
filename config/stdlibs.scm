@@ -8,6 +8,8 @@
 (rnrs lists)
 (rnrs sorting)
 (rnrs control)
+(rnrs records procedural)
+(rnrs records inspection)
 (rnrs syntax-case)
 (rnrs enums)
 (rnrs)
