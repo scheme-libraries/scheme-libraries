@@ -310,6 +310,11 @@
     assq
     cons*
 
+    ;; (rnrs sorting)
+    list-sort
+    vector-sort
+    vector-sort!
+
     set-box!
     location-box
     location-box-set!

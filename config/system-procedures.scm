@@ -282,6 +282,11 @@
  assq
  cons*
 
+ ;; (rnrs sorting)
+ list-sort
+ vector-sort
+ vector-sort!
+
  ;; (rnrs syntax-case)
  make-variable-transformer
  identifier?
