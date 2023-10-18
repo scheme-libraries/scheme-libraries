@@ -1276,7 +1276,7 @@
         [(,k ,e)
          ;; TODO: Add source location information.
          (expand-expression
-          `(or ,e (assertion-violation #f ',e)))
+          `(or ,e (assertion-violation #f "failed assertion" ',e)))
          ]
         [,x (syntax-error who "invalid syntax" x)])))
 

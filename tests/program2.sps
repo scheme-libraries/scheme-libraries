@@ -6,9 +6,9 @@
   (rnrs base)
   (rnrs bytevectors))
 
-(assert (symbol=? 'litte (endianness little)))
+(assert (symbol=? 'little (endianness little)))
 (assert (symbol=? 'big (endianness big)))
 (assert (symbol=? (native-endianness)
                   (let-syntax ([m (lambda (stx)
-                                    #`(endianess #,(datum->syntax #'here (native-endianness))))])
+                                    #`(endianness #,(datum->syntax #'here (native-endianness))))])
                     m)))

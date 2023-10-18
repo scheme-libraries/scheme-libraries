@@ -274,10 +274,16 @@
     syntax-vector->list
     unbox
     void
-    (rename ($identifier? identifier?)
-      ($free-identifier=? free-identifier=?)
+
+    ;; (rnrs syntax-case)
+    (rename
       ($make-variable-transformer make-variable-transformer)
+      ($identifier? identifier?)
+      ($bound-identifier=? bound-identifier=?)
+      ($free-identifier=? free-identifier=?)
       (syntax-object->datum syntax->datum)
+      (datum->syntax-object datum->syntax)
+      ($generate-temporaries generate-temporaries)
       (syntax-error syntax-violation))
 
     ;; DEBUG
@@ -290,5 +296,6 @@
     (scheme-libraries void)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax $labels)
+    (scheme-libraries syntax identifiers)
     (scheme-libraries syntax variable-transformers)
     (scheme-libraries syntax syntax-objects)))
