@@ -311,6 +311,11 @@
     assq
     cons*
 
+    ;; (rnrs sorting)
+    list-sort
+    vector-sort
+    vector-sort!
+
     ;; (rnrs syntax-case)
     make-variable-transformer
     syntax-case
@@ -351,5 +356,6 @@
     (rnrs unicode)
     (rnrs bytevectors)
     (rnrs lists)
+    (rnrs sorting)
     (rnrs syntax-case)
     (rnrs enums)))

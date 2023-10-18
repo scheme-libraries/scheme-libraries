@@ -5,6 +5,8 @@
 (rnrs base)
 (rnrs unicode)
 (rnrs bytevectors)
+(rnrs lists)
+(rnrs sorting)
 (rnrs syntax-case)
 (rnrs enums)
 (rnrs)
