@@ -361,6 +361,10 @@
       ($generate-temporaries generate-temporaries)
       (syntax-error syntax-violation))
 
+    ;; (scheme-libraries)
+    (rename
+      ($construct-name construct-name))
+
     ;; DEBUG
     write
     display
@@ -369,6 +373,7 @@
     (rnrs)
     (scheme-libraries boxes)
     (scheme-libraries void)
+    (scheme-libraries syntax $helpers)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax identifiers)
