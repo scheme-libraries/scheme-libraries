@@ -198,5 +198,52 @@
  string-normalize-nfc
  string-normalize-nfkc
 
+ ;; (rnrs bytevectors)
+ native-endianness
+ bytevector?
+ make-bytevector
+ bytevector-length
+ bytevector=?
+ bytevector-fill!
+ bytevector-copy!
+ bytevector-copy
+
+ ;; (rnrs lists)
+ find
+ for-all
+ exists
+ filter
+ partition
+ fold-left
+ fold-right
+ remp
+ remove
+ remv
+ remq
+ memp
+ member
+ memv
+ memq
+ assp
+ assoc
+ assv
+ assq
+ cons*
+
+ ;; (rnrs enums)
+ make-enumeration
+ enum-set-universe
+ enum-set-indexer
+ enum-set-constructor
+ enum-set->list
+ enum-set-member?
+ enum-set-subset?
+ enum-set=?
+ enum-set-union
+ enum-set-intersection
+ enum-set-difference
+ enum-set-complement
+ enum-set-projection
+
  display
  newline)
