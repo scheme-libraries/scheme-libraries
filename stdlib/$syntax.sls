@@ -89,8 +89,11 @@
                    (record-constructor record-constructor-descriptor))
                  (define predicate-name
                    (record-predicate record-type-descriptor))
+                 (define-syntax record-name
+                   (lambda (stx)
+                     (syntax-violation 'record-name "invalid syntax" stx)))
                  ;; TODO: parse record fields
-                 ;; TODO: bind record-name
+                 ;; TODO: bind record-name properties!
                  )))]
         [_ (syntax-violation who "invalid syntax" x)])))
 

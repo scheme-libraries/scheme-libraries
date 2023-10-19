@@ -39,6 +39,7 @@
     identifier->label
     identifier->label/props
     ribcage-add!
+    ribcage-add-property!
     ribcage
     (rename (&syntax $&syntax))
     (rename (&undefined $&undefined))
@@ -65,21 +66,16 @@
     variable-binding-location
     make-keyword-binding
     keyword-binding?
-    keyword-binding-transformer
     keyword-binding-library
     keyword-binding-library-set!
     keyword-binding-transformer
     keyword-binding-transformer-set!
-    ;; make-global-variable-binding
-    ;; global-variable-binding?
-    ;; global-variable-binding-library
-    ;; global-variable-binding-symbol
-    ;; global-variable-binding-location
-    ;; make-global-keyword-binding
-    ;; global-keyword-binding?
-    ;; global-keyword-binding-library
-    ;; global-keyword-binding-library-set!
-    ;; global-keyword-binding-transformer
+    make-property-binding
+    property-binding?
+    property-binding-library
+    property-binding-library-set!
+    property-binding-value
+    property-binding-value-set!
     make-expander-binding
     expander-binding?
     expander-binding-proc
@@ -222,20 +218,16 @@
             (assertion-violation who "invalid procedure argument" proc))
           ((pargs->new) #f proc)))))
 
-  #;
-  (define-record-type global-keyword-binding
-    (nongenerative global-keyword-binding-ac80d1fa-f521-48df-b1ba-5bae1823e42d)
+  (define-record-type property-binding
+    (nongenerative property-binding-72417c6c-aee4-488a-8bba-fd364e5452ec)
     (parent binding)
     (sealed #t)
-    (fields (mutable library) transformer)
+    (fields (mutable library) (mutable value))
     (protocol
       (lambda (pargs->new)
-        (define who 'make-global-keyword-binding)
-        (lambda (lib proc)
-          (assert (or (not lib) (library? lib)))
-          (assert (or (not proc) (transformer? proc)))
-          ((pargs->new) lib proc)))))
-
+        (define who 'make-property-binding)
+        (lambda (val)
+          ((pargs->new) #f val)))))
 
   (define-record-type definition-binding
     (nongenerative definition-binding-549adafc-af54-45da-b1a8-fa63c6e2ce19)
@@ -658,10 +650,32 @@
                        (identifier->symbol id)
                        (syntax-object-marks id)
                        (make-label/props lbl))
-         (and (label=? lbl (identifier->label id))
+         (and (label=? lbl (identifier->label id)) ;test for
+                                                   ;redefinition of
+                                                   ;let(rec)-syntax-bound
+                                                   ;keyword
               lbl))]
       [(ribs id bdg)
        (ribcage-add! ribs id bdg (current-metalevel))]))
+
+  (define/who ribcage-add-property!
+    (lambda (ribs id bdg lbl/props key-lbl)
+       (unless (ribcage? ribs)
+         (assertion-violation who "invalid ribcage argument" ribs))
+       (unless ($identifier? id)
+         (assertion-violation who "invalid identifier argument" id))
+       (unless (binding? bdg)
+         (assertion-violation who "invalid binding argument" bdg))
+       (let ([lbl (label/props-label lbl/props)]
+             [plbl (make-label bdg (current-metalevel-for-syntax))])
+         (ribcage-set! ribs
+                       (identifier->symbol id)
+                       (syntax-object-marks id)
+                       ;; TODO: Make the following more efficient.
+                       (label/props-merge (make-label/props lbl (list (make-property key-lbl plbl)))
+                                          lbl/props))
+         (and (label=? lbl (identifier->label id))
+              plbl))))
 
   (define/who ribcage
     (lambda (id* lbl*)
