@@ -223,7 +223,7 @@
 
   (define transform
     (lambda (f x ribs)
-      (apply-transformer f (apply-anti-mark x) ribs)))
+      (apply-transformer (property-aware f) (apply-anti-mark x) ribs)))
 
   (define apply-transformer
     (lambda (f x ribs)
@@ -237,6 +237,33 @@
                  (syntax-error #f (format "encountered invalid object ~s in output of macro"
                                     (invalid-syntax-object-irritant c)))])
           (wrap-syntax-object (f x) (make-mark) ribs)))))
+
+  (define property-aware
+    (lambda (transformer)
+      (lambda (stx)
+        (let ([res (transformer stx)])
+          (if (procedure? res)
+              (res property-lookup)
+              res)))))
+
+  (define property-lookup
+    (lambda (id key)
+      (unless ($identifier? id)
+        (assertion-violation #f "invalid identifier argument" id))
+      (unless ($identifier? key)
+        (assertion-violation #f "invalid key identifier argument" key))
+      (let* ([key-lbl (or (identifier->label key)
+                          (undefined-error key "unbound identifier ~a"))]
+             [id-lbl/props (or (identifier->label/props id)
+                               (undefined-error id "unbound identifier ~a"))]
+             [plbl (label/props-ref id-lbl/props key-lbl)]
+             [bdg (label->binding plbl)])
+        (and bdg
+             (begin
+               (assert (property-binding? bdg))
+               (let ([lib (property-binding-library bdg)])
+                 (when lib (library-visit! lib))
+                 (property-binding-value bdg)))))))
 
   ;; syntax-type
 

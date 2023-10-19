@@ -853,9 +853,9 @@
          ;; TODO: Rename compile-transformer
          (let* ([e (compile-transformer meta-expr)]
                 [id-lbl/props (or (identifier->label/props id)
-                                  (undefined-error x "unbound identifier ~a"))]
-                [key-lbl (or (identifier->label/props key-id)
-                             (undefined-error x "unbound identifier ~a"))]
+                                  (undefined-error id "unbound identifier ~a"))]
+                [key-lbl (or (identifier->label key-id)
+                             (undefined-error key-id "unbound identifier ~a"))]
                 [bdg (make-property-binding (execute e))]
                 [plbl (ribcage-add-property! ribs id bdg id-lbl/props key-lbl)])
            (unless plbl
