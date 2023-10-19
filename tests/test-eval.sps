@@ -51,5 +51,23 @@
 
 (test-assert (eval 'list (environment '(rnrs base))))
 
+;;; Identifier properties
+
+(test-assert (eval '(let ([x 1]
+                          [y 2])
+                      (define-property x y #f)
+                      #t)
+                   (bootstrap-environment)))
+
+(test-assert (eval '(let ([x 1]
+                          [y 2])
+                      (define-syntax m
+                        (lambda (x)
+                          (lambda (lookup)
+                            (syntax-case x ()
+                              [(_) #'#t]))))
+                      (define-property x y #f)
+                      (m))
+                   (bootstrap-environment)))
 
 (test-end "eval")

@@ -19,6 +19,7 @@
     label/props-merge
     label/props-label
     label/props-props
+    label/props-ref
     make-property
     property?
     property-key-label
@@ -153,4 +154,15 @@
                 new-l/p
                 (make-label/props lbl (append (label/props-props new-l/p)
                                               prev-props))))
-          new-l/p))))
+          new-l/p)))
+
+  (define/who label/props-ref
+    (lambda (l/p key-lbl)
+      (cond
+       [(find (lambda (prop)
+                (label=? (property-key-label prop)
+                         key-lbl))
+              (label/props-props l/p))
+        => property-value-label]
+       [else #f])))
+  )
