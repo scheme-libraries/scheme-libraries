@@ -18,7 +18,11 @@
     label/props?
     label/props-merge
     label/props-label
-    label/props-props)
+    label/props-props
+    make-property
+    property?
+    property-key-label
+    property-value-label)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -67,6 +71,10 @@
         (assertion-violation who "invalid second label argument" l2))
       (eq? l1 l2)))
 
+  (define make-label-table
+    (lambda ()
+      (make-eq-hashtable)))
+
   (define/who label-bind!
     (lambda (lbl bdg)
       (unless (label? lbl)
@@ -102,6 +110,16 @@
 
   ;; Labels with props
 
+  (define-record-type property
+    (nongenerative property-8f3157b8-6e11-4e4f-8a06-030ee2b0d8ae)
+    (fields key-label value-label)
+    (protocol
+      (lambda (new)
+        (lambda (key-lbl val-lbl)
+          (assert (label? key-lbl))
+          (assert (label? val-lbl))
+          (new key-lbl val-lbl)))))
+
   (define-record-type label/props
     (nongenerative label/props-b0f0a45a-a705-448c-b96f-ef8655d2b2b7)
     (sealed #t)
@@ -112,13 +130,13 @@
         (rec make
           (case-lambda
             [(lbl) (make lbl '())]
-            [(lbl props)
+            [(lbl prop*)
              (unless (label? lbl)
                (assertion-violation who "invalid labels argument" lbl))
-             (unless (and (list? props)
-                          (for-all label? props))
-               (assertion-violation who "invalid property list argument" props))
-             (new lbl props)])))))
+             (unless (and (list? prop*)
+                          (for-all property? prop*))
+               (assertion-violation who "invalid property list argument" prop*))
+             (new lbl prop*)])))))
 
   (define/who label/props-merge
     (lambda (new-l/p prev-l/p)
@@ -130,11 +148,9 @@
             (assertion-violation who "invalid previous label/props argument" prev-l/p))
           (label/props-label new-l/p)))
       (if (label=? lbl (label/props-label prev-l/p))
-	  (make-label/props lbl
-			    (delete-duplicates
-			     (append (label/props-props new-l/p)
-				     (label/props-props prev-l/p))
-                             label=?))
-	  new-l/p)))
-
-  )
+          (let ([prev-props (label/props-props prev-l/p)])
+            (if (null? prev-props)
+                new-l/p
+                (make-label/props lbl (append (label/props-props new-l/p)
+                                              prev-props))))
+          new-l/p))))

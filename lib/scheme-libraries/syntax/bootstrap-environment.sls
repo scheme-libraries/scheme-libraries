@@ -844,6 +844,29 @@
                    (list lbl)))]
         [,x (syntax-error who "invalid syntax" x)])))
 
+  (declare-definition-syntax define-property
+    (lambda (x ribs)
+      (define who 'define-property)
+      (syntax-match x
+        [(,k ,id ,key-id ,meta-expr)
+         (guard ($identifier? id) ($identifier? key-id))
+         ;; TODO: Rename compile-transformer
+         (let* ([e (compile-transformer meta-expr)]
+                [id-lbl/props (or (identifier->label/props id)
+                                  (undefined-error x "unbound identifier ~a"))]
+                [key-lbl (or (identifier->label/props key-id)
+                             (undefined-error x "unbound identifier ~a"))]
+                [bdg (make-property-binding (execute e))]
+                [plbl (ribcage-add-property! ribs id bdg id-lbl/props key-lbl)])
+           (unless plbl
+             (identifier-error who id "trying to add property to local keyword ~a"))
+           (values (list
+                    (build
+                      (property-set! ',plbl ,e)))
+                   '()
+                   (list plbl)))]
+        [,x (syntax-error who "invalid syntax" x)])))
+
   ;; Splicing syntax
 
   (declare-splicing-syntax begin

@@ -82,6 +82,7 @@
 
     ;; (scheme-libraries hashtables)
     hashtable-intern!
+    hashtable-union!
 
     ;; (scheme-libraries heaps)
     make-heap
