@@ -44,6 +44,7 @@
                                         12345)
                                      0 31)])
         (random-seed seed)
+        (display seed) (newline)
         (if (exact? x)
             (mod seed x)
             (fl/ (fl* (real->flonum x) (real->flonum seed))

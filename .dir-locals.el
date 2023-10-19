@@ -59,7 +59,7 @@
              ("(\\(define-values2\\) (\\([^()]*\\))"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
-             ("(\\(define/who\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
+             ("(\\(define/who\\|define-property\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
              ("(\\(declare-syntax\\|declare-\\(expander\\|definition\\|prim\\|splicing\\)-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
