@@ -223,7 +223,7 @@
 
   (define transform
     (lambda (f x ribs)
-      (apply-transformer (property-aware f) (apply-anti-mark x) ribs)))
+      (apply-transformer f (apply-anti-mark x) ribs)))
 
   (define apply-transformer
     (lambda (f x ribs)
@@ -236,7 +236,7 @@
                 [(invalid-syntax-object-condition? c)
                  (syntax-error #f (format "encountered invalid object ~s in output of macro"
                                     (invalid-syntax-object-irritant c)))])
-          (wrap-syntax-object (f x) (make-mark) ribs)))))
+          (wrap-syntax-object ((property-aware f) x) (make-mark) ribs)))))
 
   (define property-aware
     (lambda (transformer)
