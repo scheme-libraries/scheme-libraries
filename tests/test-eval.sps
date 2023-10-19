@@ -70,4 +70,15 @@
                       (m))
                    (bootstrap-environment)))
 
+(test-assert (eval '(let ([x 1]
+                          [y 2])
+                      (define-syntax m
+                        (lambda (stx)
+                          (lambda (lookup)
+                            (syntax-case stx ()
+                              [(_) (lookup #'x #'y)]))))
+                      (define-property x y #t)
+                      (m))
+                   (bootstrap-environment)))
+
 (test-end "eval")

@@ -729,7 +729,5 @@
     (lambda (r p wr)
       (put-string p "#<syntax ")
       (wr (syntax-object->datum r) p)
-      (put-string p " ")
-      (wr (syntax-object-wrap r) p)
       (put-string p ">")))
 )

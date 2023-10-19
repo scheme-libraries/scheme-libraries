@@ -47,6 +47,9 @@
   (define-auxiliary-syntax nongenerative)
   (define-auxiliary-syntax parent-rtd)
 
+;  (define record-type-descriptor-key)
+;  (define record-constructor-descriptor-key)
+
   (define-syntax define-record-type
     (lambda (x)
       (define who 'define-record-type)
@@ -92,6 +95,10 @@
                  (define-syntax record-name
                    (lambda (stx)
                      (syntax-violation 'record-name "invalid syntax" stx)))
+                 (define-property record-name
+                   record-type-descriptor-key #'record-type-descriptor)
+                 (define-property record-name
+                   record-constructor-descriptor-key #'record-constructor-descriptor)
                  ;; TODO: parse record fields
                  ;; TODO: bind record-name properties!
                  )))]
@@ -104,15 +111,20 @@
         [(_ name)
          (identifier? #'name)
          (lambda (lookup)
-           ;; TODO: Lookup record-type-descriptor as property.
-           ;; FIXME
-           (assert #f))]
+           (or (lookup #'name #'record-type-descriptor-key)
+               (syntax-violation who "invalid record name syntax" x #'name)))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
   (define-syntax record-constructor-descriptor
     (lambda (x)
-      ;; FIXME
-      #f))
+      (define who 'record-constructor-descriptor)
+      (syntax-case x ()
+        [(_ name)
+         (identifier? #'name)
+         (lambda (lookup)
+           (or (lookup #'name #'record-constructor-descriptor-key)
+               (syntax-violation who "invalid record name syntax" x #'name)))]
+        [_ (syntax-violation who "invalid syntax" x)])))
 
   ;; (rnrs enums)
   (define-syntax define-enumeration
