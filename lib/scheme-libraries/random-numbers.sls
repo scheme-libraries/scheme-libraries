@@ -11,6 +11,8 @@
     (scheme-libraries numbers)
     (scheme-libraries thread-parameters))
 
+  ;; TODO: Replace by MRG32k3a random generator (see SRFI 27).
+
   (define getrandom
     (lambda ()
       (call-with-port
@@ -44,10 +46,18 @@
                                         12345)
                                      0 31)])
         (random-seed seed)
-        (display seed) (newline)
-        (if (exact? x)
-            (mod seed x)
-            (fl/ (fl* (real->flonum x) (real->flonum seed))
-                 (flexpt 2.0 31.0))))))
+        (let ([r (bitwise-bit-field seed 16 31)])
+          (cond
+           [(exact? x)
+            (when (> x 32767)
+              (raise (condition (make-implementation-restriction-violation)
+                       (make-who-condition who)
+                       (make-message-condition "range too large")
+                       (make-irritants-condition (list x)))))
+            (mod r x)]
+           [(inexact? x)
+            (fl/ (fl* (real->flonum x) (real->flonum r))
+                 (flexpt 2.0 15.0))]
+           [else (assert #f)])))))
 
   )
