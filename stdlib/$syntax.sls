@@ -100,7 +100,6 @@
                  (define-property record-name
                    record-constructor-descriptor-key #'record-constructor-descriptor)
                  ;; TODO: parse record fields
-                 ;; TODO: bind record-name properties!
                  )))]
         [_ (syntax-violation who "invalid syntax" x)])))
 

@@ -337,6 +337,7 @@
     location-box
     location-box-set!
     keyword-binding-transformer-set!
+    property-set!
     label-binding
     syntax-car
     syntax-cdr

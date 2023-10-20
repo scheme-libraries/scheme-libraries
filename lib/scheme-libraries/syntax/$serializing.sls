@@ -110,6 +110,8 @@
                                                             (variable-binding-location bdg))))]
                                      [(keyword-binding? bdg)
                                       `(,lblsym (keyword))]
+                                     [(property-binding? bdg)
+                                      `(,lblsym (property))]
                                      [(auxiliary-binding? bdg)
                                       `(,lblsym (auxiliary-syntax
                                                  ,(auxiliary-binding-name bdg)))]
@@ -183,6 +185,10 @@
                  [(keyword)
                   (let ([bdg (make-keyword-binding #f)])
                     (keyword-binding-library-set! bdg lib)
+                    (label-binding-set! lbl bdg))]
+                 [(property)
+                  (let ([bdg (make-property-binding #f)])
+                    (property-binding-library-set! bdg lib)
                     (label-binding-set! lbl bdg))]
                  [(auxiliary-syntax ,name)
                   (guard (symbol? name))
@@ -259,6 +265,10 @@
         [(quote ,lbl)
          (guard (label? lbl))
          (label->datum lbl)]
+        [(quote ,stx)
+         (guard (syntax-object? stx))
+         ;; FIXME: Serialize syntax objects.
+         (assert #f)]
         [(quote ,e) `(quote ,e)]
         [,e (guard (variable? e)) (variable->datum e)]
         [,e (guard (symbol? e)) e]
