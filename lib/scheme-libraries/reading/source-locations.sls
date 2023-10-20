@@ -13,12 +13,15 @@
     make-source-location-condition
     source-location-condition?
     condition-source-location
-    display-source-location)
+    display-source-location
+    source-location->datum
+    datum->source-location)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries filenames)
+    (scheme-libraries match)
     (scheme-libraries ports)
     (scheme-libraries reading positions)
     (scheme-libraries record-writer))
@@ -68,6 +71,26 @@
                   (format "~a.~a"
                           (position-line (source-location-end s))
                           (position-column (source-location-end s)))))))
+
+  ;; Serializing
+
+  (define/who source-location->datum
+    (lambda (loc)
+      (unless (source-location? loc)
+        (assertion-violation who "invalid source location argument" loc))
+      (let ([filename (source-location-filename loc)])
+        `#(,(or filename (filename->datum filename))
+           ,(position->datum (source-location-start loc))
+           ,(position->datum (source-location-end loc))))))
+
+  (define/who datum->source-location
+    (lambda (e)
+      (match e
+        [#(,filename ,start ,end)
+         (make-source-location (and filename (datum->filename filename))
+                               (datum->position start)
+                               (datum->position end))]
+        [,e (assertion-violation who "invalid source location datum argument" e)])))
 
   ;; Record writers
 

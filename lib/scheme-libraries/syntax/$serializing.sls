@@ -267,8 +267,7 @@
          (label->datum lbl)]
         [(quote ,stx)
          (guard (syntax-object? stx))
-         ;; FIXME: Serialize syntax objects.
-         (assert #f)]
+         (intern-syntax-object! stx)]
         [(quote ,e) `(quote ,e)]
         [,e (guard (variable? e)) (variable->datum e)]
         [,e (guard (symbol? e)) e]
@@ -295,6 +294,9 @@
         [,e
          (guard (symbol? e) (variable-symbol? e))
          (datum->variable e)]
+        [,e
+         (guard (symbol? e) (syntax-object-symbol? e))
+         (ref-syntax-object e)]
         [,e (guard (symbol? e)) e]
         [(,[e*] ...) e*]
         [,e (assert #f)])))
@@ -314,5 +316,27 @@
   (define variable-symbol?
     (lambda (sym)
       (string-prefix? "%variable-" (symbol->string sym))))
+
+  (define syntax-object-symbol?
+    (lambda (sym)
+      (string-prefix? "%syntax-" (symbol->string sym))))
+
+  ;; Serializing of syntax objects
+
+    #;
+  (define syntax-object->datum/wrap
+    (lambda (x)
+      (assert (syntax-object? x))
+      ()
+
+      ))
+
+  #;
+  (define datum->syntax-object/wrap
+    (lambda (e)
+      )
+    )
+
+
 
   )
