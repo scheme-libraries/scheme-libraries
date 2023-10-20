@@ -1,5 +1,7 @@
 (library (test)
-  (export foo)
+  (export
+    foo
+    bar)
   (import
     (rnrs)
     (test2))
@@ -9,5 +11,7 @@
       (id #'y)))
 
   (define y (id 12))
+
+  (define-record-type bar)
 
   )

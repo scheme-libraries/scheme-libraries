@@ -109,14 +109,24 @@
     (lambda (l/p)
       (assert (label/props? l/p))
       (cons (label->datum (label/props-label l/p))
-            (map label->datum (label/props-props l/p)))))
+            (map property->datum (label/props-props l/p)))))
+
+  (define property->datum
+    (lambda (prop)
+      (cons (label->datum (property-key-label prop))
+            (label->datum (property-value-label prop)))))
 
   (define datum->label/props
     (lambda (ls)
       (assert (and (pair? ls)
                    (list? (cdr ls))))
       (make-label/props (datum->label (car ls))
-                        (map datum->label (cdr ls)))))
+                        (map datum->property (cdr ls)))))
+
+  (define datum->property
+    (lambda (e)
+      (make-property (datum->label (car e))
+                     (datum->label (cdr e)))))
 
   ;; Helpers
 

@@ -28,4 +28,7 @@
 
 (test-equal 12 (eval 'foo (environment '(test))))
 
+(test-assert (eval '(record-type-descriptor? (record-type-descriptor bar))
+                   (environment '(test) '(rnrs))))
+
 (test-end)

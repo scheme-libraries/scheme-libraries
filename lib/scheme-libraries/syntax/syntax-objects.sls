@@ -95,7 +95,8 @@
     make-pattern-variable-binding
     pattern-variable-binding?
     pattern-variable-binding-identifier
-    pattern-variable-binding-level)
+    pattern-variable-binding-level
+    property-set!)
   (import
     (except (rnrs) &syntax &undefined)
     (rnrs mutable-pairs)
@@ -688,6 +689,15 @@
       (make-ribcage (map identifier->symbol id*)
                     (map syntax-object-marks id*)
                     lbl*)))
+
+  ;; Properties
+
+  (define property-set!
+    (lambda (label val)
+      (assert (label? label))
+      (let ([bdg (label-binding label)])
+        (assert (property-binding? bdg))
+        (property-binding-value-set! bdg val))))
 
   ;; Conditions
 
