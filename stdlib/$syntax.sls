@@ -47,8 +47,8 @@
   (define-auxiliary-syntax nongenerative)
   (define-auxiliary-syntax parent-rtd)
 
-;  (define record-type-descriptor-key)
-;  (define record-constructor-descriptor-key)
+  (define record-type-descriptor-key)
+  (define record-constructor-descriptor-key)
 
   (define-syntax define-record-type
     (lambda (x)
