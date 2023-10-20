@@ -8,11 +8,28 @@
     (rnrs)
     (scheme-libraries define-who)
     (scheme-libraries helpers)
+    (scheme-libraries lists)
     (scheme-libraries numbers))
 
   (define-syntax empty-symbol
     (lambda (stx)
       (syntax-quote (string->symbol ""))))
+
+  (define serializers (make-eqv-hashtable))
+
+  (define/who record-serializer
+    (lambda (rtd proc)
+      (unless (record-type-descriptor? rtd)
+        (assertion-violation who "invalid record type descriptor argument" rtd))
+      (unless (procedure? proc)
+        (assertion-violation who "invalid procedure argument" proc))
+      (hashtable-update! serializers
+        rtd
+        (lambda (old-val)
+          (when old-val
+            (assertion-violation who "record type already registered" rtd))
+          proc)
+        #f)))
 
   (define/who serialize
     (lambda (x)
@@ -70,20 +87,23 @@
        [(list? x)
         `(list ,@(map f x))]
        [(pair? x)
-        ;; check for cyclic list!
-        (let f ([x x])
-          (if (null? x))
-          )
-
-        `(pair ,(f (car x)) ,(f (cdr x)))]
+        (if (length+ x)
+            `(cons* ,@(let g ([x x])
+                        (if (pair? x)
+                            (cons (g (car x))
+                                  (f (cdr x)))
+                            (f x))))
+            `(cons ,(f (car x)) (f (cdr x))))]
        [(vector? x)
         `(vector ,@(vector->list (vector-map f x)))]
        [(string? x) x]
        [(bytevector? x) x]
+       [(/record/
+         -> check record, etc.
+         )]
        [else
         (assert #f)])))
 
   (define deserialize
     (lambda (e)
-      (assert #f)))
-  )
+      (assert #f))))
