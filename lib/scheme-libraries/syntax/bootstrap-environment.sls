@@ -10,8 +10,7 @@
     label->datum
     datum->label
     label/props->datum
-    datum->label/props
-    )
+    datum->label/props)
   (import
     (rnrs)
     ;; DEBUG

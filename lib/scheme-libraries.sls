@@ -56,6 +56,8 @@
 
     ;; (scheme-libraries filenames)
     filename?
+    filename->datum
+    datum->filename
 
     ;; (scheme-libraries format-conditions)
     &format
@@ -185,6 +187,8 @@
     position-lines
     position-columns
     position-tabulator
+    position->datum
+    datum->position
 
     ;; (scheme-libraries reading readers)
     make-reader
@@ -202,6 +206,8 @@
     source-location-condition?
     condition-source-location
     display-source-location
+    source-location->datum
+    datum->source-location
 
     ;; (scheme-libraries reading tokenizers)
     make-tokenizer

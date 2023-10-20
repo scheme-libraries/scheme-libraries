@@ -30,6 +30,7 @@
     (scheme-libraries thread-parameters)
     (scheme-libraries define-who)
     (scheme-libraries hashtables)
+    (scheme-libraries source-locations)
     (scheme-libraries uuid)
     (scheme-libraries syntax $environments)
     (scheme-libraries syntax $marks)
@@ -180,4 +181,7 @@
                            (string-length "%variable-")
                            (fx- (string-length s)
                                 (string-length "%variable-")))))])
-        (symbol->object s (lambda () (name->variable name)))))))
+        (symbol->object s (lambda () (name->variable name))))))
+
+
+  )

@@ -10,10 +10,13 @@
     position-column
     position-lines
     position-columns
-    position-tabulator)
+    position-tabulator
+    position->datum
+    datum->position)
   (import
     (rnrs)
     (scheme-libraries define-who)
+    (scheme-libraries match)
     (scheme-libraries numbers))
 
   (define-record-type position
@@ -57,6 +60,15 @@
       (make-position (position-line position)
                      (fx+ (fxand (fx+ (position-column position) 7) -8) 1))))
 
+  (define/who position->datum
+    (lambda (pos)
+      (unless (position? pos)
+        (assertion-violation who "invalid position argument" pos))
+      `#(,(position-line pos) ,(position-column pos))))
 
-
+  (define/who datum->position
+    (lambda (e)
+      (match e
+        [#(,line ,col) (make-position line col)]
+        [,e (assertion-violation who "invalid position datum argument" e)])))
   )
