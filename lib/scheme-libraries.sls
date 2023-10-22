@@ -56,8 +56,8 @@
 
     ;; (scheme-libraries filenames)
     filename?
-    filename->datum
-    datum->filename
+    filename->s-expr
+    s-expr->filename
 
     ;; (scheme-libraries format-conditions)
     &format
@@ -151,6 +151,8 @@
     make-annotated-vector
     annotated-vector?
     annotated-vector-ref
+    annotated-datum->s-expr
+    s-expr->annotated-datum
 
     ;; (scheme-libraries reading lexemes)
     lexeme?
@@ -187,8 +189,8 @@
     position-lines
     position-columns
     position-tabulator
-    position->datum
-    datum->position
+    position->s-expr
+    s-expr->position
 
     ;; (scheme-libraries reading readers)
     make-reader
@@ -206,8 +208,8 @@
     source-location-condition?
     condition-source-location
     display-source-location
-    source-location->datum
-    datum->source-location
+    source-location->s-expr
+    s-expr ->source-location
 
     ;; (scheme-libraries reading tokenizers)
     make-tokenizer

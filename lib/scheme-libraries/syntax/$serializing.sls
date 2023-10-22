@@ -66,7 +66,7 @@
          [(label? obj)
           `(label ,(label->datum obj))]
          [(syntax-object? obj)
-          `(syntax ,obj)]
+          `(syntax ,(syntax-object->exp obj))]
          ;; XXX: Can marks/labels appear in code?
          #;
          [(mark? obj)
@@ -357,21 +357,57 @@
 
   ;; Serializing of syntax objects
 
-  #;
-
-  (define syntax-object->datum/wrap
+  (define syntax-object->s-exp
     (lambda (x)
-      (assert (syntax-object? x))
-      ()
+      `#(,(expr->s-exp (syntax-object-expr x))
+         ,(wrap->s-exp (syntax-object-wrap x)))))
 
-      ))
+  (define expr->s-exp
+    (lambda (x)
+      (cond
+       [(annotated-datum? x)
+        `(datum ,(annotated-datum->s-expr x))]
+       [(vector? x)
+        `(vector ,@(map expr->s-exp (vector->list x)))]
+       [(list? x)
+        `(list ,@(map expr->s-exp x))]
+       [(pair? x)
+        (match x
+          [(,x* ... . ,x)
+           `(cons* ,@(map expr->s-exp x*) ,(expr->s-exp x))])]
+       [(syntax-object? x)
+        `(syntax ,(syntax-object->s-exp x))]
+       [else x])))
 
-  #;
-  (define datum->syntax-object/wrap
+  ;; TODO: Move to wrap lib.
+  (define wrap->s-exp
+    (lambda (x)
+      `#(,(marks->s-exp (wrap-marks x))
+         ,(substitutions->s-exp (wrap-substitutions x)))))
+
+  (define s-exp->wrap
     (lambda (e)
-      )
-    )
+      (match e
+        [#(,[s-exp->marks -> x] ,[s-exp->substitutions -> y])
+         (make-wrap x y)])))
 
+  ;; TODO: Move to marks lib.
+  (define marks->s-exp
+    (lambda (m)
+      (map mark->datum m)))
 
+  (define s-exp->marks
+    (lambda (e)
+      (match e
+        [(,[datum->mark m*] ...)
+         m*])))
+
+  ;; TODO
+
+  (define substitutions->s-exp
+    ...)
+
+  (define s-exp->substitutions
+    ...)
 
   )

@@ -14,8 +14,8 @@
     source-location-condition?
     condition-source-location
     display-source-location
-    source-location->datum
-    datum->source-location)
+    source-location->s-expr
+    s-expr->source-location)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
@@ -74,7 +74,7 @@
 
   ;; Serializing
 
-  (define/who source-location->datum
+  (define/who source-location->s-expr
     (lambda (loc)
       (unless (source-location? loc)
         (assertion-violation who "invalid source location argument" loc))
@@ -83,7 +83,7 @@
            ,(position->datum (source-location-start loc))
            ,(position->datum (source-location-end loc))))))
 
-  (define/who datum->source-location
+  (define/who s-expr->source-location
     (lambda (e)
       (match e
         [#(,filename ,start ,end)
