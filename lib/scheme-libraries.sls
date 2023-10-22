@@ -234,6 +234,9 @@
     string-split
     string-prefix?
 
+    ;; (scheme-libraries symbols)
+    symbol-prefix?
+
     ;; (scheme-libraries syntactic-monads)
     define-syntactic-monad
 
@@ -305,6 +308,7 @@
     (scheme-libraries parameters)
     (scheme-libraries quote-syntax)
     (scheme-libraries strings)
+    (scheme-libraries symbols)
     (scheme-libraries syntactic-monads)
     (scheme-libraries thread-parameters)
     (scheme-libraries trees)

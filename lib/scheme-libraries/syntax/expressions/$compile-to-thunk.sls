@@ -48,7 +48,7 @@
              x]
             [,x
              (guard (variable? x))
-             (variable-name x)])))
+             (variable->symbol x)])))
       (values out
               (list->vector (reverse val*)))))
 

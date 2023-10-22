@@ -9,14 +9,19 @@
     build-let
     expression?
     expression=?
-    compile-to-thunk)
+    compile-to-thunk
+    expression->s-exp
+    s-exp->expression)
   (import
+    (prefix (chezscheme) cs:)
+
     (rnrs)
     (rnrs eval)
     (scheme-libraries atoms)
     (scheme-libraries define-who)
     (scheme-libraries gensyms)
     (scheme-libraries match)
+    (scheme-libraries symbols)
     (scheme-libraries syntax expressions $compile-to-thunk)
     (scheme-libraries syntax variables)
     (scheme-libraries with-implicit))
@@ -124,6 +129,83 @@
               (atom=? x y)]
              [else #f]))))))
 
+  ;; Serialization
 
+  (define/who expression->s-exp
+    (lambda (object->s-exp e)
+      (unless (procedure? object->s-exp)
+        (assertion-violation who "invalid object serialize argument" object->s-exp))
+      (match e
+        [(begin ,[e*] ...)
+         `(begin ,e* ...)]
+        [(case-lambda [,(formals->s-exp -> formals*) ,[e*]] ...)
+         `(case-lambda [,formals* ,e*] ...)]
+        [(letrec ([,[variable->symbol -> x*] ,[e*]] ...) ,[body])
+         `(letrec ([,x* ,e*] ...) ,body)]
+        [(letrec* ([,[variable->symbol -> x*] ,[e*]] ...) ,[body])
+         `(letrec* ([,x* ,e*] ...) ,body)]
+        [(if ,[e0] ,[e1] ,[e2])
+         `(if ,e0 ,e1 ,e2)]
+        [(quote ,e) (guard (datum? e)) `(quote ,e)]
+        [(quote ,e) `(object . ,(object->s-exp e))]
+        [(set! ,[variable->symbol -> x] ,[e])
+         `(set! ,x ,e)]
+        [(,[e*] ...) `(,e* ...)]
+        [,x (guard (symbol? x)) `(primitive ,x)]
+        [,x (guard (variable? x)) (variable->symbol x)]
+        [,x (assertion-violation who "invalid expression" x)])))
 
+  (define/who s-exp->expression
+    (lambda (s-exp->object e)
+      (unless (procedure? s-exp->object)
+        (assertion-violation who "invalid object deserialize argument" s-exp->object))
+      (match e
+        [(begin ,[e*] ...)
+         `(begin ,e* ...)]
+        [(case-lambda [,(sexp->formals -> formals*) ,[e*]] ...)
+         `(case-lambda [,formals* ,e*] ...)]
+        [(letrec ([,[symbol->variable -> x*] ,[e*]] ...) ,[body])
+         `(letrec ([,x* ,e*] ...) ,body)]
+        [(letrec* ([,[symbol->variable -> x*] ,[e*]] ...) ,[body])
+         `(letrec* ([,x* ,e*] ...) ,body)]
+        [(if ,[e0] ,[e1] ,[e2])
+         `(if ,e0 ,e1 ,e2)]
+        [(object . ,e)
+         `(quote ,(s-exp->object e))]
+        [(quote ,e)
+         `(quote ,e)]
+        [(set! ,[symbol->variable -> x] ,[e])
+         `(set! ,x ,e)]
+        [(primitive ,x) x]
+        [(,[x*] ...) `(,x* ...)]
+        [,x (guard (symbol? x)) (symbol->variable x)]
+        [,x (assertion-violation who "invalid expression s-exp" x)])))
+
+  (define sexp->formals
+    (lambda (e)
+      (match e
+        [(,[symbol->variable -> x*] ...)
+         `(,x* ...)]
+        [(,[symbol->variable -> x*] ... . ,[symbol->variable -> x])
+         `(,x* ... . ,x)])))
+
+  (define formals->s-exp
+    (lambda (e)
+      (match e
+        [(,[variable->symbol -> x*] ...)
+         `(,x* ...)]
+        [(,[variable->symbol -> x*] ... . ,[variable->symbol -> x])
+         `(,x* ... . ,x)])))
+
+  (define datum?
+    (lambda (obj)
+      (or (boolean? obj)
+          (symbol? obj)
+          (char? obj)
+          (vector? obj)
+          (null? obj)
+          (pair? obj)
+          (number? obj)
+          (string? obj)
+          (bytevector? obj))))
   )

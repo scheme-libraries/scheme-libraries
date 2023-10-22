@@ -30,7 +30,7 @@
 
   ;; Library collections
 
-  (cs:trace-define library-collection->datum
+  (define library-collection->datum
     (lambda (lc system? visible?)
       (parameterize ([current-library-collection lc])
         (define libs (library-list))
@@ -58,11 +58,30 @@
   ;; Problem: what happens if one writes out such a library -> the import would
 
   (define/who library->datum
+    (define object->s-exp
+      (lambda (obj)
+        (cond
+         [(location? obj)
+          `(location ,(location->s-exp obj))]
+         [(label? obj)
+          `(label ,(label->datum obj))]
+         [(syntax-object? obj)
+          `(syntax ,obj)]
+         ;; XXX: Can marks/labels appear in code?
+         #;
+         [(mark? obj)
+         ]
+         #;
+         [(label? obj)
+         ]
+         [else
+          (display obj) (newline)
+          (assert #f)])))
     (lambda (lib system? visible? init-uid)
       (assert (library? lib))
       (let ([imports (library-imports lib)]
-            [viscode (expression->datum (library-visit-code lib))]
-            [invcode (expression->datum (library-invoke-code lib))])
+            [viscode (expression->s-exp object->s-exp (library-visit-code lib))]
+            [invcode (expression->s-exp object->s-exp (library-invoke-code lib))])
         (extend-backquote here
           `($library (,@(if visible?
                             (library-name lib)
@@ -104,7 +123,7 @@
                                     (define lblsym (label->datum lbl))
                                     (cond
                                      [(variable-binding? bdg)
-                                      `(,lblsym (variable ,(variable-name
+                                      `(,lblsym (variable ,(variable->symbol
                                                             (variable-binding-symbol bdg))
                                                           ,(location-name
                                                             (variable-binding-location bdg))))]
@@ -119,16 +138,25 @@
                                   (library-bindings lib)) ;FIXME: Call this environment.
                                 ))
              (visit-code ,(if system?
-                              (build (begin (values)))
+                              (expression->s-exp object->s-exp
+                                                 (build (begin (values))))
                               viscode))
              (invoke-code ,(if system?
-                               (build (letrec ()
-                                        (letrec* ()
-                                          (begin (values)))))
+                               (expression->s-exp object->s-exp
+                                                  (build (letrec ()
+                                                           (letrec* ()
+                                                             (begin (values))))))
                                invcode)))))))
 
   (define/who datum->library
     ;; TODO: Check that library names corresponding to uids match.
+    (define s-exp->object
+      (lambda (e)
+        (match e
+          [(syntax ,x) x]
+          [(location ,x) (s-exp->location x)]
+          [(label ,x) (datum->label x)]
+          [else (assert #f)])))
     (lambda (e)
       (match e
         [($library (,name* ... ,version)
@@ -168,9 +196,9 @@
                   ;; Invoke requirements
                   (vector-map uid->library (list->vector invreq*))
                   ;; Visit commands
-                  (datum->expression viscode)
+                  (s-exp->expression s-exp->object viscode)
                   ;; Invoke definitions
-                  (datum->expression invcode)
+                  (s-exp->expression s-exp->object invcode)
                   ;; Bindings
                   lbl*                   ;XXX:store it under env instead?
                   )])
@@ -178,8 +206,8 @@
              (lambda (lbl type)
                (match type
                  [(variable ,sym ,locname)
-                  (let ([bdg (make-variable-binding (name->variable sym)
-                                                    (datum->location locname))])
+                  (let ([bdg (make-variable-binding (symbol->variable sym)
+                                                    (s-exp->location locname))])
                     (variable-binding-library-set! bdg lib)
                     (label-binding-set! lbl bdg))]
                  [(keyword)
@@ -253,6 +281,7 @@
 
   ;; Code serialization
 
+  #;
   (define expression->datum
     (lambda (e)
       (match e
@@ -267,6 +296,8 @@
          (label->datum lbl)]
         [(quote ,stx)
          (guard (syntax-object? stx))
+         (assert #f)
+         #;
          (intern-syntax-object! stx)]
         [(quote ,e) `(quote ,e)]
         [,e (guard (variable? e)) (variable->datum e)]
@@ -278,6 +309,7 @@
 
          (assert #f)])))
 
+  #;
   (define datum->expression
     (lambda (e)
       (match e
@@ -296,6 +328,8 @@
          (datum->variable e)]
         [,e
          (guard (symbol? e) (syntax-object-symbol? e))
+         (assert #f)
+         #;
          (ref-syntax-object e)]
         [,e (guard (symbol? e)) e]
         [(,[e*] ...) e*]
@@ -303,27 +337,28 @@
 
   (define location-symbol?
     (lambda (sym)
-      (string-prefix? "%location-" (symbol->string sym))))
+      (string-prefix? (symbol->string sym) "%location-")))
 
   (define label-symbol?
     (lambda (sym)
-      (string-prefix? "%label-" (symbol->string sym))))
+      (string-prefix? (symbol->string sym) "%label-")))
 
   (define mark-symbol?
     (lambda (sym)
-      (string-prefix? "%mark-" (symbol->string sym))))
+      (string-prefix? (symbol->string sym) "%mark-")))
 
   (define variable-symbol?
     (lambda (sym)
-      (string-prefix? "%variable-" (symbol->string sym))))
+      (string-prefix? (symbol->string sym) "%variable-")))
 
   (define syntax-object-symbol?
     (lambda (sym)
-      (string-prefix? "%syntax-" (symbol->string sym))))
+      (string-prefix? (symbol->string sym) "%syntax-")))
 
   ;; Serializing of syntax objects
 
-    #;
+  #;
+
   (define syntax-object->datum/wrap
     (lambda (x)
       (assert (syntax-object? x))

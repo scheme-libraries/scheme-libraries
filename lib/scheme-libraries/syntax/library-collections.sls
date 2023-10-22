@@ -19,9 +19,11 @@
     symbol->object
     mark->datum
     datum->mark
-    location->datum
-    datum->location
+    location->s-exp
+    s-exp->location
+    #;
     variable->datum
+    #;
     datum->variable)
   (import
     (rnrs)
@@ -30,7 +32,7 @@
     (scheme-libraries thread-parameters)
     (scheme-libraries define-who)
     (scheme-libraries hashtables)
-    (scheme-libraries source-locations)
+    (scheme-libraries reading source-locations)
     (scheme-libraries uuid)
     (scheme-libraries syntax $environments)
     (scheme-libraries syntax $marks)
@@ -156,21 +158,25 @@
       (assert (symbol? s))
       (symbol->object s (lambda () (make-mark s)))))
 
-  (define/who location->datum
+  (define/who location->s-exp
     (lambda (loc)
       (assert (location? loc))
       (location-name loc)))
 
-  (define/who datum->location
+  (define/who s-exp->location
     (lambda (s)
       (assert (symbol? s))
       (symbol->object s (lambda () (make-location s)))))
 
+  ;; FIXME: Obsolete.
+  #;
   (define variable->datum
     (lambda (var)
       (assert (variable? var))
       (string->symbol (format "%variable-~a" (variable-name var)))))
 
+  ;; FIXME: Obsolete.
+  #;
   (define datum->variable
     (lambda (s)
       (assert (symbol? s))
