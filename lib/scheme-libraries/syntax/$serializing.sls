@@ -18,6 +18,7 @@
     (scheme-libraries parameters)
     (scheme-libraries strings)
     (scheme-libraries uuid)
+    (scheme-libraries reading annotated-datums)
     (scheme-libraries syntax bootstrap-environment)
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax $marks)
@@ -30,7 +31,7 @@
 
   ;; Library collections
 
-  (define library-collection->datum
+  (cs:trace-define library-collection->datum
     (lambda (lc system? visible?)
       (parameterize ([current-library-collection lc])
         (define libs (library-list))
@@ -66,14 +67,7 @@
          [(label? obj)
           `(label ,(label->datum obj))]
          [(syntax-object? obj)
-          `(syntax ,(syntax-object->exp obj))]
-         ;; XXX: Can marks/labels appear in code?
-         #;
-         [(mark? obj)
-         ]
-         #;
-         [(label? obj)
-         ]
+          `(syntax ,(syntax-object->s-exp obj))]
          [else
           (display obj) (newline)
           (assert #f)])))
@@ -153,7 +147,7 @@
     (define s-exp->object
       (lambda (e)
         (match e
-          [(syntax ,x) x]
+          [(syntax ,x) (s-exp->syntax-object x)]
           [(location ,x) (s-exp->location x)]
           [(label ,x) (datum->label x)]
           [else (assert #f)])))
@@ -359,14 +353,14 @@
 
   (define syntax-object->s-exp
     (lambda (x)
-      `#(,(expr->s-exp (syntax-object-expr x))
+      `#(,(expr->s-exp (syntax-object-expression x))
          ,(wrap->s-exp (syntax-object-wrap x)))))
 
   (define expr->s-exp
     (lambda (x)
       (cond
        [(annotated-datum? x)
-        `(datum ,(annotated-datum->s-expr x))]
+        `(datum ,(annotated-datum->s-exp x))]
        [(vector? x)
         `(vector ,@(map expr->s-exp (vector->list x)))]
        [(list? x)
@@ -378,6 +372,22 @@
        [(syntax-object? x)
         `(syntax ,(syntax-object->s-exp x))]
        [else x])))
+
+  (define s-exp->syntax-object
+    (lambda (x)
+      (match x
+        [#(,[s-exp->expr -> e] ,[s-exp->wrap -> w])
+         (make-syntax-object e w)])))
+
+  (define s-exp->expr
+    (lambda (e)
+      (match e
+        [(datum ,[s-exp->annotated-datum -> x]) x]
+        [(vector ,[e*] ...) (list->vector e*)]
+        [(list ,[e*] ...) e*]
+        [(cons* ,[e*] ... ,[e]) (append e* e)]
+        [(syntax ,[s-exp->syntax-object -> x]) x]
+        [,x x])))
 
   ;; TODO: Move to wrap lib.
   (define wrap->s-exp
@@ -405,9 +415,11 @@
   ;; TODO
 
   (define substitutions->s-exp
-    ...)
+    (lambda (s)
+      s))
 
   (define s-exp->substitutions
-    ...)
+    (lambda (s)
+      s))
 
   )

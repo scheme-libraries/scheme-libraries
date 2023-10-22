@@ -14,8 +14,8 @@
     source-location-condition?
     condition-source-location
     display-source-location
-    source-location->s-expr
-    s-expr->source-location)
+    source-location->s-exp
+    s-exp->source-location)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
@@ -74,22 +74,22 @@
 
   ;; Serializing
 
-  (define/who source-location->s-expr
+  (define/who source-location->s-exp
     (lambda (loc)
       (unless (source-location? loc)
         (assertion-violation who "invalid source location argument" loc))
       (let ([filename (source-location-filename loc)])
-        `#(,(or filename (filename->datum filename))
-           ,(position->datum (source-location-start loc))
-           ,(position->datum (source-location-end loc))))))
+        `#(,(and filename (filename->s-exp filename))
+           ,(position->s-exp (source-location-start loc))
+           ,(position->s-exp (source-location-end loc))))))
 
-  (define/who s-expr->source-location
+  (define/who s-exp->source-location
     (lambda (e)
       (match e
         [#(,filename ,start ,end)
-         (make-source-location (and filename (datum->filename filename))
-                               (datum->position start)
-                               (datum->position end))]
+         (make-source-location (and filename (s-exp->filename filename))
+                               (s-exp->position start)
+                               (s-exp->position end))]
         [,e (assertion-violation who "invalid source location datum argument" e)])))
 
   ;; Record writers

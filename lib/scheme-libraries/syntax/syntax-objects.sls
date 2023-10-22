@@ -9,7 +9,14 @@
     location-box
     location-box-set!
     location-name
+    make-syntax-object
     syntax-object?
+    syntax-object-wrap
+    syntax-object-expression
+    make-wrap
+    wrap?
+    wrap-marks
+    wrap-substitutions
     annotated-datum->syntax-object
     syntax-object-source-location
     syntax-object-marks

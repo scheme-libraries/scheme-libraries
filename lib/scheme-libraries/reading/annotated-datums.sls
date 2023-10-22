@@ -21,8 +21,8 @@
     annotated-vector-ref
     annotated-vector->list
     invalid-datum-condition
-    annotated-datum->s-expr
-    s-expr->annotated-datum)
+    annotated-datum->s-exp
+    s-exp->annotated-datum)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -219,35 +219,35 @@
 
   ;; Serialization
 
-  (define/who annotated-datum->s-expr
+  (define/who annotated-datum->s-exp
     (lambda (ann)
       (unless (annotated-datum? ann)
         (assertion-violation who "invalid annotated datum argument" ann))
-      `#(,(expr->s-expr (annotated-datum-expr ann))
-         ,(let ([loc (annotated-datum-source-location)])
+      `#(,(expr->s-exp (annotated-datum-expression ann))
+         ,(let ([loc (annotated-datum-source-location ann)])
             (and loc
-                 (source-location->s-expr loc))))))
+                 (source-location->s-exp loc))))))
 
-  (define expr->s-expr
+  (define expr->s-exp
     (lambda (e)
       (cond
        [(vector? e)
-        `(vector ,@(map annotated-datum->s-expr (vector->list e)))]
+        `(vector ,@(map annotated-datum->s-exp (vector->list e)))]
        [(list? e)
-        `(list ,@(map annotated-datum->s-expr e))]
+        `(list ,@(map annotated-datum->s-exp e))]
        [(pair? e)
         (match e
           [(,x* ... . ,x)
-           `(cons* ,@(map annotated-datum->s-expr x*)
-                   ,(annotated-datum->s-expr x))])]
+           `(cons* ,@(map annotated-datum->s-exp x*)
+                   ,(annotated-datum->s-exp x))])]
        [else e])))
 
-  (define s-expr->annotated-datum
+  (define s-exp->annotated-datum
     (lambda (e)
       (match e
         [#(,x ,y)
          (let ([loc (and y
-                         (s-expr->source-location y))])
+                         (s-exp->source-location y))])
            (match x
              [(vector ,[x*] ...)
               (make-annotated-vector x* loc)]

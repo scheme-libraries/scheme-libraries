@@ -11,8 +11,8 @@
     position-lines
     position-columns
     position-tabulator
-    position->s-expr
-    s-expr->position)
+    position->s-exp
+    s-exp->position)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -60,13 +60,13 @@
       (make-position (position-line position)
                      (fx+ (fxand (fx+ (position-column position) 7) -8) 1))))
 
-  (define/who position->s-expr
+  (define/who position->s-exp
     (lambda (pos)
       (unless (position? pos)
         (assertion-violation who "invalid position argument" pos))
       `#(,(position-line pos) ,(position-column pos))))
 
-  (define/who s-expr->position
+  (define/who s-exp->position
     (lambda (e)
       (match e
         [#(,line ,col) (make-position line col)]
