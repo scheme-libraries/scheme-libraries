@@ -233,13 +233,9 @@
       (cond
        [(vector? e)
         `(vector ,@(map annotated-datum->s-exp (vector->list e)))]
-       [(list? e)
-        `(list ,@(map annotated-datum->s-exp e))]
        [(pair? e)
-        (match e
-          [(,x* ... . ,x)
-           `(cons* ,@(map annotated-datum->s-exp x*)
-                   ,(annotated-datum->s-exp x))])]
+        `(cons ,(annotated-datum->s-exp (car e))
+               ,(annotated-datum->s-exp (cdr e)))]
        [else e])))
 
   (define s-exp->annotated-datum
@@ -249,13 +245,11 @@
          (let ([loc (and y
                          (s-exp->source-location y))])
            (match x
-             [(vector ,[x*] ...)
+             [(vector ,[s-exp->annotated-datum -> x*] ...)
               (make-annotated-vector x* loc)]
-             [(list ,[x*] ...)
-              (make-annotated-list x* loc)]
-             [(cons* ,[x*] ... ,[x])
-              (make-annotated-dotted-list x* x loc)]
-             [else
+             [(cons ,[s-exp->annotated-datum -> x] ,[s-exp->annotated-datum -> y])
+              (make-annotated-pair x y loc)]
+             [,x
               (make-annotated-atom x loc)]))])))
 
   ;; Conditions
