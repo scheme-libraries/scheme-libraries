@@ -67,10 +67,23 @@
                      (construct-name #'record-name "make-" #'record-name)
                      (construct-name #'record-name #'record-name "?"))]
             [_ (syntax-violation who "invalid name spec syntax" x name-spec)])))
+      (define parse-record-clauses
+        (lambda (cl*)
+          (define-syntactic-monad $ fields)
+          ($ let f ([cl cl*]
+                    [fields '()])
+            (match cl*
+              [(,cl . ,cl*)
+               (syntax-case cl (fields)
+                 [_ (syntax-violation who "invalid record clause syntax" x cl)])]
+              [()
+               ($ values ())]))))
       (syntax-case x ()
         [(_ name-spec record-clause ...)
          (let-values ([(record-name constructor-name predicate-name)
-                       (parse-name-spec #'name-spec)])
+                       (parse-name-spec #'name-spec)]
+                      [(...)
+                       (parse-record-clauses #'(record-clause ...))])
            (with-syntax ([record-name record-name]
                          [constructor-name constructor-name]
                          [predicate-name predicate-name])

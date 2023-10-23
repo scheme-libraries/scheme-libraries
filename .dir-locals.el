@@ -4,6 +4,7 @@
   . ((lisp-indent-offset . nil)
      (eval
       . (progn
+          (put '$ 'scheme-indent-function 'defun)
           (put 'metalet 'scheme-indent-function 1)
           (put 'except 'scheme-indent-function 1)
           (put 'rename 'scheme-indent-function 1)
@@ -93,4 +94,20 @@
 	     ("(\\(with-syntax\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(with-requirements-collector\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(with-syntax-error-context\\)\\>" 1 font-lock-keyword-face)
-	     ("(\\(test-datums\\)\\>" 1 font-lock-keyword-face))))))))
+	     ("(\\(test-datums\\)\\>" 1 font-lock-keyword-face)
+             ("\\(define-syntactic-monad\\)\\>[ \t]*\\(\\sw+\\)\\>"
+              (1 font-lock-keyword-face)
+              (2 font-lock-type-face))
+             ("(\\(\\$\\sw*\\)\\>[ \t]*\\(let\\*-values\\|lambda\\|case-lambda\\)\\>"
+              (1 font-lock-type-face)
+              (2 font-lock-keyword-face))
+             ("(\\(\\$\\sw*\\)\\>[ \t]*\\(define\\)\\>[ \t]*(\\(\\sw+\\)\\>"
+              (1 font-lock-type-face)
+              (2 font-lock-keyword-face)
+              (3 font-lock-function-name-face))
+             ("(\\(\\$\\sw*\\)\\>[ \t]*\\(let\\)\\>[ \t]*\\(\\sw+\\)\\>"
+              (1 font-lock-type-face)
+              (2 font-lock-keyword-face)
+              (3 font-lock-function-name-face))
+             ("(\\(\\$\\sw*\\)\\>"
+              1 font-lock-type-face))))))))
