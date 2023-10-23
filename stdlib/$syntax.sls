@@ -19,11 +19,14 @@
     record-constructor-descriptor
     define-enumeration)
   (import
-    ($system))
+    ($system)
+    (scheme-libraries with-implicit)
+    (scheme-libraries define-who)
+    (scheme-libraries syntactic-monads))
 
   ;; (rnrs bytevectors)
 
-  (define-syntax endianness
+  (define-syntax/who endianness
     (let ([enum-set (make-enumeration (cons (native-endianness) '(big little)))])
       (lambda (stx)
         (syntax-case stx ()
@@ -31,9 +34,9 @@
            (identifier? #'symbol)
            (begin
              (unless (enum-set-member? (syntax->datum #'symbol) enum-set)
-               (syntax-violation 'endianness "invalid endianness" stx #'symbol))
+               (syntax-violation 'who "invalid endianness" stx #'symbol))
              #''symbol)]
-          [_ (syntax-violation 'endianness "invalid syntax" stx)]))))
+          [_ (syntax-violation 'who "invalid syntax" stx)]))))
 
   ;; (rnrs records syntactic)
 
@@ -50,9 +53,8 @@
   (define record-type-descriptor-key)
   (define record-constructor-descriptor-key)
 
-  (define-syntax define-record-type
+  (define-syntax/who define-record-type
     (lambda (x)
-      (define who 'define-record-type)
       (define parse-name-spec
         (lambda (name-spec)
           (syntax-case name-spec ()
@@ -103,9 +105,8 @@
                  )))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
-  (define-syntax record-type-descriptor
+  (define-syntax/who record-type-descriptor
     (lambda (x)
-      (define who 'record-type-descriptor)
       (syntax-case x ()
         [(_ name)
          (identifier? #'name)
@@ -115,9 +116,8 @@
         [_
          (syntax-violation who "invalid syntax" x)])))
 
-  (define-syntax record-constructor-descriptor
+  (define-syntax/who record-constructor-descriptor
     (lambda (x)
-      (define who 'record-constructor-descriptor)
       (syntax-case x ()
         [(_ name)
          (identifier? #'name)
@@ -127,7 +127,7 @@
         [_ (syntax-violation who "invalid syntax" x)])))
 
   ;; (rnrs enums)
-  (define-syntax define-enumeration
+  (define-syntax/who define-enumeration
     (lambda (stx)
       (syntax-case stx ()
         [(_ type-name (symbol ...) constructor-name)
@@ -159,4 +159,4 @@
                               (syntax-violation 'type-name "universe does not include specified symbol" stx x)))
                           #'(x (... ...)))
                         #'(constructor '(x (... ...))))])))))]
-        [_ (syntax-violation 'define-enumeration "invalid syntax" stx)]))))
+        [_ (syntax-violation who "invalid syntax" stx)]))))

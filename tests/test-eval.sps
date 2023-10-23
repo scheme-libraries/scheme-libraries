@@ -19,6 +19,14 @@
 (define library-locator (make-library-locator '("tests/") '(".sls")))
 (current-library-loader (make-default-library-loader library-locator))
 
+(define test-environment
+  (environment '(rnrs)))
+
+(define-syntax test-eval
+  (syntax-rules ()
+    [(test-eval result expr)
+     (test-equal result (eval 'expr test-environment))]))
+
 (test-begin "eval")
 
 (test-equal 4 (eval '4 (bootstrap-environment)))
@@ -80,5 +88,7 @@
                       (define-property x y #t)
                       (m))
                    (bootstrap-environment)))
+
+(test-eval 1 1)
 
 (test-end "eval")

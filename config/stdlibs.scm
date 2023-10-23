@@ -14,3 +14,5 @@
 (rnrs syntax-case)
 (rnrs enums)
 (rnrs)
+(scheme-libraries with-implicit)
+(scheme-libraries define-who)
