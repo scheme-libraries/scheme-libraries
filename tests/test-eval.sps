@@ -26,6 +26,7 @@
   (syntax-rules ()
     [(test-eval result expr)
      (begin
+       ;; FIXME/DEBUG:
        (eval 'expr test-environment)
        (test-equal result (eval 'expr test-environment)))]))
 
@@ -97,7 +98,7 @@
   (let ()
     (define-record-type pare
       (fields kar kdr))
-    (pare? (make-pare))))
+    (pare? (make-pare 1 2))))
 
 (test-end "eval")
 

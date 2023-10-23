@@ -70,18 +70,21 @@
       (let ([ht (make-eq-hashtable)])
         (let f ([x x])
           (cond
+           [(variable? x)]
            [(atom? x)]
            [(hashtable-ref ht x #f) #f]
            [(pair? x)
             (hashtable-set! ht x #t)
-            (and (f (car x)) (f (cdr x)))]
+            (or (eq? (car x) 'quote)
+                (and (f (car x)) (f (cdr x))))]
            [(vector? x)
             (hashtable-set! ht x #t)
             (let g ([k (vector-length x)])
               (or (fxzero? k)
                   (let ([k (fx- k 1)])
                     (and (f (vector-ref x k))
-                         (g k)))))])))))
+                         (g k)))))]
+           [else #f])))))
 
   (define/who expression=?
     ;; XXX: In our tests, we use ordinary symbols for variables.
