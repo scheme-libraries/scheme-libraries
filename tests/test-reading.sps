@@ -55,5 +55,6 @@
 ;;; Random examples
 
 (test-datums (unsyntax foo) (unsyntax-splicing bar) "#,foo #,@bar")
+(test-datums (,'unquote foo) (,'unquote-splicing bar) ",foo ,@bar")
 
 (test-end "reading")

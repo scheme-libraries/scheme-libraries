@@ -322,7 +322,7 @@
              ;; `
              [(char=? ch #\`) (make-abbreviation 'quasiquote start (position))]
              ;; ,
-             [(char=? ch #\')
+             [(char=? ch #\,)
               (cond
                [(char=? (peek-char) #\@)
                 (read-char)
