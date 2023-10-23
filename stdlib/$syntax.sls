@@ -73,7 +73,7 @@
                          [constructor-name constructor-name]
                          [predicate-name predicate-name])
              #'(begin
-                 (define record-type-descriptor
+                 (define rtd
                    (make-record-type-descriptor
                     'record-name
                     #f                    ;parent
@@ -82,23 +82,23 @@
                     #f                    ;opaque?
                     '#()                  ;fields
                     ))
-                 (define record-constructor-descriptor
+                 (define rcd
                    (make-record-constructor-descriptor
-                    record-type-descriptor
+                    rtd
                     #f                    ;parent cd
                     #f                    ;protocol
                     ))
                  (define constructor-name
-                   (record-constructor record-constructor-descriptor))
+                   (record-constructor rcd))
                  (define predicate-name
-                   (record-predicate record-type-descriptor))
+                   (record-predicate rtd))
                  (define-syntax record-name
                    (lambda (stx)
                      (syntax-violation 'record-name "invalid syntax" stx)))
                  (define-property record-name
-                   record-type-descriptor-key #'record-type-descriptor)
+                   record-type-descriptor-key #'rtd)
                  (define-property record-name
-                   record-constructor-descriptor-key #'record-constructor-descriptor)
+                   record-constructor-descriptor-key #'rcd)
                  ;; TODO: parse record fields
                  )))]
         [_ (syntax-violation who "invalid syntax" x)])))
@@ -112,7 +112,8 @@
          (lambda (lookup)
            (or (lookup #'name #'record-type-descriptor-key)
                (syntax-violation who "invalid record name syntax" x #'name)))]
-        [_ (syntax-violation who "invalid syntax" x)])))
+        [_
+         (syntax-violation who "invalid syntax" x)])))
 
   (define-syntax record-constructor-descriptor
     (lambda (x)

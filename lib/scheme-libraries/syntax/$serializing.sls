@@ -24,6 +24,7 @@
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax $marks)
     (scheme-libraries syntax $ribs)
+    (scheme-libraries syntax $ribcages)
     (scheme-libraries syntax expressions)
     (scheme-libraries syntax variables)
     (scheme-libraries syntax libraries)
@@ -32,7 +33,7 @@
 
   ;; Library collections
 
-  (define library-collection->datum
+  (cs:trace-define library-collection->datum
     (lambda (lc system? visible?)
       (parameterize ([current-library-collection lc])
         (define libs (library-list))
@@ -77,14 +78,19 @@
       (define ribcages (make-eq-hashtable))
       (define ribcage->symbol
         (lambda (r)
-          (hashtable-intern! ribcages r (lambda () (uid 'ribcage)))))
+          (hashtable-intern! ribcages
+                             r
+                             (lambda () (uid 'ribcage)))))
       (assert (library? lib))
       (let ([imports (library-imports lib)]
             [viscode (expression->s-exp object->s-exp (library-visit-code lib))]
             [invcode (expression->s-exp object->s-exp (library-invoke-code lib))])
         (define objects
           (let-values ([(ribcages symbols) (hashtable-entries ribcages)])
-            (map cons (vector->list symbols) (vector->list ribcages))))
+            (map
+              (lambda (sym ribcage)
+                `(,sym . ,(ribcage->s-exp label/props->datum ribcage)))
+              (vector->list symbols) (vector->list ribcages))))
         (extend-backquote here
           `($library (,@(if visible?
                             (library-name lib)
@@ -166,7 +172,9 @@
       (define intern-objects!
         (lambda (objects)
           (map (lambda (entry)
-                 (hashtable-set! ribcages (car entry) (cdr entry)))
+                 (hashtable-set! ribcages
+                                 (car entry)
+                                 (s-exp->ribcage datum->label/props (cdr entry))))
                objects)))
       (define symbol->ribcage
         (lambda (r)
@@ -328,7 +336,6 @@
             (map (lambda (s)
                    (substitution->s-exp ribcage->symbol s))
                  s*)))
-        ;; syntax-object->s-exp
         `#(,(expr->s-exp (syntax-object-expression x))
            ,(wrap->s-exp (syntax-object-wrap x))))))
 

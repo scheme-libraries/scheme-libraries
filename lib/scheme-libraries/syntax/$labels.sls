@@ -55,7 +55,7 @@
              (make bdg ml #f)]
             [(bdg ml name)
              (let ([bdg (or bdg (make-displaced-binding))]
-                   [name (or name (uid '%label))])
+                   [name (or name (uid 'label))])
                (unless (binding? bdg)
                  (assertion-violation who "invalid label argument" bdg))
                (unless (metalevel? ml)

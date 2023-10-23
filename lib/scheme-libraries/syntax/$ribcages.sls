@@ -135,6 +135,10 @@
                 n* m* lbl*)
                (new (list rib)))])))))
 
+  (define chunks->ribcage
+    (record-constructor
+     (make-record-constructor-descriptor (record-type-descriptor ribcage) #f #f)))
+
   (define next-chunk
     (lambda (chunks)
       (let ([table (car chunks)]
@@ -153,12 +157,35 @@
   ;; Serialization
 
   (define ribcage->s-exp
-    (lambda (r)
-      r))
+    (lambda (label/props->s-exp r)
+      (let f ([chunks (ribcage-chunks r)])
+        (let-values ([(table barrier chunks)
+                      (next-chunk chunks)])
+          (if chunks
+              (cons* (rib->s-exp label/props->s-exp table)
+                     (barrier->s-exp barrier)
+                     (f chunks))
+              (list (rib->s-exp label/props->s-exp table)))))))
+
+  (define barrier->s-exp
+    (lambda (mark-list*)
+      (map mark-list->s-exp mark-list*)))
 
   (define s-exp->ribcage
-    (lambda (e)
-      e))
+    (lambda (s-exp->label/props e*)
+      (define chunks
+        (let f ([e* e*])
+          (let-values ([(e b e*) (next-chunk e*)])
+            (if e*
+                (cons* (s-exp->rib s-exp->label/props e)
+                       (s-exp->barrier b)
+                       (f e*))
+                (list (s-exp->rib s-exp->label/props e))))))
+      (chunks->ribcage chunks)))
+
+  (define s-exp->barrier
+    (lambda (e*)
+      (map s-exp->mark-list e*)))
 
   ;; Conditions
 

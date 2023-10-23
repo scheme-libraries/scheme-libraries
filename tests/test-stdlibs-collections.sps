@@ -24,9 +24,9 @@
 
 (test-equal 4 (eval '4 (environment '(rnrs))))
 
-(eval 'foo (environment '(test)))
+(test-equal 12 (eval '(foo) (environment '(test))))
 
-(test-equal 12 (eval 'foo (environment '(test))))
+;(eval '(record-type-descriptor bar) (environment '(test) '(rnrs)))
 
 (test-assert (eval '(record-type-descriptor? (record-type-descriptor bar))
                    (environment '(test) '(rnrs))))

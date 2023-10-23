@@ -28,7 +28,7 @@
 
 (test-equal 1 (eval 1 (environment '(rnrs base))))
 
-(test-equal 12 (eval 'foo (environment '(test))))
+(test-equal 12 (eval '(foo) (environment '(test))))
 
 (test-equal 10
   (eval '(let ([x 10]) x) (environment '(rnrs base))))

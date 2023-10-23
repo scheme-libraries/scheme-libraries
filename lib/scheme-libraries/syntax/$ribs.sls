@@ -10,12 +10,15 @@
     rib-for-each
     rib-map
     rib-set!
-    rib-update!)
+    rib-update!
+    rib->s-exp
+    s-exp->rib)
   (import
     (rnrs)
     ;; TODO: Avoid the use of mutable pairs.
     (rnrs mutable-pairs)
     (scheme-libraries define-who)
+    (scheme-libraries match)
     (scheme-libraries syntax $marks))
 
   ;; Ribs
@@ -84,6 +87,28 @@
               (cons (cons m (f d)) a)]))
         '())))
 
+  ;; Serialization
+
+  (define rib->s-exp
+    (lambda (label/props->s-exp rib)
+      (assert (procedure? label/props->s-exp))
+      (assert (rib? rib))
+      (rib-map
+       (lambda (name marks l/p)
+         `#(,name ,(mark-list->s-exp marks) ,(label/props->s-exp l/p)))
+       rib)))
+
+  (define s-exp->rib
+    (lambda (s-exp->label/props e*)
+      (let ([rib (make-rib)])
+        (for-each
+          (lambda (e)
+            (match e
+              [#(,n ,[s-exp->mark-list -> m] ,[s-exp->label/props -> l/p])
+               (rib-set! rib n m l/p)]))
+          e*)
+        rib)))
+
   ;; Helpers
 
   (define ass-marks
@@ -92,6 +117,4 @@
 
   (define rem-marks
     (lambda (marks a)
-      (remp (lambda (p) (marks=? (car p) marks)) a)))
-
-  )
+      (remp (lambda (p) (marks=? (car p) marks)) a))))

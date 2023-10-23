@@ -8,7 +8,9 @@
 
   (define-syntax foo
     (lambda (x)
-      (id #'y)))
+      (syntax-case x ()
+        [(_)
+         (id #'y)])))
 
   (define y (id 12))
 
