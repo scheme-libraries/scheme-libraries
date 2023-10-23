@@ -17,6 +17,8 @@
     wrap?
     wrap-marks
     wrap-substitutions
+    substitution->s-exp
+    s-exp->substitution
     annotated-datum->syntax-object
     syntax-object-source-location
     syntax-object-marks
@@ -304,6 +306,21 @@
     (lambda (obj)
       (and (list? obj)
            (for-all substitution? obj))))
+
+  (define substitution->s-exp
+    (lambda (ribcage->symbol subst)
+      (cond
+       [(shift? subst) #f]
+       [(ribcage? subst)
+        (ribcage->symbol subst)]
+       [else (assert #f)])))
+
+  (define s-exp->substitution
+    (lambda (symbol->ribcage e)
+      (cond
+       [(symbol? e) (symbol->ribcage e)]
+       [(not e) (make-shift)]
+       [else (assert #f)])))
 
   ;; Wraps
 

@@ -12,7 +12,10 @@
     &duplicate-definition
     make-duplicate-definition-condition
     duplicate-definition-condition?
-    duplicate-definition-name)
+    duplicate-definition-name
+    ribcage->s-exp
+    s-exp->ribcage
+    )
   (import
     (rnrs)
     (scheme-libraries numbers)
@@ -147,6 +150,16 @@
 		(marks=? barrier-marks m))
 	      barrier)))
 
+  ;; Serialization
+
+  (define ribcage->s-exp
+    (lambda (r)
+      r))
+
+  (define s-exp->ribcage
+    (lambda (e)
+      e))
+
   ;; Conditions
 
   (define-condition-type &duplicate-definition
@@ -158,6 +171,4 @@
 
   (record-writer (record-type-descriptor ribcage)
     (lambda (r p wr)
-      (put-string p "#<ribcage>")))
-
-  )
+      (put-string p "#<ribcage>"))))

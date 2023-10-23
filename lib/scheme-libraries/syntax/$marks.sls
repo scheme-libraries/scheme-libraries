@@ -11,7 +11,11 @@
     mark=?
     marks=?
     anti-mark
-    anti-mark?)
+    anti-mark?
+    mark->symbol
+    symbol->mark
+    mark-list->s-exp
+    s-exp->mark-list)
   (import
     (rnrs)
     (scheme-libraries hashtables)
@@ -30,7 +34,7 @@
       (lambda (new)
         (define who 'make-mark)
         (case-lambda
-          [() (new (uid '%mark))]
+          [() (new #f)]
           [(name)
            (unless (symbol? name)
              (assertion-violation who "not a valid name argument" name))
@@ -47,7 +51,10 @@
         (assertion-violation who "invalid first mark argument" m1))
       (unless (mark? m2)
         (assertion-violation who "invalid second mark argument" m2))
-      (eq? m1 m2)))
+      (or (eq? m1 m2)
+          (let ([name1 (mark-name m1)]
+                [name2 (mark-name m2)])
+            (and name1 name2 (symbol=? name1 name2))))))
 
   (define/who marks=?
     (lambda (m1* m2*)
@@ -78,11 +85,36 @@
         (assertion-violation who "invalid mark argument" m))
       (mark=? m (anti-mark))))
 
+  ;; Serializing
+
+  (define/who mark->symbol
+    (lambda (m)
+      (unless (mark? m)
+        (assertion-violation who "invalid mark argument" m))
+      (or (mark-name m)
+          (let ([name (uid 'mark)])
+            (mark-name-set! m name)
+            name))))
+
+  (define/who symbol->mark
+    (lambda (sym)
+      (unless (symbol? sym)
+        (assertion-violation who "invalid symbol argument" sym))
+      (make-mark sym)))
+
+  (define mark-list->s-exp
+    (lambda (m)
+      (map mark->symbol m)))
+
+  (define s-exp->mark-list
+    (lambda (e)
+      (assert (list? e))
+      (map symbol->mark e)))
+
   ;; Record writers
 
   (record-writer (record-type-descriptor mark)
     (lambda (r p wr)
-      (define name (mark-name r))
       (put-string p "#<mark ")
-      (put-string p (symbol->string name))
+      (put-string p (symbol->string (mark->symbol r)))
       (put-string p ">"))))

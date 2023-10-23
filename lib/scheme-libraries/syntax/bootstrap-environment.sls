@@ -92,6 +92,8 @@
   (define symbol-table
     (make-eq-hashtable))
 
+  ;; TODO: Rename to label->s-exp (also similar procedures below).
+
   (define label->datum
     (lambda (lbl)
       (assert (label? lbl))

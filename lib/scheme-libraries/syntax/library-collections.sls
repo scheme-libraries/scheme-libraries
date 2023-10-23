@@ -17,14 +17,10 @@
     object-set-symbol!
     object->symbol
     symbol->object
-    mark->datum
-    datum->mark
+    ;;mark->datum
+    ;;datum->mark
     location->s-exp
-    s-exp->location
-    #;
-    variable->datum
-    #;
-    datum->variable)
+    s-exp->location)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
@@ -146,17 +142,17 @@
 
   ;; Serializers
 
-  (define/who mark->datum
-    (lambda (m)
-      (assert (mark? m))
-      ;; XXX: We might be able to output an anti-mark.  Check this.
-      (assert (not (anti-mark? m)))
-      (mark-name m)))
+  ;; (define/who mark->datum
+  ;;   (lambda (m)
+  ;;     (assert (mark? m))
+  ;;     ;; XXX: We might be able to output an anti-mark.  Check this.
+  ;;     (assert (not (anti-mark? m)))
+  ;;     (mark-name m)))
 
-  (define/who datum->mark
-    (lambda (s)
-      (assert (symbol? s))
-      (symbol->object s (lambda () (make-mark s)))))
+  ;; (define/who datum->mark
+  ;;   (lambda (s)
+  ;;     (assert (symbol? s))
+  ;;     (symbol->object s (lambda () (make-mark s)))))
 
   (define/who location->s-exp
     (lambda (loc)
@@ -168,26 +164,6 @@
       (assert (symbol? s))
       (symbol->object s (lambda () (make-location s)))))
 
-  ;; FIXME: Obsolete.
-  #;
-  (define variable->datum
-    (lambda (var)
-      (assert (variable? var))
-      (string->symbol (format "%variable-~a" (variable-name var)))))
-
-  ;; FIXME: Obsolete.
-  #;
-  (define datum->variable
-    (lambda (s)
-      (assert (symbol? s))
-      (let ([name
-             (let ([s (symbol->string s)])
-               (string->symbol
-                (substring s
-                           (string-length "%variable-")
-                           (fx- (string-length s)
-                                (string-length "%variable-")))))])
-        (symbol->object s (lambda () (name->variable name))))))
 
 
   )

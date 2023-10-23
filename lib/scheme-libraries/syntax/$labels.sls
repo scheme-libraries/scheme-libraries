@@ -70,7 +70,7 @@
         (assertion-violation who "invalid first label argument" l1))
       (unless (label? l2)
         (assertion-violation who "invalid second label argument" l2))
-      (eq? l1 l2)))
+      (or (eq? l1 l2))))
 
   (define make-label-table
     (lambda ()

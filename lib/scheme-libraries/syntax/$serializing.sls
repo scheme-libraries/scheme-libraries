@@ -14,6 +14,7 @@
 
     (rnrs)
     (scheme-libraries define-who)
+    (scheme-libraries hashtables)
     (scheme-libraries match)
     (scheme-libraries parameters)
     (scheme-libraries strings)
@@ -31,7 +32,7 @@
 
   ;; Library collections
 
-  (cs:trace-define library-collection->datum
+  (define library-collection->datum
     (lambda (lc system? visible?)
       (parameterize ([current-library-collection lc])
         (define libs (library-list))
@@ -59,23 +60,31 @@
   ;; Problem: what happens if one writes out such a library -> the import would
 
   (define/who library->datum
-    (define object->s-exp
-      (lambda (obj)
-        (cond
-         [(location? obj)
-          `(location ,(location->s-exp obj))]
-         [(label? obj)
-          `(label ,(label->datum obj))]
-         [(syntax-object? obj)
-          `(syntax ,(syntax-object->s-exp obj))]
-         [else
-          (display obj) (newline)
-          (assert #f)])))
     (lambda (lib system? visible? init-uid)
+      (define object->s-exp
+        (lambda (obj)
+          (cond
+           [(location? obj)
+            `(location ,(location->s-exp obj))]
+           [(label? obj)
+            `(label ,(label->datum obj))]
+           [(syntax-object? obj)
+            `(syntax ,(syntax-object->s-exp ribcage->symbol obj))]
+           [else
+            ;; FIXME
+            (display obj) (newline)
+            (assert #f)])))
+      (define ribcages (make-eq-hashtable))
+      (define ribcage->symbol
+        (lambda (r)
+          (hashtable-intern! ribcages r (lambda () (uid 'ribcage)))))
       (assert (library? lib))
       (let ([imports (library-imports lib)]
             [viscode (expression->s-exp object->s-exp (library-visit-code lib))]
             [invcode (expression->s-exp object->s-exp (library-invoke-code lib))])
+        (define objects
+          (let-values ([(ribcages symbols) (hashtable-entries ribcages)])
+            (map cons (vector->list symbols) (vector->list ribcages))))
         (extend-backquote here
           `($library (,@(if visible?
                             (library-name lib)
@@ -87,11 +96,11 @@
              (import)
              ;; FIXME: for the non-system libraries, we have to retain the imports!
              #;
-             (import ,@(vector->list    ; ; ;
-             (vector-map                ; ; ;
-             (lambda (implib)           ; ; ;
-             `((,@(library-name implib) ,(library-version implib)) ; ; ;
-             ,(library-uid implib)))    ; ; ;
+             (import ,@(vector->list    ; ; ; ; ; ;
+             (vector-map                ; ; ; ; ; ;
+             (lambda (implib)           ; ; ; ; ; ;
+             `((,@(library-name implib) ,(library-version implib)) ; ; ; ; ; ;
+             ,(library-uid implib)))    ; ; ; ; ; ;
              (library-imports lib))))
              (visit-requirements ,@(if system?
                                        (list init-uid)
@@ -131,6 +140,7 @@
                                      [else (assert #f)]))
                                   (library-bindings lib)) ;FIXME: Call this environment.
                                 ))
+             (objects ,objects)
              (visit-code ,(if system?
                               (expression->s-exp object->s-exp
                                                  (build (begin (values))))
@@ -144,14 +154,23 @@
 
   (define/who datum->library
     ;; TODO: Check that library names corresponding to uids match.
+    (lambda (e)
     (define s-exp->object
       (lambda (e)
         (match e
-          [(syntax ,x) (s-exp->syntax-object x)]
+          [(syntax ,x) (s-exp->syntax-object symbol->ribcage x)]
           [(location ,x) (s-exp->location x)]
           [(label ,x) (datum->label x)]
           [else (assert #f)])))
-    (lambda (e)
+      (define ribcages (make-eq-hashtable))
+      (define intern-objects!
+        (lambda (objects)
+          (map (lambda (entry)
+                 (hashtable-set! ribcages (car entry) (cdr entry)))
+               objects)))
+      (define symbol->ribcage
+        (lambda (r)
+          (assert (hashtable-ref ribcages r #f))))
       (match e
         [($library (,name* ... ,version)
            (uid ,uid)
@@ -160,8 +179,10 @@
            (invoke-requirements ,invreq* ...)
            (export ,expexp* ...)
            (environment (,[datum->label -> lbl*] ,type*) ...)
+           (objects ,objects)
            (visit-code ,viscode)
            (invoke-code ,invcode))
+         (intern-objects! objects)
          (let* ([name (if (equal? name* '(#f)) #f name*)]
                 [lib
                  (make-library
@@ -194,7 +215,7 @@
                   ;; Invoke definitions
                   (s-exp->expression s-exp->object invcode)
                   ;; Bindings
-                  lbl*                   ;XXX:store it under env instead?
+                  lbl*                ;XXX:store it under env instead?
                   )])
            (for-each
              (lambda (lbl type)
@@ -273,153 +294,69 @@
              (begin ,cmd* ... ,body)))
          cmd*])))
 
-  ;; Code serialization
-
-  #;
-  (define expression->datum
-    (lambda (e)
-      (match e
-        [(quote ,loc)
-         (guard (location? loc))
-         (location->datum loc)]
-        [(quote ,mark)
-         (guard (mark? mark))
-         (mark->datum mark)]
-        [(quote ,lbl)
-         (guard (label? lbl))
-         (label->datum lbl)]
-        [(quote ,stx)
-         (guard (syntax-object? stx))
-         (assert #f)
-         #;
-         (intern-syntax-object! stx)]
-        [(quote ,e) `(quote ,e)]
-        [,e (guard (variable? e)) (variable->datum e)]
-        [,e (guard (symbol? e)) e]
-        [(,[e*] ...) e*]
-        [,x
-         ;; XXX FIXME DEBUG
-         (display x) (newline)
-
-         (assert #f)])))
-
-  #;
-  (define datum->expression
-    (lambda (e)
-      (match e
-        [(quote ,e) `(quote ,e)]
-        [,e
-         (guard (symbol? e) (location-symbol? e))
-         `(quote ,(datum->location e))]
-        [,e
-         (guard (symbol? e) (label-symbol? e))
-         `(quote ,(datum->label e))]
-        [,e
-         (guard (symbol? e) (mark-symbol? e))
-         `(quote ,(datum->mark e))]
-        [,e
-         (guard (symbol? e) (variable-symbol? e))
-         (datum->variable e)]
-        [,e
-         (guard (symbol? e) (syntax-object-symbol? e))
-         (assert #f)
-         #;
-         (ref-syntax-object e)]
-        [,e (guard (symbol? e)) e]
-        [(,[e*] ...) e*]
-        [,e (assert #f)])))
-
-  (define location-symbol?
-    (lambda (sym)
-      (string-prefix? (symbol->string sym) "%location-")))
-
-  (define label-symbol?
-    (lambda (sym)
-      (string-prefix? (symbol->string sym) "%label-")))
-
-  (define mark-symbol?
-    (lambda (sym)
-      (string-prefix? (symbol->string sym) "%mark-")))
-
-  (define variable-symbol?
-    (lambda (sym)
-      (string-prefix? (symbol->string sym) "%variable-")))
-
-  (define syntax-object-symbol?
-    (lambda (sym)
-      (string-prefix? (symbol->string sym) "%syntax-")))
-
   ;; Serializing of syntax objects
 
-  (define syntax-object->s-exp
-    (lambda (x)
-      `#(,(expr->s-exp (syntax-object-expression x))
-         ,(wrap->s-exp (syntax-object-wrap x)))))
+  ;; TODO: Many substitutions are composed of the same ribcages.  We
+  ;; can compress these lists.  The same may be true for lists of
+  ;; marks.
 
-  (define expr->s-exp
-    (lambda (x)
-      (cond
-       [(annotated-datum? x)
-        `(datum ,(annotated-datum->s-exp x))]
-       [(vector? x)
-        `(vector ,@(map expr->s-exp (vector->list x)))]
-       [(list? x)
-        `(list ,@(map expr->s-exp x))]
-       [(pair? x)
-        (match x
-          [(,x* ... . ,x)
-           `(cons* ,@(map expr->s-exp x*) ,(expr->s-exp x))])]
-       [(syntax-object? x)
-        `(syntax ,(syntax-object->s-exp x))]
-       [else x])))
+  (define syntax-object->s-exp
+    (lambda (ribcage->symbol x)
+      (let f ([x x])
+        (define expr->s-exp
+          (lambda (x)
+            (cond
+             [(annotated-datum? x)
+              `(datum ,(annotated-datum->s-exp x))]
+             [(vector? x)
+              `(vector ,@(map expr->s-exp (vector->list x)))]
+             [(list? x)
+              `(list ,@(map expr->s-exp x))]
+             [(pair? x)
+              (match x
+                [(,x* ... . ,x)
+                 `(cons* ,@(map expr->s-exp x*) ,(expr->s-exp x))])]
+             [(syntax-object? x)
+              `(syntax ,(f x))]
+             [else x])))
+        (define wrap->s-exp
+          (lambda (x)
+            `#(,(mark-list->s-exp (wrap-marks x))
+               ,(substitutions->s-exp (wrap-substitutions x)))))
+        (define substitutions->s-exp
+          (lambda (s*)
+            (map (lambda (s)
+                   (substitution->s-exp ribcage->symbol s))
+                 s*)))
+        ;; syntax-object->s-exp
+        `#(,(expr->s-exp (syntax-object-expression x))
+           ,(wrap->s-exp (syntax-object-wrap x))))))
 
   (define s-exp->syntax-object
-    (lambda (x)
-      (match x
-        [#(,[s-exp->expr -> e] ,[s-exp->wrap -> w])
-         (make-syntax-object e w)])))
+    (lambda (symbol->ribcage x)
+      (let f ([x x])
+        (define s-exp->expr
+          (lambda (e)
+            (match e
+              [(datum ,[s-exp->annotated-datum -> x]) x]
+              [(vector ,[e*] ...) (list->vector e*)]
+              [(list ,[e*] ...) e*]
+              [(cons* ,[e*] ... ,[e]) (append e* e)]
+              [(syntax ,[f -> x]) x]
+              [,x x])))
+        (define s-exp->wrap
+          (lambda (e)
+            (match e
+              [#(,[s-exp->mark-list -> x] ,[s-exp->substitutions -> y])
+               (make-wrap x y)])))
+        (define s-exp->substitutions
+          (lambda (e*)
+            (map (lambda (e)
+                   (s-exp->substitution symbol->ribcage e))
+                 e*)))
+        (match x
+          [#(,[s-exp->expr -> e] ,[s-exp->wrap -> w])
+           (make-syntax-object e w)]))))
 
-  (define s-exp->expr
-    (lambda (e)
-      (match e
-        [(datum ,[s-exp->annotated-datum -> x]) x]
-        [(vector ,[e*] ...) (list->vector e*)]
-        [(list ,[e*] ...) e*]
-        [(cons* ,[e*] ... ,[e]) (append e* e)]
-        [(syntax ,[s-exp->syntax-object -> x]) x]
-        [,x x])))
-
-  ;; TODO: Move to wrap lib.
-  (define wrap->s-exp
-    (lambda (x)
-      `#(,(marks->s-exp (wrap-marks x))
-         ,(substitutions->s-exp (wrap-substitutions x)))))
-
-  (define s-exp->wrap
-    (lambda (e)
-      (match e
-        [#(,[s-exp->marks -> x] ,[s-exp->substitutions -> y])
-         (make-wrap x y)])))
-
-  ;; TODO: Move to marks lib.
-  (define marks->s-exp
-    (lambda (m)
-      (map mark->datum m)))
-
-  (define s-exp->marks
-    (lambda (e)
-      (match e
-        [(,[datum->mark m*] ...)
-         m*])))
-
-  ;; TODO
-
-  (define substitutions->s-exp
-    (lambda (s)
-      s))
-
-  (define s-exp->substitutions
-    (lambda (s)
-      s))
 
   )
