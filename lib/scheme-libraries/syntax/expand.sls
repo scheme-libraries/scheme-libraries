@@ -262,7 +262,6 @@
              (begin
                (assert (property-binding? bdg))
                (let ([lib (property-binding-library bdg)])
-                 (display bdg) (newline)
                  (when lib (library-visit! lib))
                  (property-binding-value bdg)))))))
 

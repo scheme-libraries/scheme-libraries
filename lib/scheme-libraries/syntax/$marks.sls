@@ -64,7 +64,7 @@
         (assertion-violation who "invalid second mark list argument" m2*))
       (if (null? m1*) (null? m2*)
           (and (pair? m2*)
-               (eq? (car m1*) (car m2*))
+               (mark=? (car m1*) (car m2*))
                (marks=? (cdr m1*) (cdr m2*))))))
 
   (define/who member-mark
