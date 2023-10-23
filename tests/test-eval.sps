@@ -25,7 +25,9 @@
 (define-syntax test-eval
   (syntax-rules ()
     [(test-eval result expr)
-     (test-equal result (eval 'expr test-environment))]))
+     (begin
+       (eval 'expr test-environment)
+       (test-equal result (eval 'expr test-environment)))]))
 
 (test-begin "eval")
 
@@ -91,4 +93,14 @@
 
 (test-eval 1 1)
 
+(test-eval #t
+  (let ()
+    (define-record-type pare
+      (fields kar kdr))
+    (pare? (make-pare))))
+
 (test-end "eval")
+
+;; Local Variables:
+;; eval: (put 'test-eval 'scheme-indent-function 1)
+;; End:

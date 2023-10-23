@@ -318,7 +318,9 @@
                    [(displaced-binding? bdg)
                     (syntax-error #f "identifier referenced out of context" x)]
                    [(pattern-variable-binding? bdg)
-                    (syntax-error #f "pattern variable referenced outside syntax form" x)]
+                    (syntax-error #f
+                      (format "pattern variable ~a referenced outside syntax form"
+                        (identifier->symbol x)) x)]
                    [else
                     (values x (make-other-type))])))]
           [else

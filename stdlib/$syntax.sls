@@ -69,24 +69,57 @@
             [_ (syntax-violation who "invalid name spec syntax" x name-spec)])))
       (define parse-record-clauses
         (lambda (cl*)
-          (define-syntactic-monad $ fields)
-          ($ let f ([cl cl*]
-                    [fields '()])
-            (match cl*
-              [(,cl . ,cl*)
-               (syntax-case cl (fields)
-                 [_ (syntax-violation who "invalid record clause syntax" x cl)])]
-              [()
-               ($ values ())]))))
+          (define-syntactic-monad $ cl* field*)
+          ($ let f ([field* #f])
+            (cond
+             [(pair? cl*)
+              (let ([cl (car cl*)] [cl* (cdr cl*)])
+                (syntax-case cl (fields)
+                  [(fields field-spec ...)
+                   (begin
+                     (when field*
+                       (syntax-violation who "multiple field record clauses" x cl))
+                     ($ f ([field* (map parse-field-spec #'(field-spec ...))])))]
+                  [_ (syntax-violation who "invalid record clause syntax" x cl)]))]
+             [(null? cl*)
+              (values (or field* '()))]
+             [else (assert #f)]))))
+      (define parse-field-spec
+        (lambda (field-spec)
+          (syntax-case field-spec (mutable immutable)
+            [(immutable field-name accessor-name)
+             (and (identifier? #'field-name)
+                  (identifier? #'accessor-name))
+             ;; FIXME
+             (assert #f)]
+            [(mutable field-name accessor-name mutator-name)
+             (and (identifier? #'field-name)
+                  (identifier? #'accessor-name)
+                  (identifier? #'mutator-name))
+             ;; FIXME
+             (assert #f)]
+            [(immutable field-name)
+             (identifier? #'field-name)
+             ;; FIXME
+             (assert #f)]
+            [(mutable field-name)
+             (identifier? #'field-name)
+             ;; FIXME
+             (assert #f)]
+            [field-name
+             (identifier? #'field-name)
+             #'(immutable field-name)]
+            [_ (syntax-violation who "invalid record field spec" x field-spec)])))
       (syntax-case x ()
         [(_ name-spec record-clause ...)
          (let-values ([(record-name constructor-name predicate-name)
                        (parse-name-spec #'name-spec)]
-                      [(...)
+                      [(field*)
                        (parse-record-clauses #'(record-clause ...))])
            (with-syntax ([record-name record-name]
                          [constructor-name constructor-name]
-                         [predicate-name predicate-name])
+                         [predicate-name predicate-name]
+                         [(field-spec ...) field*])
              #'(begin
                  (define rtd
                    (make-record-type-descriptor
@@ -95,7 +128,7 @@
                     #f                    ;uid
                     #f                    ;sealed?
                     #f                    ;opaque?
-                    '#()                  ;fields
+                    '#(field-spec ...)    ;fields
                     ))
                  (define rcd
                    (make-record-constructor-descriptor

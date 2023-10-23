@@ -719,7 +719,8 @@
                 ;; <constant>
                 [,tmpl
                  (values
-                   (if (and tail? (syntax-null? tmpl))
+                   ;; XXX: tail? is no longer used.
+                   (if (and #;tail? (syntax-null? tmpl))
                        `(quote ())
                        `($syntax ,tmpl))
                    env*
