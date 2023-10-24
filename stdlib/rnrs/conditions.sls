@@ -73,8 +73,6 @@
              (fields (immutable field accessor) ...))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
-  ;; Problem: &message-rtd is not a procedure (we have system procedures), but a message-rtd...
-
   (define-condition-name &message (message-rtd))
   (define-condition-name &warning (warning-rtd))
   (define-condition-name &serious (serious-rtd))

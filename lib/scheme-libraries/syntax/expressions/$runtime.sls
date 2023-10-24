@@ -363,6 +363,33 @@
       (make-undefined-error make-undefined-violation)
       (undefined-error? undefined-violation?))
 
+    ;; (rnrs files)
+    file-exists?
+    delete-file
+
+    ;; (rnrs programs)
+    command-line
+    exit
+
+    ;; (rnrs hashtables)
+    make-eq-hashtable
+    make-eqv-hashtable
+    make-hashtable
+    hashtable?
+    hashtable-size
+    hashtable-ref
+    hashtable-set!
+    hashtable-delete!
+    hashtable-contains?
+    hashtable-update!
+    hashtable-copy
+    hashtable-clear!
+    hashtable-keys
+    hashtable-entries
+    hashtable-equivalence-function
+    hashtable-hash-function
+    hashtable-mutable?
+
     ;; (rnrs enums)
     make-enumeration
     enum-set-universe
