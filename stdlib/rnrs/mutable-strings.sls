@@ -2,7 +2,7 @@
 
 ;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (rnrs mutable-pairs (6))
+(library (rnrs mutable-strings (6))
   (export
     string-set!
     string-fill!)
