@@ -191,34 +191,36 @@
                     (lexical-error "invalid number syntax ~s" start (position) s)]))))
             (define get-character
               (lambda ()
-                (let ([ch (read-char)])
-                  (cond
-                   [(eof-object? ch) (lexical-error "unterminated character" start (position))]
-                   [(char=? ch #\x)
-                    (let ([ch (read-inline-hex-escape)])
-                      (unless (delimiter? ch)
-                        (lexical-error "undelimited character" start (position)))
-                      ch)]
-                   [else
-                    (let ([s (read-delimited-lexeme "")])
-                      (if (fx=? (string-length s) 1)
-                          (string-ref s 0)
-                          (cond
-                           [(assq (string->symbol s) '((nul . #\nul)
-                                                       (alarm . #\alarm)
-                                                       (backspace . #\backspace)
-                                                       (tab . #\tab)
-                                                       (linefeed . #\linefeed)
-                                                       (newline . #\newline)
-                                                       (vtab . #\vtab)
-                                                       (page . #\page)
-                                                       (return . #\return)
-                                                       (esc . #\esc)
-                                                       (space . #\space)
-                                                       (delete . #\delete)))
-                            => cdr]
-                           [else
-                            (lexical-error "invalid character name" start (position))])))]))))
+                (define c
+                  (let ([ch (read-char)])
+                    (cond
+                     [(eof-object? ch) (lexical-error "unterminated character" start (position))]
+                     [(char=? ch #\x)
+                      (let ([ch (read-inline-hex-escape)])
+                        (unless (delimiter? ch)
+                          (lexical-error "undelimited character" start (position)))
+                        ch)]
+                     [else
+                      (let ([s (read-delimited-lexeme (string ch))])
+                        (if (fx=? (string-length s) 1)
+                            (string-ref s 0)
+                            (cond
+                             [(assq (string->symbol s) '((nul . #\nul)
+                                                         (alarm . #\alarm)
+                                                         (backspace . #\backspace)
+                                                         (tab . #\tab)
+                                                         (linefeed . #\linefeed)
+                                                         (newline . #\newline)
+                                                         (vtab . #\vtab)
+                                                         (page . #\page)
+                                                         (return . #\return)
+                                                         (esc . #\esc)
+                                                         (space . #\space)
+                                                         (delete . #\delete)))
+                              => cdr]
+                             [else
+                              (lexical-error "invalid character name" start (position))])))])))
+                (make-atomic c start (position))))
             (define get-identifier
               (lambda (initial)
                 (let ([id (read-identifier initial)])

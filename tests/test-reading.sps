@@ -52,6 +52,12 @@
 
 (test-datums #vu8(2 24 123) "#vu8(2 24 123)")
 
+;;; Characters
+
+(test-datums #\a "#\\a")
+(test-datums #\A "#\\A")
+(test-datums #\nul "#\\nul")
+
 ;;; Random examples
 
 (test-datums (unsyntax foo) (unsyntax-splicing bar) "#,foo #,@bar")
