@@ -492,6 +492,36 @@
     make-no-nans-violation
     no-nans-violation?
 
+    ;; (rnrs arithmetic bitwise)
+    bitwise-not
+    bitwise-and
+    bitwise-ior
+    bitwise-xor
+    bitwise-if
+    bitwise-bit-count
+    bitwise-length
+    bitwise-first-bit-set
+    bitwise-bit-set?
+    bitwise-copy-bit
+    bitwise-bit-field
+    bitwise-copy-bit-field
+    bitwise-arithmetic-shift
+    bitwise-arithmetic-shift-left
+    bitwise-arithmetic-shift-right
+    bitwise-rotate-bit-field
+    bitwise-reverse-bit-field
+
+    ;; (rnrs syntax-case)
+    (rename
+      ($make-variable-transformer make-variable-transformer)
+      ($identifier? identifier?)
+      ($bound-identifier=? bound-identifier=?)
+      ($free-identifier=? free-identifier=?)
+      (syntax-object->datum syntax->datum)
+      (datum->syntax-object datum->syntax)
+      ($generate-temporaries generate-temporaries)
+      (syntax-error syntax-violation))
+
     ;; (rnrs hashtables)
     make-eq-hashtable
     make-eqv-hashtable
@@ -526,6 +556,17 @@
     enum-set-complement
     enum-set-projection
 
+    ;; (rnrs mutable-pairs)
+    set-car!
+    set-cdr!
+
+    ;; (rnrs mutable-strings)
+    string-set!
+    string-fill!
+
+
+
+
     set-box!
     location-box
     location-box-set!
@@ -544,35 +585,7 @@
     unbox
     void
 
-    ;; (rnrs arithmetic bitwise)
-    bitwise-not
-    bitwise-and
-    bitwise-ior
-    bitwise-xor
-    bitwise-if
-    bitwise-bit-count
-    bitwise-length
-    bitwise-first-bit-set
-    bitwise-bit-set?
-    bitwise-copy-bit
-    bitwise-bit-field
-    bitwise-copy-bit-field
-    bitwise-arithmetic-shift
-    bitwise-arithmetic-shift-left
-    bitwise-arithmetic-shift-right
-    bitwise-rotate-bit-field
-    bitwise-reverse-bit-field
 
-    ;; (rnrs syntax-case)
-    (rename
-      ($make-variable-transformer make-variable-transformer)
-      ($identifier? identifier?)
-      ($bound-identifier=? bound-identifier=?)
-      ($free-identifier=? free-identifier=?)
-      (syntax-object->datum syntax->datum)
-      (datum->syntax-object datum->syntax)
-      ($generate-temporaries generate-temporaries)
-      (syntax-error syntax-violation))
 
     ;; (scheme-libraries)
     (rename
@@ -598,6 +611,8 @@
     no-nans-rtd)
   (import
     (rnrs)
+    (rnrs mutable-pairs)
+    (rnrs mutable-strings)
     (scheme-libraries boxes)
     (scheme-libraries void)
     (scheme-libraries uuid)

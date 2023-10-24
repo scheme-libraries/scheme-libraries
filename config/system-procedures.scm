@@ -541,6 +541,14 @@
  enum-set-complement
  enum-set-projection
 
+ ;; (rnrs mutable-pairs)
+ set-car!
+ set-cdr!
+
+ ;; (rnrs mutable-strings)
+ string-set!
+ string-fill!
+
  ;; (scheme-libraries)
  construct-name
  uid
