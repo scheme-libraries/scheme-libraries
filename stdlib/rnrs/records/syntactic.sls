@@ -109,12 +109,14 @@
             (lambda (field-name)
               (construct-name field-name record-name "-" field-name "-set!")))
           (define-syntactic-monad $ cl*
-            field* protocol* sealed* opaque* nongenerative* definition*)
+            field* parent* protocol* sealed* opaque* nongenerative* parent-cd definition*)
           ($ let f ([field* #f]
+                    [parent* #f]
                     [protocol* #f]
                     [sealed* #f]
                     [opaque* #f]
                     [nongenerative* #f]
+                    [parent-cd #f]
                     [definition* '()])
             (cond
              [(pair? cl*)
@@ -128,7 +130,7 @@
                        (identifier? #'uid)
                        #'uid]
                       [_ (syntax-violation "invalid protocol record clause" x cl)])))
-                (syntax-case cl (fields protocol)
+                (syntax-case cl (fields parent protocol sealed opaque nongenerative parent-rtd)
                   [(fields field-spec ...)
                    (begin
                      (when field*
@@ -137,6 +139,13 @@
                                    (parse-field-spec* #'(field-spec ...)
                                                       definition*)])
                        ($ f ())))]
+                  [(parent parent-name)
+                   (identifier? #'parent-name)
+                   (begin
+                     (when parent*
+                       (syntax-violation who "multiple parent(-rtd) record clauses" x cl))
+                     ($ f ([parent* #'((record-type-descriptor parent-name))]
+                           [parent-cd #'(record-constructor-descriptor parent-name)])))]
                   [(protocol expression)
                    (begin
                      (when protocol*
@@ -160,35 +169,45 @@
                        (syntax-violation who "multiple nongenerative record clauses" x cl))
                      (let ([uid (parse-uid* #'uid*)])
                        ($ f ([nongenerative* (list uid)]))))]
+                  [(parent-rtd rtd-expr cd-expr)
+                   (begin
+                     (when parent*
+                       (syntax-violation who "multiple parent(-rtd) record clauses" x cl))
+                     ($ f ([parent* #'(rtd-expr)]
+                           [parent-cd #'cd-expr])))]
                   [_ (syntax-violation who "invalid record clause syntax" x cl)]))]
              [(null? cl*)
               (values (or field* '())
+                      parent*
                       protocol*
                       sealed*
                       opaque*
                       nongenerative*
+                      parent-cd
                       definition*)]
              [else (assert #f)]))))
       (syntax-case x ()
         [(_ name-spec record-clause ...)
          (let*-values ([(record-name constructor-name predicate-name)
                         (parse-name-spec #'name-spec)]
-                       [(field* protocol* sealed* opaque* nongenerative* definition*)
+                       [(field* parent* protocol* sealed* opaque* nongenerative* parent-cd definition*)
                         (parse-record-clauses record-name #'(record-clause ...))])
            (with-syntax ([record-name record-name]
                          [constructor-name constructor-name]
                          [predicate-name predicate-name]
                          [(field-spec ...) field*]
                          [(definition ...) definition*]
+                         [parent (and parent* (car parent*))]
                          [protocol (and protocol* (car protocol*))]
                          [sealed (and sealed* (car sealed*))]
                          [opaque (and opaque* (car opaque*))]
-                         [uid (and nongenerative* (car nongenerative*))])
+                         [uid (and nongenerative* (car nongenerative*))]
+                         [parent-cd parent-cd])
              #'(begin
                  (define rtd
                    (make-record-type-descriptor
                     'record-name
-                    #f                    ;parent
+                    parent
                     uid
                     sealed
                     opaque
@@ -197,7 +216,7 @@
                  (define rcd
                    (make-record-constructor-descriptor
                     rtd
-                    #f                    ;parent cd
+                    parent-cd
                     protocol))
                  (define constructor-name
                    (record-constructor rcd))

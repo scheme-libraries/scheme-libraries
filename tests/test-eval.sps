@@ -100,10 +100,29 @@
       (fields kar kdr))
     (pare? (make-pare 1 2))))
 
-(test-eval '(1 2)
+(test-eval '(1 3)
   (let ()
     (define-record-type pare
       (fields kar (mutable kdr kdr set-kdr!)))
+    (let ([x (make-pare 1 2)])
+      (set-kdr! x 3)
+      (list (pare-kar x) (kdr x)))))
+
+(test-eval '(1 2)
+  (let ()
+    (define-record-type base)
+    (define-record-type pare
+      (fields kar (mutable kdr kdr set-kdr!))
+      (parent base))
+    (let ([x (make-pare 1 2)])
+      (list (pare-kar x) (kdr x)))))
+
+(test-eval '(1 2)
+  (let ()
+    (define-record-type base)
+    (define-record-type pare
+      (fields kar (mutable kdr kdr set-kdr!))
+      (parent-rtd (record-type-descriptor base) #f))
     (let ([x (make-pare 1 2)])
       (list (pare-kar x) (kdr x)))))
 
