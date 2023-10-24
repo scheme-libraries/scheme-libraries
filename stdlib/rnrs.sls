@@ -413,6 +413,29 @@
     make-undefined-violation
     undefined-violation?
 
+    ;; (rnrs io simple)
+    eof-object
+    call-with-input-file
+    call-with-output-file
+    input-port?
+    output-port?
+    current-input-port
+    current-output-port
+    current-error-port
+    with-input-from-file
+    with-output-to-file
+    open-input-file
+    open-output-file
+    close-input-port
+    close-output-port
+    read-char
+    peek-char
+    read
+    write-char
+    newline
+    display
+    write
+
     ;; (rnrs files)
     file-exists?
     delete-file
@@ -420,6 +443,106 @@
     ;; (rnrs programs)
     command-line
     exit
+
+    ;; (rnrs arithmetic fixnums)
+    fixnum?
+    fixnum-width
+    least-fixnum
+    greatest-fixnum
+    fx=?
+    fx>?
+    fx<?
+    fx>=?
+    fx<=?
+    fxzero?
+    fxpositive?
+    fxnegative?
+    fxodd?
+    fxeven?
+    fxmax
+    fx+
+    fx*
+    fx-
+    fxdiv-and-mod
+    fxdiv
+    fxmod
+    fxdiv0-and-mod0
+    fxdiv0
+    fxmod0
+    fx+/carry
+    fx-/carry
+    fx*/carry
+    fxnot
+    fxand
+    fxior
+    fxxor
+    fxif
+    fxbit-count
+    fxlength
+    fxfirst-bit-set
+    fxbit-set?
+    fxcopy-bit
+    fxbit-field
+    fxcopy-bit-field
+    fxarithmetic-shift
+    fxarithmetic-shift-left
+    fxarithmetic-shift-right
+    fxrotate-bit-field
+    fxreverse-bit-field
+
+    ;; (rnrs arithmetic flonums)
+    flonum?
+    real->flonum
+    fl=?
+    fl<?
+    fl<=?
+    fl>?
+    fl>=?
+    flinteger?
+    flzero?
+    flpositive?
+    flnegative?
+    flodd?
+    fleven?
+    flfinite?
+    flinfinite?
+    flnan?
+    flmax
+    flmin
+    fl+
+    fl*
+    fl-
+    fl/
+    flabs
+    fldiv-and-mod
+    fldiv
+    flmod
+    fldiv0-and-mod0
+    fldiv0
+    flmod0
+    flnumerator
+    fldenominator
+    flfloor
+    flceiling
+    fltruncate
+    flround
+    flexp
+    fllog
+    flsin
+    flcos
+    fltan
+    flasin
+    flacos
+    flatan
+    flsqrt
+    flexpt
+    fixnum->flonum
+    &no-infinities
+    make-no-infinities-violation
+    no-infinities-violation?
+    &no-nans
+    make-no-nans-violation
+    no-nans-violation?
 
     ;; (rnrs syntax-case)
     make-variable-transformer
@@ -485,8 +608,11 @@
     (rnrs records inspection)
     (rnrs exceptions)
     (rnrs conditions)
+    (rnrs io simple)
     (rnrs files)
     (rnrs programs)
+    (rnrs arithmetic fixnums)
+    (rnrs arithmetic flonums)
     (rnrs hashtables)
     (rnrs syntax-case)
     (rnrs enums)))
