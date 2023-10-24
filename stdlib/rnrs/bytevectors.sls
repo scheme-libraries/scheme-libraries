@@ -84,4 +84,19 @@
 
   (import
     ($system)
-    ($syntax)))
+    (rnrs enums)
+    (scheme-libraries with-implicit))
+
+  (let-syntax ([define-endianness
+                 (with-syntax ([(option ...)
+                                (datum->syntax #'here (cons (native-endianness) '(big little)))])
+                   (lambda (x)
+                     (syntax-case x ()
+                       [(k)
+                        (with-implicit (k endianness)
+                          #'(define-enumeration endianness
+                              (option ...)
+                              endiannesses))])))])
+    (define-endianness)))
+
+  )

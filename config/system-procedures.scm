@@ -625,6 +625,13 @@
  string-set!
  string-fill!
 
+ ;; (rnrs r5rs)
+ quotient
+ remainder
+ modulo
+ $delay
+ force
+
  ;; (scheme-libraries)
  construct-name
  uid

@@ -640,6 +640,13 @@
     string-set!
     string-fill!
 
+    ;; (rnrs r5rs)
+    quotient
+    remainder
+    modulo
+    $delay
+    force
+
     ;; I/O error types
     make-i/o-error
     i/o-error?
@@ -726,6 +733,7 @@
     (rnrs)
     (rnrs mutable-pairs)
     (rnrs mutable-strings)
+    (rnrs r5rs)
     (scheme-libraries boxes)
     (scheme-libraries void)
     (scheme-libraries uuid)
@@ -742,6 +750,13 @@
   (define $file-options
     (lambda ()
       (enum-set->list (enum-set-universe (file-options)))))
+
+  ;; Delay
+
+  (define-syntax $delay
+    (syntax-rules ()
+      [($delay thunk)
+       (delay (thunk))]))
 
   ;; Conditions
 
