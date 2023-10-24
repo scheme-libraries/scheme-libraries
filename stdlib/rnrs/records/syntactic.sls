@@ -18,6 +18,7 @@
     record-constructor-descriptor)
   (import
     ($system)
+    ($record-names)
     (scheme-libraries with-implicit)
     (scheme-libraries define-who)
     (scheme-libraries syntactic-monads))
@@ -31,9 +32,6 @@
   (define-auxiliary-syntax opaque)
   (define-auxiliary-syntax nongenerative)
   (define-auxiliary-syntax parent-rtd)
-
-  (define record-type-descriptor-key)
-  (define record-constructor-descriptor-key)
 
   (define-syntax/who define-record-type
     (lambda (x)
@@ -222,36 +220,10 @@
                    (record-constructor rcd))
                  (define predicate-name
                    (record-predicate rtd))
-                 (define-syntax record-name
-                   (lambda (stx)
-                     (syntax-violation 'record-name "invalid syntax" stx)))
-                 (define-property record-name
-                   record-type-descriptor-key #'rtd)
-                 (define-property record-name
-                   record-constructor-descriptor-key #'rcd)
+                 (define-record-name record-name rtd rcd)
                  definition ...)))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
-  (define-syntax/who record-type-descriptor
-    (lambda (x)
-      (syntax-case x ()
-        [(_ name)
-         (identifier? #'name)
-         (lambda (lookup)
-           (or (lookup #'name #'record-type-descriptor-key)
-               (syntax-violation who "invalid record name syntax" x #'name)))]
-        [_
-         (syntax-violation who "invalid syntax" x)])))
-
-  (define-syntax/who record-constructor-descriptor
-    (lambda (x)
-      (syntax-case x ()
-        [(_ name)
-         (identifier? #'name)
-         (lambda (lookup)
-           (or (lookup #'name #'record-constructor-descriptor-key)
-               (syntax-violation who "invalid record name syntax" x #'name)))]
-        [_ (syntax-violation who "invalid syntax" x)])))
 
 
   )
