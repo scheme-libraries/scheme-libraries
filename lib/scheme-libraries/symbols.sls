@@ -4,6 +4,7 @@
 
 (library (scheme-libraries symbols)
   (export
+    symbol-append
     symbol-prefix?)
   (import
     (rnrs)
@@ -16,4 +17,13 @@
         (assertion-violation who "invalid symbol argument" sym))
       (unless (string? prefix)
         (assertion-violation who "invalid prefix argument" prefix))
-      (string-prefix? (symbol->string sym) prefix))))
+      (string-prefix? (symbol->string sym) prefix)))
+
+  (define/who symbol-append
+    (lambda sym*
+      (for-each
+        (lambda (sym)
+          (unless (symbol? sym)
+            (assertion-violation who "invalid symbol argument" sym)))
+        sym*)
+      (string->symbol (apply string-append (map symbol->string sym*))))))

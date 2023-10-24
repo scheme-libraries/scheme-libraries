@@ -617,6 +617,10 @@
     hashtable-equivalence-function
     hashtable-hash-function
     hashtable-mutable?
+    equal-hash
+    string-hash
+    string-ci-hash
+    symbol-hash
 
     ;; (rnrs enums)
     make-enumeration

@@ -71,7 +71,8 @@
                       (identifier? #'accessor-name))
                  (values #'(immutable field-name)
                          #`((define accessor-name
-                              (record-accessor rtd #,k))))]
+                              (record-accessor rtd #,k))
+                            #,@definitions))]
                 [(mutable field-name accessor-name mutator-name)
                  (and (identifier? #'field-name)
                       (identifier? #'accessor-name)
@@ -80,19 +81,22 @@
                          #`((define accessor-name
                               (record-accessor rtd #,k))
                             (define mutator-name
-                              (record-mutator rtd #,k))))]
+                              (record-mutator rtd #,k))
+                            #,@definitions))]
                 [(immutable field-name)
                  (identifier? #'field-name)
                  (values #'(immutable field-name)
                          #`((define #,(construct-accessor-name #'field-name)
-                              (record-accessor rtd #,k))))]
+                              (record-accessor rtd #,k))
+                            #,@definitions))]
                 [(mutable field-name)
                  (identifier? #'field-name)
                  (values #'(mutable field-name)
                          #`((define #,(construct-accessor-name #'field-name)
                               (record-accessor rtd #,k))
                             (define #,(construct-mutator-name #'field-name)
-                              (record-mutator rtd #,k))))]
+                              (record-mutator rtd #,k))
+                            #,@definitions))]
                 [field-name
                  (identifier? #'field-name)
                  (values #'(immutable field-name)

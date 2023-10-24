@@ -13,6 +13,7 @@
     (scheme-libraries define-who)
     (scheme-libraries numbers)
     (scheme-libraries parameters)
+    (scheme-libraries symbols)
     (scheme-libraries syntax library-collections)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax libraries)
@@ -60,21 +61,45 @@
            (expand-library-reference lib-ref htimp)]
           [(only ,imp-set ,id* ...)
            (guard (for-all $identifier? id*))
-           ;; FIXME
-           (assert #f)]
+           (only-import-set (f imp-set) id*)]
           [(except ,imp-set ,id* ...)
            (guard (for-all $identifier? id*))
            ;; FIXME
            (assert #f)]
           [(prefix ,imp-set ,id)
            (guard ($identifier? id))
-           ;; FIXME
-           (assert #f)]
+           (prefix-import-set (f imp-set) (identifier->symbol id))]
           [(rename ,imp-set (,orig-id* ,new-id*) ...)
            (guard (for-all $identifier? orig-id*) (for-all $identifier? new-id*))
            ;; FIXME
            (assert #f)]
           [,imp-set (expand-library-reference imp-set htimp)]))))
+
+  ;; prefix
+  (define prefix-import-set
+    (lambda (rib pre)
+      (define new-rib (make-rib))
+      (rib-for-each
+       (lambda (n m l/p)
+         (rib-set! new-rib (symbol-append pre n) m l/p))
+       rib)
+      new-rib))
+
+  ;; only
+  (define only-import-set
+    (lambda (rib id*)
+      (define new-rib (make-rib))
+      (for-each
+        (lambda (id)
+          (define n (identifier->symbol id))
+          (cond
+           [(rib-ref rib n '())
+            => (lambda (l/p)
+                 (rib-set! new-rib n '() l/p))]
+           [else
+            (identifier-error #f id "identifier ~a not found in original set")]))
+        id*)
+      new-rib))
 
   (define expand-library-reference
     (lambda (lib-ref htimp)
@@ -118,6 +143,4 @@
 	       [(meta ,lvl) (guard (exact-integer? lvl)) #t]
 	       [,x (syntax-error #f "invalid import level" #f x)]))
 	   imp-lvl*)]
-	[,x x])))
-
-  )
+	[,x x]))))

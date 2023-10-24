@@ -238,6 +238,7 @@
 
     ;; (scheme-libraries symbols)
     symbol-prefix?
+    symbol-append
 
     ;; (scheme-libraries syntactic-monads)
     define-syntactic-monad

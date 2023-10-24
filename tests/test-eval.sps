@@ -139,8 +139,15 @@
                [(u) (set! v (guard u))]))]
           [(init)
            (make-parameter init values)]))
-      #t)
-)
+      #t))
+
+(test-eval 3
+  (let ()
+    (define-record-type pattern-variable
+      (nongenerative) (sealed #t) (opaque #t)
+      (fields (mutable identifier) expression level))
+    (pattern-variable-level (make-pattern-variable #f #f 3)))
+  )
 
 (test-end "eval")
 

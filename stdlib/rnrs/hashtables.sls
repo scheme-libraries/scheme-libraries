@@ -23,6 +23,11 @@
     ;; Inspection
     hashtable-equivalence-function
     hashtable-hash-function
-    hashtable-mutable?)
+    hashtable-mutable?
+    ;; Hash functions
+    equal-hash
+    string-hash
+    string-ci-hash
+    symbol-hash)
   (import
     ($system)))
