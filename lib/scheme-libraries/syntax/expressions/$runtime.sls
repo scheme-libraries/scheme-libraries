@@ -365,6 +365,7 @@
     ;; (scheme-libraries)
     (rename
       ($construct-name construct-name))
+    uid
 
     ;; DEBUG
     write
@@ -374,6 +375,7 @@
     (rnrs)
     (scheme-libraries boxes)
     (scheme-libraries void)
+    (scheme-libraries uuid)
     (scheme-libraries syntax $helpers)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax $labels)

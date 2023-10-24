@@ -100,6 +100,13 @@
       (fields kar kdr))
     (pare? (make-pare 1 2))))
 
+(test-eval '(1 2)
+  (let ()
+    (define-record-type pare
+      (fields kar (mutable kdr kdr set-kdr!)))
+    (let ([x (make-pare 1 2)])
+      (list (pare-kar x) (kdr x)))))
+
 (test-end "eval")
 
 ;; Local Variables:
