@@ -61,7 +61,7 @@
         (assertion-violation who "invalid identifier argument" id))
       (guard (c [(syntax-error? c)
                  (raise-continuable
-                  (condition c (make-undefined-violation)))])
+                  (condition c (make-undefined-error)))])
         (syntax-error #f (format msg (identifier->symbol id)) id))))
 
 

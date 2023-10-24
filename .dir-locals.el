@@ -7,7 +7,7 @@
           (put '$ 'scheme-indent-function 'defun)
           (put 'metalet 'scheme-indent-function 1)
           (put 'except 'scheme-indent-function 1)
-          (put 'rename 'scheme-indent-function 1)
+          (put 'rename 'scheme-indent-function 'defun)
           (put 'prefix 'scheme-indent-function 1)
           (put 'only 'scheme-indent-function 1)
           (put 'label-binding-set! 'scheme-indent-function 'defun)
@@ -60,7 +60,7 @@
              ("(\\(define-values2\\) (\\([^()]*\\))"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
-             ("(\\(define/who\\|define-record-name\\|define-property\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
+             ("(\\(define/who\\|define-condition-name\\|define-record-name\\|define-property\\|define-record-type\\|define-syntax/who\\|define-values\\|define-auxiliary-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"
               (1 font-lock-keyword-face)
               (2 font-lock-function-name-face nil t))
              ("(\\(declare-syntax\\|declare-\\(expander\\|definition\\|prim\\|splicing\\)-syntax\\)\\>[ \t]*(*\\(\\sw+\\)?"

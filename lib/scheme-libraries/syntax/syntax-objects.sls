@@ -60,6 +60,8 @@
     make-invalid-syntax-object-condition
     invalid-syntax-object-condition?
     invalid-syntax-object-irritant
+    make-undefined-error
+    undefined-error?
     make-other-type
     other-type?
     make-application-type

@@ -313,6 +313,42 @@
  raise
  raise-continuable
 
+ ;; (rnrs conditions)
+ condition
+ simple-conditions
+ condition?
+ condition-predicate
+ condition-accessor
+ make-message-condition
+ message-condition?
+ condition-message
+ make-warning-condition
+ warning-condition?
+ make-serious-condition
+ serious-condition?
+ make-error
+ error?
+ make-violation
+ violation?
+ make-irritants-condition
+ irritants-condition?
+ condition-irritants
+ make-who-condition
+ who-condition?
+ condition-who
+ make-non-continuable-violation
+ non-continuable-violation?
+ make-implementation-restriction-violation
+ implementation-restriction-violation?
+ make-lexical-violation
+ lexical-violation?
+ make-syntax-violation
+ syntax-violation?
+ syntax-violation-form
+ syntax-violation-subform
+ make-undefined-violation
+ undefined-violation?
+
  ;; (rnrs syntax-case)
  make-variable-transformer
  identifier?
@@ -344,4 +380,19 @@
  ;; (scheme-libraries)
  construct-name
  uid
- )
+
+ ;; conditions
+ condition-rtd
+ message-rtd
+ warning-rtd
+ serious-rtd
+ error-rtd
+ violation-rtd
+ assertion-rtd
+ irritants-rtd
+ who-rtd
+ non-continuable-rtd
+ implementation-restriction-rtd
+ lexical-rtd
+ syntax-rtd
+ undefined-rtd)

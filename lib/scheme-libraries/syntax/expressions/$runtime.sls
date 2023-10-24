@@ -323,6 +323,46 @@
     raise
     raise-continuable
 
+    ;; (rnrs conditions)
+    condition
+    simple-conditions
+    condition?
+    condition-predicate
+    condition-accessor
+    condition
+    simple-conditions
+    condition?
+    condition-predicate
+    condition-accessor
+    make-message-condition
+    message-condition?
+    condition-message
+    make-serious-condition
+    serious-condition?
+    make-error
+    error?
+    make-violation
+    violation?
+    make-irritants-condition
+    irritants-condition?
+    condition-irritants
+    make-who-condition
+    who-condition?
+    condition-who
+    make-non-continuable-violation
+    non-continuable-violation?
+    make-implementation-restriction-violation
+    implementation-restriction-violation?
+    (rename
+      (make-lexical-error make-lexical-violation)
+      (lexical-error? lexical-violation?)
+      (make-syntax-error make-syntax-violation)
+      (syntax-error? syntax-violation?)
+      (syntax-error-form syntax-violation-form)
+      (syntax-error-subform syntax-violation-subform)
+      (make-undefined-error make-undefined-violation)
+      (undefined-error? undefined-violation?))
+
     ;; (rnrs enums)
     make-enumeration
     enum-set-universe
@@ -372,6 +412,22 @@
       ($construct-name construct-name))
     uid
 
+    ;; Conditions
+    condition-rtd
+    message-rtd
+    warning-rtd
+    serious-rtd
+    error-rtd
+    violation-rtd
+    assertion-rtd
+    irritants-rtd
+    who-rtd
+    non-continuable-rtd
+    implementation-restriction-rtd
+    lexical-rtd
+    syntax-rtd
+    undefined-rtd
+
     ;; DEBUG
     write
     display
@@ -381,9 +437,30 @@
     (scheme-libraries boxes)
     (scheme-libraries void)
     (scheme-libraries uuid)
+    (scheme-libraries reading tokenizers)
     (scheme-libraries syntax $helpers)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax identifiers)
     (scheme-libraries syntax variable-transformers)
-    (scheme-libraries syntax syntax-objects)))
+    (scheme-libraries syntax syntax-objects))
+
+  ;; Conditions
+
+  (define (condition-rtd) (record-type-descriptor &condition))
+  (define (message-rtd) (record-type-descriptor &message))
+  (define (warning-rtd) (record-type-descriptor &warning))
+  (define (serious-rtd) (record-type-descriptor &serious))
+  (define (error-rtd) (record-type-descriptor &error))
+  (define (violation-rtd) (record-type-descriptor &violation))
+  (define (assertion-rtd) (record-type-descriptor &assertion))
+  (define (irritants-rtd) (record-type-descriptor &irritants))
+  (define (who-rtd) (record-type-descriptor &who))
+  (define (non-continuable-rtd) (record-type-descriptor &non-continuable))
+  (define (implementation-restriction-rtd) (record-type-descriptor &implementation-restriction))
+  (define (lexical-rtd) (record-type-descriptor &lexical-error))
+  (define (syntax-rtd) (record-type-descriptor $&syntax))
+  (define (undefined-rtd) (record-type-descriptor $&undefined))
+
+
+  )

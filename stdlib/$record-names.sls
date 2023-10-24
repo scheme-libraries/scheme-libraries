@@ -23,7 +23,8 @@
                (lambda (x)
                  (syntax-violation who "invalid record name syntax" x)))
              (define-property record-name record-type-descriptor-key #'rtd-id)
-             (define-property record-name record-constructor-descriptor-key #'cd-id))])))
+             (define-property record-name record-constructor-descriptor-key #'cd-id))]
+        [_ (syntax-violation who "invalid syntax" x)])))
 
   (define-syntax/who record-type-descriptor
     (lambda (x)
