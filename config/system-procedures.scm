@@ -553,6 +553,31 @@
  construct-name
  uid
 
+ ;; I/O condition types
+ make-i/o-error
+ i/o-error?
+ make-i/o-read-error
+ i/o-read-error?
+ make-i/o-write-error
+ i/o-write-error?
+ make-i/o-invalid-position-error
+ i/o-invalid-position-error?
+ i/o-error-position
+ make-i/o-filename-error
+ i/o-filename-error?
+ i/o-error-filename
+ make-i/o-file-protection-error
+ i/o-file-protection-error?
+ make-i/o-file-is-read-only-error
+ i/o-file-is-read-only-error?
+ make-i/o-file-already-exists-error
+ i/o-file-already-exists-error?
+ make-i/o-file-does-not-exist-error
+ i/o-file-does-not-exist-error?
+ make-i/o-port-error
+ i/o-port-error?
+ i/o-error-port
+
  ;; conditions
  condition-rtd
  message-rtd
@@ -569,4 +594,14 @@
  syntax-rtd
  undefined-rtd
  no-infinities-rtd
- no-nans-rtd)
+ no-nans-rtd
+ i/o-rtd
+ i/o-read-rtd
+ i/o-write-rtd
+ i/o-invalid-position-rtd
+ i/o-filename-rtd
+ i/o-file-protection-rtd
+ i/o-file-is-read-only-rtd
+ i/o-file-already-exists-rtd
+ i/o-file-does-not-exist-rtd
+ i/o-port-rtd)

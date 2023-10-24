@@ -564,8 +564,30 @@
     string-set!
     string-fill!
 
-
-
+    ;; I/O error types
+    make-i/o-error
+    i/o-error?
+    make-i/o-read-error
+    i/o-read-error?
+    make-i/o-write-error
+    i/o-write-error?
+    make-i/o-invalid-position-error
+    i/o-invalid-position-error?
+    i/o-error-position
+    make-i/o-filename-error
+    i/o-filename-error?
+    i/o-error-filename
+    make-i/o-file-protection-error
+    i/o-file-protection-error?
+    make-i/o-file-is-read-only-error
+    i/o-file-is-read-only-error?
+    make-i/o-file-already-exists-error
+    i/o-file-already-exists-error?
+    make-i/o-file-does-not-exist-error
+    i/o-file-does-not-exist-error?
+    make-i/o-port-error
+    i/o-port-error?
+    i/o-error-port
 
     set-box!
     location-box
@@ -607,6 +629,16 @@
     lexical-rtd
     syntax-rtd
     undefined-rtd
+    i/o-rtd
+    i/o-read-rtd
+    i/o-write-rtd
+    i/o-invalid-position-rtd
+    i/o-filename-rtd
+    i/o-file-protection-rtd
+    i/o-file-is-read-only-rtd
+    i/o-file-already-exists-rtd
+    i/o-file-does-not-exist-rtd
+    i/o-port-rtd
     no-infinities-rtd
     no-nans-rtd)
   (import
@@ -640,6 +672,17 @@
   (define (lexical-rtd) (record-type-descriptor &lexical-error))
   (define (syntax-rtd) (record-type-descriptor $&syntax))
   (define (undefined-rtd) (record-type-descriptor $&undefined))
+
+  (define (i/o-rtd) (record-type-descriptor &i/o))
+  (define (i/o-read-rtd) (record-type-descriptor &i/o-read))
+  (define (i/o-write-rtd) (record-type-descriptor &i/o-write))
+  (define (i/o-invalid-position-rtd) (record-type-descriptor &i/o-invalid-position))
+  (define (i/o-filename-rtd) (record-type-descriptor &i/o-filename))
+  (define (i/o-file-protection-rtd) (record-type-descriptor &i/o-file-protection))
+  (define (i/o-file-is-read-only-rtd) (record-type-descriptor &i/o-file-is-read-only))
+  (define (i/o-file-already-exists-rtd) (record-type-descriptor &i/o-file-already-exists))
+  (define (i/o-file-does-not-exist-rtd) (record-type-descriptor &i/o-file-does-not-exist))
+  (define (i/o-port-rtd) (record-type-descriptor &i/o-port))
 
   (define (no-infinities-rtd) (record-type-descriptor &no-infinities))
   (define (no-nans-rtd) (record-type-descriptor &no-nans))
