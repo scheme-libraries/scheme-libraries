@@ -663,6 +663,7 @@
     (rnrs records inspection)
     (rnrs exceptions)
     (rnrs conditions)
+    (rnrs io ports)
     (rnrs io simple)
     (rnrs files)
     (rnrs programs)

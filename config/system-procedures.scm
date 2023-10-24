@@ -349,6 +349,82 @@
  make-undefined-violation
  undefined-violation?
 
+ ;; (rnrs io ports)
+ buffer-mode?
+ latin-1-codec
+ utf-8-codec
+ utf-16-codec
+ make-i/o-decoding-error
+ i/o-decoding-error?
+ make-i/o-encoding-error
+ i/o-encoding-error?
+ i/o-encoding-error-char
+ native-eol-style
+ make-transcoder
+ native-transcoder
+ transcoder-codec
+ transcoder-eol-style
+ transcoder-error-handling-mode
+ bytevector->string
+ string->bytevector
+ eof-object
+ eof-object?
+ port?
+ port-transcoder
+ textual-port?
+ binary-port?
+ transcoded-port
+ port-has-port-position?
+ port-position
+ port-has-set-port-position!?
+ set-port-position!
+ close-port
+ call-with-port
+ input-port?
+ port-eof?
+ open-file-input-port
+ open-bytevector-input-port
+ open-string-input-port
+ standard-input-port
+ current-input-port
+ make-custom-binary-input-port
+ make-custom-textual-input-port
+ get-u8
+ lookahead-u8
+ get-bytevector-n
+ get-bytevector-n!
+ get-bytevector-some
+ get-bytevector-all
+ get-char
+ lookahead-char
+ get-string-n
+ get-string-n!
+ get-string-all
+ get-line
+ get-datum
+ output-port?
+ flush-output-port
+ output-port-buffer-mode
+ open-file-output-port
+ open-bytevector-output-port
+ call-with-bytevector-output-port
+ open-string-output-port
+ call-with-string-output-port
+ standard-output-port
+ standard-error-port
+ current-output-port
+ current-error-port
+ make-custom-binary-output-port
+ make-custom-textual-output-port
+ put-u8
+ put-bytevector
+ put-char
+ put-string
+ put-datum
+ open-file-input/output-port
+ make-custom-binary-input/output-port
+ make-custom-textual-input/output-port
+
  ;; (rnrs io simple)
  eof-object
  call-with-input-file
@@ -578,7 +654,7 @@
  i/o-port-error?
  i/o-error-port
 
- ;; conditions
+ ;; Conditions
  condition-rtd
  message-rtd
  warning-rtd
@@ -604,4 +680,9 @@
  i/o-file-is-read-only-rtd
  i/o-file-already-exists-rtd
  i/o-file-does-not-exist-rtd
- i/o-port-rtd)
+ i/o-port-rtd
+ i/o-decoding-rtd
+ i/o-encoding-rtd
+
+ ;; File options
+ $file-options)
