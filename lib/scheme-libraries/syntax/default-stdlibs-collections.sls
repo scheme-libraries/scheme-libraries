@@ -20,5 +20,5 @@
       (syntax-case stx ()
         [(k)
          (with-syntax ([(libspec ...) (read-file "config/stdlibs.scm" #'k)])
-           #'(stdlibs-collection (make-library-locator '("stdlib/") '(".sls"))
+           #'(stdlibs-collection (make-library-locator '("stdlib/" "lib/") '(".sls"))
                                  (libspec #t) ...))]))))

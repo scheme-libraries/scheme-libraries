@@ -84,7 +84,8 @@
                   (let ([k (fx- k 1)])
                     (and (f (vector-ref x k))
                          (g k)))))]
-           [else #f])))))
+           [else
+            #f])))))
 
   (define/who expression=?
     ;; XXX: In our tests, we use ordinary symbols for variables.

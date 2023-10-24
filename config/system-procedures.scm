@@ -8,6 +8,7 @@
  eqv?
  eq?
  equal?
+ procedure?
  number?
  complex?
  real?

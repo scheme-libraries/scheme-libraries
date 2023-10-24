@@ -17,6 +17,7 @@
     eqv?
     eq?
     equal?
+    procedure?
     number?
     complex?
     real?
@@ -672,6 +673,8 @@
     i/o-port-error?
     i/o-error-port
 
+
+
     set-box!
     location-box
     location-box-set!
@@ -735,6 +738,7 @@
     (rnrs mutable-strings)
     (rnrs r5rs)
     (scheme-libraries boxes)
+    (scheme-libraries helpers)
     (scheme-libraries void)
     (scheme-libraries uuid)
     (scheme-libraries reading tokenizers)
@@ -760,36 +764,50 @@
 
   ;; Conditions
 
-  (define (condition-rtd) (record-type-descriptor &condition))
-  (define (message-rtd) (record-type-descriptor &message))
-  (define (warning-rtd) (record-type-descriptor &warning))
-  (define (serious-rtd) (record-type-descriptor &serious))
-  (define (error-rtd) (record-type-descriptor &error))
-  (define (violation-rtd) (record-type-descriptor &violation))
-  (define (assertion-rtd) (record-type-descriptor &assertion))
-  (define (irritants-rtd) (record-type-descriptor &irritants))
-  (define (who-rtd) (record-type-descriptor &who))
-  (define (non-continuable-rtd) (record-type-descriptor &non-continuable))
-  (define (implementation-restriction-rtd) (record-type-descriptor &implementation-restriction))
-  (define (lexical-rtd) (record-type-descriptor &lexical-error))
-  (define (syntax-rtd) (record-type-descriptor $&syntax))
-  (define (undefined-rtd) (record-type-descriptor $&undefined))
-
-  (define (i/o-rtd) (record-type-descriptor &i/o))
-  (define (i/o-read-rtd) (record-type-descriptor &i/o-read))
-  (define (i/o-write-rtd) (record-type-descriptor &i/o-write))
-  (define (i/o-invalid-position-rtd) (record-type-descriptor &i/o-invalid-position))
-  (define (i/o-filename-rtd) (record-type-descriptor &i/o-filename))
-  (define (i/o-file-protection-rtd) (record-type-descriptor &i/o-file-protection))
-  (define (i/o-file-is-read-only-rtd) (record-type-descriptor &i/o-file-is-read-only))
-  (define (i/o-file-already-exists-rtd) (record-type-descriptor &i/o-file-already-exists))
-  (define (i/o-file-does-not-exist-rtd) (record-type-descriptor &i/o-file-does-not-exist))
-  (define (i/o-port-rtd) (record-type-descriptor &i/o-port))
-
-  (define (i/o-decoding-rtd) (record-type-descriptor &i/o-decoding))
-  (define (i/o-encoding-rtd) (record-type-descriptor &i/o-encoding))
-
-  (define (no-infinities-rtd) (record-type-descriptor &no-infinities))
-  (define (no-nans-rtd) (record-type-descriptor &no-nans))
-
+  (let-syntax ([define-condition-rtds
+                 (lambda (x)
+                   (syntax-case x ()
+                     [(k condition ...)
+                      (with-syntax ([(rtd ...)
+                                     (map (lambda (cnd)
+                                            (construct-name #'k cnd "-rtd"))
+                                          #'(condition ...))]
+                                    [(type ...)
+                                     (map (lambda (cnd)
+                                            (construct-name #'k "&" cnd))
+                                          #'(condition ...))])
+                        #'(begin
+                            (define-syntax rtd
+                                   (syntax-rules ()
+                                     [(rtd) (record-type-descriptor type)]))
+                            ...))]))])
+    (define-condition-rtds
+      condition
+      message
+      warning
+      serious
+      error
+      violation
+      assertion
+      irritants
+      who
+      non-continuable
+      implementation-restriction
+      lexical
+      syntax
+      undefined
+      i/o
+      i/o-read
+      i/o-write
+      i/o-invalid-position
+      i/o-filename
+      i/o-file-protection
+      i/o-file-is-read-only
+      i/o-file-already-exists
+      i/o-file-does-not-exist
+      i/o-port
+      i/o-decoding
+      i/o-encoding
+      no-infinities
+      no-nans))
   )

@@ -33,6 +33,9 @@
     eq?
     equal?
 
+    ;; Procedure predicate
+    procedure?
+
     ;; Arithmetic
     number?
     complex?

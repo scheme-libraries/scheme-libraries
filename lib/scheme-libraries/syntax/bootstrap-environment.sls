@@ -944,7 +944,8 @@
                                    [current-form x])
                       (map (lambda (form* lbl*)
                              (let ([x (expand-body form*)])
-                               (for-each label-kill! lbl*)))
+                               (for-each label-kill! lbl*)
+                               x))
                            form** lbl**))])
            (build
              (case-lambda [,vars* ,e*] ...)))]
@@ -978,7 +979,7 @@
                 [bdg (label->binding lbl)])
            (cond
             [(variable-binding? bdg)
-             `(set! ,(variable-binding-symbol bdg) ,(expand-expression e))]
+             (build (set! ,(variable-binding-symbol bdg) ,(expand-expression e)))]
             [(keyword-binding? bdg)
              (let ([t (keyword-binding-transformer bdg)])
                (unless (variable-transformer? t)

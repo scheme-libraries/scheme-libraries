@@ -123,10 +123,10 @@
                   (lambda (uid*)
                     (syntax-case uid* ()
                       [()
-                       (datum->syntax #'here (uid (syntax->datum #'record-name)))]
+                       (datum->syntax #'here `(quote ,(uid (syntax->datum #'record-name))))]
                       [(uid)
                        (identifier? #'uid)
-                       #'uid]
+                       #''uid]
                       [_ (syntax-violation "invalid protocol record clause" x cl)])))
                 (syntax-case cl (fields parent protocol sealed opaque nongenerative parent-rtd)
                   [(fields field-spec ...)

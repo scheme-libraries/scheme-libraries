@@ -20,7 +20,7 @@
 (current-library-loader (make-default-library-loader library-locator))
 
 (define test-environment
-  (environment '(rnrs)))
+  (environment '(rnrs) '(scheme-libraries define-who)))
 
 (define-syntax test-eval
   (syntax-rules ()
@@ -125,6 +125,22 @@
       (parent-rtd (record-type-descriptor base) #f))
     (let ([x (make-pare 1 2)])
       (list (pare-kar x) (kdr x)))))
+
+(test-eval #t
+    (let ()
+      (define/who make-parameter
+        (case-lambda
+          [(init guard)
+           (unless (procedure? guard)
+             (assertion-violation who "invalid guard argument" guard))
+           (let ([v (guard init)])
+             (case-lambda
+               [() v]
+               [(u) (set! v (guard u))]))]
+          [(init)
+           (make-parameter init values)]))
+      #t)
+)
 
 (test-end "eval")
 
