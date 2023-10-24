@@ -2,7 +2,7 @@
 
 ;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (rnrs arithmetic fixnums)
+(library (rnrs arithmetic fixnums (6))
   (export
     fixnum?
     fixnum-width

@@ -2,7 +2,7 @@
 
 ;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (rnrs arithmetic flonums)
+(library (rnrs arithmetic flonums (6))
   (export
     flonum?
     real->flonum
