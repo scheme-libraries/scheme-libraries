@@ -146,8 +146,19 @@
     (define-record-type pattern-variable
       (nongenerative) (sealed #t) (opaque #t)
       (fields (mutable identifier) expression level))
-    (pattern-variable-level (make-pattern-variable #f #f 3)))
-  )
+    (pattern-variable-level (make-pattern-variable #f #f 3))))
+
+(test-eval '(1 1 1)
+  (let ()
+    (define/who make-list
+      (case-lambda
+        [(k fill)
+         (do [(k k (fx- k 1))
+              (rv '() (cons fill rv))]
+             ((fxzero? k)
+              rv))]
+        [(k) (make-list k #f)]))
+    (make-list 3 1)))
 
 (test-end "eval")
 

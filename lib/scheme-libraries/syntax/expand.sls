@@ -144,8 +144,13 @@
                    "wrong number of arguments" e*)))
            (build (,name ,e* ...)))])))
 
+  ;; XXX FIXME
+  (define *body* #f)
+
   (define expand-body
     (lambda (x*)
+      ;; DEBUG!!!
+      (set! *body* x*)
       (let-values ([(viscmd* def* e lbl*)
                     (expand-internal x* (make-ribcage) (expansion-mode body))])
         (if (null? def*)
@@ -324,6 +329,8 @@
                    [else
                     (values x (make-other-type))])))]
           [else
+           ;; FIXME!!
+           (display *body*) (newline)
            (undefined-error x "unbound identifier ~a")])]
         [,x
          (let ([e (syntax-object->datum x)])

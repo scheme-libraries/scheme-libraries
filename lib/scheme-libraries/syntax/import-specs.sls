@@ -64,8 +64,7 @@
            (only-import-set (f imp-set) id*)]
           [(except ,imp-set ,id* ...)
            (guard (for-all $identifier? id*))
-           ;; FIXME
-           (assert #f)]
+           (except-import-set (f imp-set) id*)]
           [(prefix ,imp-set ,id)
            (guard ($identifier? id))
            (prefix-import-set (f imp-set) (identifier->symbol id))]
@@ -99,6 +98,25 @@
            [else
             (identifier-error #f id "identifier ~a not found in original set")]))
         id*)
+      new-rib))
+
+  ;; except
+  (define except-import-set
+    (lambda (rib id*)
+      (define new-rib (make-rib))
+      (define excepted (make-eq-hashtable))
+      (for-each
+        (lambda (id)
+          (define n (identifier->symbol id))
+          (unless (rib-ref rib n '())
+            (identifier-error #f id "identifier ~a not found in original set"))
+          (hashtable-set! excepted n #t))
+        id*)
+      (rib-for-each
+       (lambda (n m l/p)
+         (unless (hashtable-contains? excepted n)
+           (rib-set! new-rib n m l/p)))
+       rib)
       new-rib))
 
   (define expand-library-reference

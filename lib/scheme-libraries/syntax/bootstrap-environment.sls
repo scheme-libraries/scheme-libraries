@@ -1292,7 +1292,7 @@
          (let-values ([(x* i* s*) (parse-do-clause* cl*)])
            (let ([f (generate-temporary)])
              (expand-expression
-              `(let f [(,x* ,i*) ...]
+              `(let ,f [(,x* ,i*) ...]
                  (if ,t
                      (begin (values) ,e* ...)
                      (begin
