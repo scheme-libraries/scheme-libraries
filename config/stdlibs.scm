@@ -11,6 +11,7 @@
 (rnrs records syntactic)
 (rnrs records procedural)
 (rnrs records inspection)
+(rnrs exceptions)
 (rnrs syntax-case)
 (rnrs enums)
 (rnrs)

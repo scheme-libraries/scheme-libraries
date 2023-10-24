@@ -357,6 +357,12 @@
     record-type-field-names
     record-field-mutable?
 
+    ;; (rnrs exceptions)
+    guard
+    with-exception-handler
+    raise
+    raise-continuable
+
     ;; (rnrs syntax-case)
     make-variable-transformer
     syntax-case
@@ -400,5 +406,6 @@
     (rnrs records syntactic)
     (rnrs records procedural)
     (rnrs records inspection)
+    (rnrs exceptions)
     (rnrs syntax-case)
     (rnrs enums)))

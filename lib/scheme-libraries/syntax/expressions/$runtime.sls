@@ -318,6 +318,11 @@
     record-type-field-names
     record-field-mutable?
 
+    ;; (rnrs exceptions)
+    with-exception-handler
+    raise
+    raise-continuable
+
     ;; (rnrs enums)
     make-enumeration
     enum-set-universe
