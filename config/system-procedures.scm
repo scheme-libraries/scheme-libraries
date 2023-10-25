@@ -700,4 +700,7 @@
  $file-options
 
  ;; Host eval
- $eval)
+ $eval
+
+ ;; Expanded and serialized standard library collection
+ default-stdlibs-collection-datum)
