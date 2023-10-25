@@ -1043,12 +1043,11 @@
         [(,k () ,b* ... ,b)
          (expand-body `(,b* ... ,b))]
         [(,k ([,x ,e] [,x* ,e*] ...) ,b* ... ,b)
-         (guard (for-all $identifier? (cons x x*)))
-         (let f ([x x] [x* x*] [e e] [e* e*])
-           (if (null? x*)
-               (expand-expression
-                `(let ([,x ,e]) ,b* ... ,b))
-               (expand-expression
+         (guard ($identifier? x) (for-all $identifier? x*))
+         (expand-expression
+          (let f ([x x] [x* x*] [e e] [e* e*])
+            (if (null? x*)
+                `(let ([,x ,e]) ,b* ... ,b)
                 `(let ([,x ,e])
                    ,(f (car x*) (cdr x*)
                        (car e*) (cdr e*))))))]

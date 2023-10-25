@@ -160,6 +160,10 @@
         [(k) (make-list k #f)]))
     (make-list 3 1)))
 
+(test-eval 3
+  (let ([y 3])
+    y))
+
 (test-eval 5
   (let* ([x 12]
          [x (- x 7)])
