@@ -16,7 +16,6 @@
     ;(prefix (chezscheme) cs:)
 
     (rnrs)
-    (rnrs eval)
     (scheme-libraries atoms)
     (scheme-libraries define-who)
     (scheme-libraries gensyms)
