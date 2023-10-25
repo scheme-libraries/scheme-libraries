@@ -8,8 +8,10 @@
   (import
     (rnrs)
     (scheme-libraries define-who)
-    (scheme-libraries syntax $make-stdlibs-collection-expr)
+    (scheme-libraries helpers)
+    (scheme-libraries syntax $make-stdlibs-collection-datum)
     (scheme-libraries syntax $parsers)
+    (scheme-libraries syntax $serializing)
     (scheme-libraries syntax syntax-match))
 
   ;; A library in a stdlibs collection is identified by its name,
@@ -19,15 +21,6 @@
   ;; All system libraries are compiled together and are later invoked
   ;; together.  A library, on which a system library depends must also
   ;; be a system library.  It is an error if this is not fulfilled.
-
-  #;
-  (standard-library-collection
-    library-locator
-    ((rnrs) #f #f)
-    ((...) #f #t)
-    ((...) ...)
-    (<lib> <system?> <visible?>)
-    ...)
 
   ;; Helpers
 
@@ -57,7 +50,7 @@
                                        (parse-library-reference lib-ref-expr)])
                            (make-stdlib name pred (syntax->datum sys?-expr) )))
                        lib-ref* sys?*)])
-             (make-stdlibs-collection-expr loc stdlib*)))]
+             #`(datum->library-collection #,(syntax-quote (make-stdlibs-collection-datum loc stdlib*)))))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
 

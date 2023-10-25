@@ -2,9 +2,9 @@
 
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (scheme-libraries syntax $make-stdlibs-collection-expr)
+(library (scheme-libraries syntax $make-stdlibs-collection-datum)
   (export
-    make-stdlibs-collection-expr
+    make-stdlibs-collection-datum
     make-stdlib
     stdlib?
     stdlib-name
@@ -27,7 +27,7 @@
     (sealed #t)
     (fields name pred system?))
 
-  (define make-stdlibs-collection-expr
+  (define make-stdlibs-collection-datum
     (lambda (loc stdlib*)
       (define who 'stdlibs-collection)
       (define visible-libs (make-eq-hashtable))
@@ -51,25 +51,7 @@
              [else
               (assertion-violation who "library not found" name)]))
           stdlib*)
-        #`(datum->library-collection
-           #,(syntax-quote (library-collection->datum (current-library-collection) system? visible?)))
-
-
-
-
-
-
-        ;; The stdlibs are now in the library collection.  Now
-        ;; serialize the library collection.
-        ;; what to do with the non-visible collections?
-        ;; -> what did I mean with system?
-        ;;
-        ;; some libraries may be needed by instantiation of other libraries.
-        ;; do we want all libraries initialized?
-        ;; -> no, this is not what r6rs says.  but it could still work for stdlibs... ?
-        ;; -> each library knows which have to be inven
-
-        )))
+        (library-collection->datum (current-library-collection) system? visible?))))
 
 
 

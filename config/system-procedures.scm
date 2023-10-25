@@ -697,4 +697,7 @@
  i/o-encoding-rtd
 
  ;; File options
- $file-options)
+ $file-options
+
+ ;; Host eval
+ $eval)

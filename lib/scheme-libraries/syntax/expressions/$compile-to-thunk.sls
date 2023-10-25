@@ -7,8 +7,8 @@
     compile-to-thunk)
   (import
     (rnrs)
-    (rnrs eval)
     (scheme-libraries syntax variables)
+    (scheme-libraries syntax expressions $eval)
     (scheme-libraries atoms)
     (scheme-libraries impure)
     (scheme-libraries match))
@@ -21,7 +21,7 @@
         ;;(display "Eval: ")
         ;;(display e) (newline)
 
-        ((eval `(case-lambda [(vals) (case-lambda [() ,e])]) (runtime-environment))
+        (($eval `(case-lambda [(vals) (case-lambda [() ,e])]))
          vals))))
 
   (define parse
@@ -50,12 +50,4 @@
              (guard (variable? x))
              (variable->symbol x)])))
       (values out
-              (list->vector (reverse val*)))))
-
-  (define runtime-environment
-    (let ([env #f])
-      (lambda ()
-        (or env
-            (begin
-              (set! env (environment '(scheme-libraries syntax expressions $runtime)))
-              env))))))
+              (list->vector (reverse val*))))))

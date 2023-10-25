@@ -678,7 +678,7 @@
     i/o-error-port
 
 
-
+    $eval
     set-box!
     location-box
     location-box-set!
@@ -751,7 +751,8 @@
     (scheme-libraries syntax $labels)
     (scheme-libraries syntax identifiers)
     (scheme-libraries syntax variable-transformers)
-    (scheme-libraries syntax syntax-objects))
+    (scheme-libraries syntax syntax-objects)
+    (scheme-libraries syntax expressions $eval))
 
   ;; File options
 
