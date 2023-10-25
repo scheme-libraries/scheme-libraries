@@ -1043,7 +1043,7 @@
         [(,k () ,b* ... ,b)
          (expand-body `(,b* ... ,b))]
         [(,k ([,x ,e] [,x* ,e*] ...) ,b* ... ,b)
-         (guard (for-all $identifier? x*))
+         (guard (for-all $identifier? (cons x x*)))
          (let f ([x x] [x* x*] [e e] [e* e*])
            (if (null? x*)
                (expand-expression

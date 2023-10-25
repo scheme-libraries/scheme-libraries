@@ -160,6 +160,11 @@
         [(k) (make-list k #f)]))
     (make-list 3 1)))
 
+(test-eval 5
+  (let* ([x 12]
+         [x (- x 7)])
+    x))
+
 (test-end "eval")
 
 ;; Local Variables:
