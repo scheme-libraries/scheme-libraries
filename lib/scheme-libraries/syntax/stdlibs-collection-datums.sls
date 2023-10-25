@@ -2,9 +2,9 @@
 
 ;;; Copyright © Marc Nieper-Wißkirchen (2023).
 
-(library (scheme-libraries syntax stdlibs-collections)
+(library (scheme-libraries syntax stdlibs-collection-datums)
   (export
-    stdlibs-collection)
+    stdlibs-collection-datum)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -36,7 +36,7 @@
 
   ;; Syntax
 
-  (define-syntax/who stdlibs-collection
+  (define-syntax/who stdlibs-collection-datum
     (lambda (x)
       (syntax-case x ()
         [(_ loc-expr [lib-ref sys?] ...)
@@ -50,7 +50,7 @@
                                        (parse-library-reference lib-ref-expr)])
                            (make-stdlib name pred (syntax->datum sys?-expr) )))
                        lib-ref* sys?*)])
-             #`(datum->library-collection #,(syntax-quote (make-stdlibs-collection-datum loc stdlib*)))))]
+             (syntax-quote (make-stdlibs-collection-datum loc stdlib*))))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
 

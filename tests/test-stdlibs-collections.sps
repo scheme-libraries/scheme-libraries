@@ -3,18 +3,20 @@
 ;; Copyright © Marc Nieper-Wißkirchen (2023).
 
 (import (rnrs)
-        (scheme-libraries syntax stdlibs-collections)
+        (scheme-libraries syntax $serializing)
+        (scheme-libraries syntax stdlibs-collection-datums)
         (scheme-libraries syntax library-collections)
         (scheme-libraries syntax library-locators)
         (scheme-libraries syntax eval)
         (scheme-libraries testing))
 
 (define stdlibs
-  (stdlibs-collection
-   (make-library-locator '("stdlib/" "tests/") '(".sls"))
-   ((rnrs base) #t)
-   ((rnrs) #t)
-   ((test) #t)))
+  (datum->library-collection
+   (stdlibs-collection-datum
+    (make-library-locator '("stdlib/" "tests/") '(".sls"))
+    ((rnrs base) #t)
+    ((rnrs) #t)
+    ((test) #t))))
 
 (test-begin "standard libraries collections")
 
