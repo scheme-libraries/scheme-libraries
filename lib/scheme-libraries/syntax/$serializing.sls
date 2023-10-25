@@ -10,7 +10,7 @@
     datum->library)
   (import
 
-    (prefix (chezscheme) cs:)
+    ;(prefix (chezscheme) cs:)
 
     (rnrs)
     (scheme-libraries define-who)

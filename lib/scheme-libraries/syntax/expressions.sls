@@ -13,7 +13,7 @@
     expression->s-exp
     s-exp->expression)
   (import
-    (prefix (chezscheme) cs:)
+    ;(prefix (chezscheme) cs:)
 
     (rnrs)
     (rnrs eval)

@@ -14,7 +14,7 @@
   (import
     (rnrs)
     ;; DEBUG
-    (only (chezscheme) pretty-print trace-define)
+    ;(only (chezscheme) pretty-print trace-define)
 
     (scheme-libraries define-values)
     (scheme-libraries define-who)
@@ -492,10 +492,10 @@
 
   ;; FIXME: DEBUG: XXX: LOG
   ;; Move this into execute-transformer code.
-  (define dlog (lambda (x)
+  ;; (define dlog (lambda (x)
 
-                 (pretty-print (syntax-object->datum x))
-                x))
+  ;;                (pretty-print (syntax-object->datum x))
+  ;;               x))
 
   (define parse-syntax-case
     (lambda (x)
