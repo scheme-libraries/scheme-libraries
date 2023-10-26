@@ -71,7 +71,7 @@
           (cond
            [(variable? x)]
            [(atom? x)]
-           [(hashtable-ref ht x #f) #f]
+           [(hashtable-ref ht x #f)]
            [(pair? x)
             (hashtable-set! ht x #t)
             (or (eq? (car x) 'quote)
