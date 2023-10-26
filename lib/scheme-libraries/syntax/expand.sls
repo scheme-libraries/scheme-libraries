@@ -149,8 +149,6 @@
 
   (define expand-body
     (lambda (x*)
-      ;; DEBUG!!!
-      (set! *body* x*)
       (let-values ([(viscmd* def* e lbl*)
                     (expand-internal x* (make-ribcage) (expansion-mode body))])
         (if (null? def*)
@@ -184,6 +182,8 @@
 
   (define expand-form
     (lambda (x x* ribs rviscmd* rdef* lbl* rdeferred*)
+    ;; DEBUG!!!
+    (set! *body* x)
       (let-values ([(x t) (syntax-type x ribs)])
         (cond
          [(definition-binding? t)
@@ -330,7 +330,7 @@
                     (values x (make-other-type))])))]
           [else
            ;; FIXME!!
-           (display *body*) (newline)
+           (write *body*) (newline)
            (undefined-error x "unbound identifier ~a")])]
         [,x
          (let ([e (syntax-object->datum x)])

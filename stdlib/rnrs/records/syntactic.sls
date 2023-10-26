@@ -106,10 +106,10 @@
                 [_ (syntax-violation who "invalid record field spec" x field-spec)])))
           (define construct-accessor-name
             (lambda (field-name)
-              (construct-name field-name record-name "-" field-name)))
+              (construct-name record-name record-name "-" field-name)))
           (define construct-mutator-name
             (lambda (field-name)
-              (construct-name field-name record-name "-" field-name "-set!")))
+              (construct-name record-name record-name "-" field-name "-set!")))
           (define-syntactic-monad $ cl*
             field* parent* protocol* sealed* opaque* nongenerative* parent-cd definition*)
           ($ let f ([field* #f]

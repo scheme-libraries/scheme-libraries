@@ -6,9 +6,4 @@
   (export
     $eval)
   (import
-    (prefix ($system) system:))
-
-  (define $eval
-    (lambda (exp)
-      ((system:$eval `(lambda (default-stdlibs-collection-datum) ,exp))
-       default-stdlibs-collection-datum))))
+    ($system)))

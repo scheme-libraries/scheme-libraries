@@ -696,8 +696,7 @@
     syntax-vector->list
     unbox
     void
-
-
+    default-stdlibs-collection-datum
 
     ;; (scheme-libraries)
     (rename
@@ -815,4 +814,17 @@
       i/o-encoding
       no-infinities
       no-nans))
+
+  ;; Default standard libraries collection
+
+  (define default-stdlibs-collection-datum
+    (let ([e #f])
+      (case-lambda
+        [()
+         (unless e
+           (assertion-violation 'default-stdlibs-collection-datum "not initialized"))
+         e]
+        [(new-e)
+         (set! e new-e)])))
+
   )

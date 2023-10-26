@@ -70,8 +70,7 @@
            (prefix-import-set (f imp-set) (identifier->symbol id))]
           [(rename ,imp-set (,orig-id* ,new-id*) ...)
            (guard (for-all $identifier? orig-id*) (for-all $identifier? new-id*))
-           ;; FIXME
-           (assert #f)]
+           (rename-import-set imp-set (f imp-set) orig-id* new-id*)]
           [,imp-set (expand-library-reference imp-set htimp)]))))
 
   ;; prefix
@@ -116,6 +115,39 @@
        (lambda (n m l/p)
          (unless (hashtable-contains? excepted n)
            (rib-set! new-rib n m l/p)))
+       rib)
+      new-rib))
+
+  ;; rename
+  (define rename-import-set
+    (lambda (imp-set rib orig-id* new-id*)
+      (define new-rib (make-eq-hashtable))
+      (define renames (make-eq-hashtable))
+      (for-each
+        (lambda (orig-id new-id)
+          (define n (identifier->symbol orig-id))
+          (unless (rib-ref rib n '())
+            (identifier-error #f orig-id "identifier ~a not found in original set"))
+          (hashtable-update! renames n
+            (lambda (prev)
+              (when prev
+                (identifier-error #f orig-id "identifier ~a already renamed"))
+              (identifier->symbol new-id))
+            #f))
+        orig-id* new-id*)
+      (rib-for-each
+       (lambda (n m l/p)
+         (let ([n (hashtable-ref renames n n)])
+           (rib-update! new-rib
+                        n
+                        '()
+                        (lambda (prev)
+                          (when prev
+                            (syntax-error #f
+                              (format "identifier ~a already in new set" n)
+                              imp-set))
+                          l/p)
+                        #f)))
        rib)
       new-rib))
 
