@@ -658,7 +658,6 @@
                                                          [(var* init* env*)
                                                           (pop-env env*)])
                                              (values
-                                               ;; FIXME: Provide append-map in runtime.
                                                `(append-map
                                                  (lambda (,var* ...)
                                                    ,out)
@@ -1396,6 +1395,7 @@
   ;; prims
 
   (declare-system-procedures)
+  (declare-prim-syntax append-map -3)
   (declare-prim-syntax void 0)
   (declare-prim-syntax set-box! 2)
   (declare-prim-syntax location-box-set! 2)

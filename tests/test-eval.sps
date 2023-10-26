@@ -20,7 +20,10 @@
 (current-library-loader (make-default-library-loader library-locator))
 
 (define test-environment
-  (environment '(rnrs) '(scheme-libraries define-who)))
+  (environment '(rnrs)
+               '(scheme-libraries define-who)
+               '(scheme-libraries syntax default-stdlibs-collections)
+               '(scheme-libraries syntax eval)))
 
 (define-syntax test-eval
   (syntax-rules ()
@@ -168,6 +171,9 @@
   (let* ([x 12]
          [x (- x 7)])
     x))
+
+;; (test-eval 5
+;;   (eval '(+ 1 4) (environment '(rnrs))))
 
 (test-end "eval")
 

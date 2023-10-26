@@ -1,1 +1,5 @@
 (import (scheme-libraries))
+
+;; Local Variables:
+;; mode: scheme
+;; End:

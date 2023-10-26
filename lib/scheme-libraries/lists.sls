@@ -4,6 +4,7 @@
 
 (library (scheme-libraries lists)
   (export
+    append-map
     last
     iota
     filter-map
@@ -18,6 +19,17 @@
     (scheme-libraries exceptions)
     (scheme-libraries numbers)
     (scheme-libraries void))
+
+  (define/who append-map
+    (lambda (f . ls*)
+      (unless (procedure? f)
+        (assertion-violation who "invalid procedure argument" f))
+      (for-each
+        (lambda (ls)
+          (unless (list? ls)
+            (assertion-violation who "invalid list argument" ls)))
+        ls*)
+      (apply append (apply map f ls*))))
 
   (define/who last
     (lambda (ls)

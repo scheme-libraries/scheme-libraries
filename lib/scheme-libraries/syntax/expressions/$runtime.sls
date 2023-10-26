@@ -679,6 +679,7 @@
 
 
     $eval
+    append-map
     set-box!
     location-box
     location-box-set!
@@ -744,6 +745,7 @@
     (scheme-libraries helpers)
     (scheme-libraries void)
     (scheme-libraries uuid)
+    (scheme-libraries lists)
     (scheme-libraries reading tokenizers)
     (scheme-libraries syntax $helpers)
     (scheme-libraries syntax exceptions)

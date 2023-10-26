@@ -30,3 +30,4 @@
 (scheme-libraries with-implicit)
 (scheme-libraries define-who)
 (scheme-libraries syntax eval)
+(scheme-libraries syntax default-stdlibs-collections)
