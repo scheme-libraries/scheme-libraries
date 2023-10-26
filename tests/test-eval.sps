@@ -21,16 +21,15 @@
 
 (define test-environment
   (environment '(rnrs)
-               '(scheme-libraries define-who)
-               '(scheme-libraries syntax default-stdlibs-collections)
-               '(scheme-libraries syntax eval)))
+               '(rnrs eval)
+               '(scheme-libraries define-who)))
 
 (define-syntax test-eval
   (syntax-rules ()
     [(test-eval result expr)
      (begin
        ;; FIXME/DEBUG:
-       (eval 'expr test-environment)
+       ;;(eval 'expr test-environment)
        (test-equal result (eval 'expr test-environment)))]))
 
 (test-begin "eval")
@@ -172,8 +171,8 @@
          [x (- x 7)])
     x))
 
-;; (test-eval 5
-;;   (eval '(+ 1 4) (environment '(rnrs))))
+(test-eval 5
+  (eval '(+ 1 4) (environment '(rnrs))))
 
 (test-end "eval")
 

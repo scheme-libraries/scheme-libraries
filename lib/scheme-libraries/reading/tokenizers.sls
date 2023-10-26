@@ -104,20 +104,22 @@
               (string-append initial (string #\# (read-char)))]
              [else initial])))
         (define read-inline-hex-escape
-          (lambda ()
+          (lambda (in-string?)
             (let ([start (position)])
               (let f ([val 0] [empty? #t])
-                (let ([ch (read-char)])
+                (let ([ch (peek-char)])
                   (cond
-                   [(eof-object? ch)
+                   [(and in-string? (eof-object? ch))
                     (lexical-error "unterminated inline hex escape" start (position))]
-                   [(char=? ch #\;)
+                   [(if in-string?
+                        (and (char=? ch #\;) (read-char))
+                        (or (eof-object? ch) (delimiter? ch)))
                     (when empty?
                       (lexical-error "empty inline hex escape" start (position)))
                     (unless (unicode-scalar-value? val)
                       (lexical-error "invalid Unicode scalar value ~s" start (position)))
                     (integer->char val)]
-                   [(hex-digit ch)
+                   [(hex-digit (read-char))
                     =>
                     (lambda (e)
                       (f (fx+ (fx* val 16) e) #f))]
@@ -195,11 +197,9 @@
                   (let ([ch (read-char)])
                     (cond
                      [(eof-object? ch) (lexical-error "unterminated character" start (position))]
-                     [(char=? ch #\x)
-                      (let ([ch (read-inline-hex-escape)])
-                        (unless (delimiter? ch)
-                          (lexical-error "undelimited character" start (position)))
-                        ch)]
+                     [(char=? ch #\x) (if (delimiter? (peek-char))
+                                          #\x
+                                          (read-inline-hex-escape #f))]
                      [else
                       (let ([s (read-delimited-lexeme (string ch))])
                         (if (fx=? (string-length s) 1)
@@ -253,7 +253,7 @@
                           (lambda (e)
                             (f (cons (cdr e) ch*)))]
                          [(char=? ch #\x)
-                          (f (cons (read-inline-hex-escape) ch*))]
+                          (f (cons (read-inline-hex-escape #t) ch*))]
                          [else
                           (skip-intraline-whitespace)
                           (let ([ch (read-char)])
