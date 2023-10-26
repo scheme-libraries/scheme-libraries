@@ -266,7 +266,7 @@
                  (values))))
       (define invcode
         (build
-          (letrec (,(map library-invoke-bindings libs) ... ...)
+          (letrec () #;(,(map library-invoke-bindings libs) ... ...)
             (letrec* (,(map library-invoke-definitions libs) ... ...)
               (begin
                 ,(map library-invoke-commands libs) ... ...

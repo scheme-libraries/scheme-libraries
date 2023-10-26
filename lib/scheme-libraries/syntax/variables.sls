@@ -8,7 +8,9 @@
     variable?
     variable=?
     variable->symbol
-    symbol->variable)
+    symbol->variable
+    make-variable-hashtable
+    variable-hash)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -36,6 +38,16 @@
           (let ([sym1 (variable-symbol var1)]
                 [sym2 (variable-symbol var2)])
             (and sym1 sym2 (symbol=? sym1 sym2))))))
+
+  (define/who variable-hash
+    (lambda (var)
+      (unless (variable? var)
+        (assertion-violation who "invalid variable argument" var))
+      (symbol-hash (variable->symbol var))))
+
+  (define make-variable-hashtable
+    (lambda ()
+      (make-hashtable variable-hash variable=?)))
 
   (define/who variable->symbol
     (lambda (var)
