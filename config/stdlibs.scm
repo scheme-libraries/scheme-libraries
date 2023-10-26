@@ -29,4 +29,4 @@
 (rnrs r5rs)
 (scheme-libraries with-implicit)
 (scheme-libraries define-who)
-;(scheme-libraries syntax eval)
+(scheme-libraries syntax eval)
