@@ -20,11 +20,8 @@
     (lambda import-spec*
       (apply $environment import-spec*)))
 
-  ;; XXX: Fix library expressions!
-  (define bla
-    (current-library-collection (make-default-stdlibs-collection)))
+  (current-library-collection (make-default-stdlibs-collection))
 
-  (define blub
-    ;; FIXME: Make configurable.
-    (current-library-loader
-     (make-default-library-loader (make-library-locator '("lib/") '(".sls"))))))
+  ;; FIXME: Make configurable.
+  (current-library-loader
+   (make-default-library-loader (make-library-locator '("lib/") '(".sls")))))

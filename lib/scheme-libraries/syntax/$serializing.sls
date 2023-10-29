@@ -262,7 +262,7 @@
       (define invreqs '#())
       (define viscode
         (build (begin
-                ,(map library-visit-commands libs) ... ...
+                 ,(map library-visit-commands libs) ... ...
                  (values))))
       (define invcode
         (build

@@ -175,7 +175,7 @@
              (syntax-error #f "no expressions in body"))
            (values (reverse rviscmd*)
                    (expand-definitions (reverse rdef*))
-                   (build-begin ,@(reverse rcmd*))
+                   `(begin ,@(reverse rcmd*))
                    lbl*))]
         [(,x . ,x*)
          (expand-form x x* ribs rviscmd* rdef* lbl* rdeferred*)])))
@@ -456,7 +456,8 @@
                            def*)
               (begin
                 ,@setter*
-                ,body))))))
+                ;; FIXME: This makes use of the structure of body.
+                ,@(cdr body)))))))
 
     (define build-visit-code
       (lambda (viscmd*)

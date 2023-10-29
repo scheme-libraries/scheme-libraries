@@ -21,6 +21,5 @@
 
   (define (fruit) *store*)
 
-  (set! *store* 'cherry)
-
-  )
+  (set! *store* 'pear)
+  (set! *store* 'cherry))
