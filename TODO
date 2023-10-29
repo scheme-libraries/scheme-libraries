@@ -1,0 +1,2 @@
+* Add debug and info to composite library.
+* Raise an error if exported variable is set!.

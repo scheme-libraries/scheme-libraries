@@ -7,14 +7,6 @@
   (rnrs io simple)                      ;XXX
   (test))
 
-;;; XXX Debug
-(display (foo))
-(newline)
-
 (assert (eq? (foo) 12))
 
-;;; XXX Debug
-(display fruit)
-(newline)
-
-(assert (eq? fruit 'cherry))
+(assert (eq? (fruit) 'cherry))

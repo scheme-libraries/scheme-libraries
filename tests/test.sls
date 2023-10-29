@@ -17,11 +17,10 @@
 
   (define-record-type bar)
 
-  (define fruit 'apple)
+  (define *store* 'apple)
 
-  ;; FIXME: The following line should raise an exception because an
-  ;; exported variable must not be mutated.
-  #;
-  (set! fruit 'cherry)
+  (define (fruit) *store*)
+
+  (set! *store* 'cherry)
 
   )

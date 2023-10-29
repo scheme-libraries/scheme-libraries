@@ -29,17 +29,6 @@
           (parse-program x))
         (define-values (e invreqs)
           (expand-program imp* body*))
-
-        ;; FIXME:
-        (display "Program invoke requirements: ")
-        (vector-for-each
-         (lambda (lib)
-           (write (library-invoke-code lib))
-
-           (newline))
-         invreqs)
-        (newline)
-
         (vector-for-each library-invoke! invreqs)
         ((compile-to-thunk e)))))
 

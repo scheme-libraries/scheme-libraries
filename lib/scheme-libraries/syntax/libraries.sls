@@ -1,6 +1,6 @@
 #!r6rs
 
-;;; Copyright © Marc Nieper-Wißkirchen (2023).
+;; Copyright © Marc Nieper-Wißkirchen (2023).
 
 (library (scheme-libraries syntax libraries)
   (export
@@ -39,6 +39,8 @@
     collected-invoke-requirements)
   (import
     (rnrs)
+    (scheme-libraries debug)
+    (scheme-libraries info)
     (scheme-libraries basic-format-strings)
     (scheme-libraries exceptions)
     (scheme-libraries boxes)
@@ -197,6 +199,7 @@
                                   (assertion-violation #f (format "invocation of library ~a did not return" name))))
           (when (eq? invoker #t)
             (assertion-violation #f (format "circular invocation of library ~a" name)))
+          (debug info "Invoking library ~a" (library-name lib))
           (invoker)
           (library-invoker-set! lib #f)))))
 

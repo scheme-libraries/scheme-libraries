@@ -362,7 +362,7 @@
               (values
                 (build
                   (letrec ,(map (lambda (var loc)
-                                  `[,var ',(location-box loc)])
+                                  `[,var (location-box ',loc)])
                                 (vector->list vars)
                                 (vector->list locs))
                     (letrec* (,@(map (lambda (def)
