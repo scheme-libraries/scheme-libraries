@@ -28,6 +28,8 @@ the ~(srfi :28)~ library of SRFI 28.
 The ~(scheme-libraries boxes)~ library is a drop-in replacement for
 the ~(srfi :111)~ library of SRFI 111.
 
+** Conditional expansion
+
 ** Continuation prompts
 
 Implements ~abort-to-continuation~.

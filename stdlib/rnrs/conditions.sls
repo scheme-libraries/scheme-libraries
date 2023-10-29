@@ -70,6 +70,7 @@
             (field accessor) ...)
          (for-all identifier? #'(condition-type super-type constructor predicate field ... accessor ...))
          #'(define-record-type (condition-type constructor predicate)
+             (parent super-type)
              (fields (immutable field accessor) ...))]
         [_ (syntax-violation who "invalid syntax" x)])))
 

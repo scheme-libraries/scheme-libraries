@@ -116,6 +116,9 @@
     ->
     guard
 
+    ;; (meta-cond)
+    meta-cond
+
     ;; (scheme-libraries numbers)
     exact-integer?
     exact-positive-integer?
@@ -295,6 +298,7 @@
     (scheme-libraries impure)
     (scheme-libraries lists)
     (scheme-libraries match)
+    (scheme-libraries meta-cond)
     (scheme-libraries modules)
     (scheme-libraries numbers)
     (scheme-libraries ports)

@@ -1,7 +1,8 @@
 (library (test)
   (export
     foo
-    bar)
+    bar
+    fruit)
   (import
     (rnrs)
     (test2))
@@ -15,5 +16,12 @@
   (define y (id 12))
 
   (define-record-type bar)
+
+  (define fruit 'apple)
+
+  ;; FIXME: The following line should raise an exception because an
+  ;; exported variable must not be mutated.
+  #;
+  (set! fruit 'cherry)
 
   )

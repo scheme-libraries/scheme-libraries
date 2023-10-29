@@ -28,5 +28,8 @@
   (call-with-values (lambda () (load-program "tests/program2.sps"))
     list))
 
+(test-equal '()
+  (call-with-values (lambda () (load-program "tests/program3.sps"))
+    list))
 
 (test-end "programs")

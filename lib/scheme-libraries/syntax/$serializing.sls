@@ -273,6 +273,13 @@
                 (values))))))
       (define env
         (apply append (map library-bindings libs)))
+
+      ;; XXX DEBUG FIXME
+      ;; (display "XXXX:\n")
+      ;; (display (map library-invoke-commands libs))
+      ;; (newline)
+
+
       (make-library name version init-uid imports exports visreqs invreqs viscode invcode env)))
 
   (define library-visit-commands

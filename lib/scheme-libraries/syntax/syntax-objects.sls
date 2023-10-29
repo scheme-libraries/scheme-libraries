@@ -144,7 +144,7 @@
       (lambda (new)
         (case-lambda
           [()
-           (new (uid '%location) (void))]
+           (new (uid 'location) (void))]
           [(name)
            (new name (void))]))))
 
@@ -727,6 +727,15 @@
 
   ;; Conditions
 
+  ;; TODO: Rewrite the other conditions as nongenerative record types
+  (define-record-type (&syntax make-syntax-error syntax-error?)
+    (nongenerative &syntax-080cda56-9262-4443-bf10-638ce129014a)
+    (parent &error)
+    (fields
+      (immutable form syntax-error-form)
+      (immutable subform syntax-error-subform)))
+
+  #;
   (define-condition-type &syntax &error
     make-syntax-error syntax-error?
     (form syntax-error-form)
@@ -747,6 +756,13 @@
       (raise (make-invalid-syntax-object-condition x))))
 
   ;; Record writers
+
+  (record-writer (record-type-descriptor location)
+    (lambda (r p wr)
+      (put-string p "#<location ")
+      (put-string p (symbol->string (location-name r)))
+      (put-string p ">")
+      ))
 
   (record-writer (record-type-descriptor shift)
     (lambda (r p wr)

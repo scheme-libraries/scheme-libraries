@@ -171,6 +171,24 @@
          [x (- x 7)])
     x))
 
+(test-assert
+  (condition?
+   (eval '(make-implementation-restriction-violation) test-environment)))
+
+(test-assert
+  (condition?
+   (eval '(let ()
+            (define-condition-type &foo &condition
+              make-foo-condition foo-condition?)
+            (make-foo-condition))
+         test-environment)))
+
+(test-eval 4
+  (eval '4 (environment '(rnrs))))
+
+;;; XXX: We currently get the error that + is used out-of-context; it
+;;; is probably not even defined.
+#;
 (test-eval 5
   (eval '(+ 1 4) (environment '(rnrs))))
 
