@@ -186,11 +186,12 @@
 (test-eval 4
   (eval '4 (environment '(rnrs))))
 
-;;; XXX: We currently get the error that + is used out-of-context; it
-;;; is probably not even defined.
-#;
 (test-eval 5
   (eval '(+ 1 4) (environment '(rnrs))))
+
+(test-eval 'apple
+  (eval '(eval '(car '(apple pear)) (environment '(rnrs)))
+        (environment '(rnrs) '(rnrs eval))))
 
 (test-end "eval")
 

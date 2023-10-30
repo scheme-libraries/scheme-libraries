@@ -12,6 +12,8 @@
     transform)
   (import
     (rnrs)
+    (scheme-libraries debug)
+    (scheme-libraries info)
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries helpers)
@@ -377,6 +379,7 @@
     ;; TODO: For programs/libs(?): we can have a true body at the end.
     (define expand-library
       (lambda (name ver exp* imp* body*)
+        (debug info "Expanding ~s" name)
         (let ([ribs (make-ribcage)]
               [rib (make-rib)]
               [htimp (make-eq-hashtable)])
