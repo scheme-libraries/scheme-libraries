@@ -13,6 +13,7 @@
     ;(prefix (chezscheme) cs:)
 
     (rnrs)
+    (scheme-libraries debug)
     (scheme-libraries define-who)
     (scheme-libraries hashtables)
     (scheme-libraries match)
@@ -33,7 +34,7 @@
 
   ;; Library collections
 
-  (define library-collection->datum
+  (trace define library-collection->datum
     (lambda (lc system? visible?)
       (parameterize ([current-library-collection lc])
         (define libs (library-list))
@@ -43,7 +44,7 @@
           ,(library->datum init-lib #f #f init-uid)
           ,@(map (lambda (lib) (library->datum lib (system? lib) (visible? lib) init-uid)) (library-list))))))
 
-  (define/who datum->library-collection
+  (define datum->library-collection
     (lambda (e)
       (parameterize ([current-library-collection (make-library-collection)])
         (match e
