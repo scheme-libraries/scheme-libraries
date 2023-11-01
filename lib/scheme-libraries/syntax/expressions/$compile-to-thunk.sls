@@ -7,6 +7,8 @@
     compile-to-thunk)
   (import
     (rnrs)
+    (scheme-libraries debug)
+    (scheme-libraries info)
     (scheme-libraries syntax variables)
     (scheme-libraries syntax expressions $eval)
     (scheme-libraries atoms)

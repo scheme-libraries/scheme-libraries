@@ -335,17 +335,14 @@
              [(syntax-object? x)
               `(syntax ,(f x))]
              [else x])))
-        (define wrap->s-exp
-          (lambda (x)
-            `#(,(mark-list->s-exp (wrap-marks x))
-               ,(substitutions->s-exp (wrap-substitutions x)))))
         (define substitutions->s-exp
           (lambda (s*)
             (map (lambda (s)
                    (substitution->s-exp ribcage->symbol s))
                  s*)))
         `#(,(expr->s-exp (syntax-object-expression x))
-           ,(wrap->s-exp (syntax-object-wrap x))))))
+           ,(mark-list->s-exp (syntax-object-marks x))
+           ,(substitutions->s-exp (syntax-object-substitutions x))))))
 
   (define s-exp->syntax-object
     (lambda (symbol->ribcage x)
@@ -359,19 +356,14 @@
               [(cons* ,[e*] ... ,[e]) (append e* e)]
               [(syntax ,[f -> x]) x]
               [,x x])))
-        (define s-exp->wrap
-          (lambda (e)
-            (match e
-              [#(,[s-exp->mark-list -> x] ,[s-exp->substitutions -> y])
-               (make-wrap x y)])))
         (define s-exp->substitutions
           (lambda (e*)
             (map (lambda (e)
                    (s-exp->substitution symbol->ribcage e))
                  e*)))
         (match x
-          [#(,[s-exp->expr -> e] ,[s-exp->wrap -> w])
-           (make-syntax-object e w)]))))
+          [#(,[s-exp->expr -> e] ,[s-exp->mark-list -> m*] ,[s-exp->substitutions -> s*])
+           (make-syntax-object e m* s*)]))))
 
 
   )

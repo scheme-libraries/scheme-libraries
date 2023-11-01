@@ -11,17 +11,13 @@
     location-name
     make-syntax-object
     syntax-object?
-    syntax-object-wrap
+    syntax-object-marks
+    syntax-object-substitutions
     syntax-object-expression
-    make-wrap
-    wrap?
-    wrap-marks
-    wrap-substitutions
     substitution->s-exp
     s-exp->substitution
     annotated-datum->syntax-object
     syntax-object-source-location
-    syntax-object-marks
     add-substitutions
     add-substitutions*
     syntax-object->datum
@@ -326,6 +322,7 @@
 
   ;; Wraps
 
+  #;
   (define-record-type wrap
     (nongenerative wrap-e7ee2eda-dd42-4089-a9ec-f6d97afc789c)
     (sealed #t)
@@ -342,14 +339,10 @@
           (new m* s*)))))
 
   (define/who join-wraps
-    (lambda (w1 w2)
-      (unless (wrap? w1)
-        (assertion-violation who "invalid first wrap argument" w1))
-      (unless (wrap? w2)
-        (assertion-violation who "invalid first wrap argument" w2))
-      (make-wrap
-       (smart-append (wrap-marks w1) (wrap-marks w2))
-       (smart-append (wrap-substitutions w1) (wrap-substitutions w2)))))
+    (lambda (m1 s1 m2 s2)
+      (values
+        (smart-append m1 m2)
+        (smart-append s1 s2))))
 
   ;; The idea for smart-append comes from Chez Scheme.
 
@@ -361,18 +354,20 @@
 
   (define-record-type syntax-object
     (nongenerative syntax-object-b201d939-6db8-45be-a8a0-6ab49fff59e0)
-    (fields expression wrap)
+    (fields expression marks substitutions)
     (protocol
       (lambda (new)
         (define who 'make-syntax-object)
         (case-lambda
-          [(expr wrap)
+          [(expr marks substs)
            ;; XXX: Who may call this syntax object?
-           (unless (wrap? wrap)
-             (assertion-violation who "invalid wrap argument" wrap))
-           (new expr wrap)]
+           (unless (mark-list? marks)
+            (assertion-violation who "invalid mark list argument" marks))
+           (unless (substitution-list? substs)
+             (assertion-violation who "invalid substitution list argument" substs))
+           (new expr marks substs)]
           [(expr)
-           (new expr (make-wrap '() '()))]))))
+           (new expr '() '())]))))
 
   (define/who annotated-datum->syntax-object
     (lambda (annotation env)
@@ -381,8 +376,8 @@
       (unless (environment? env)
         (assertion-violation who "invalid environment" env))
       (make-syntax-object annotation
-                          (make-wrap '()
-                                     (list (make-ribcage (environment-rib env)))))))
+                          '()
+                          (list (make-ribcage (environment-rib env))))))
 
   (define/who syntax-object-source-location
     (lambda (stx)
@@ -398,7 +393,7 @@
     (lambda (s x)
       (unless (substitution? s)
         (assertion-violation who "invalid substitutions argument" s))
-      (extend-wrap x (make-wrap '() (list s)))))
+      (extend-wrap x '() (list s))))
 
   (define/who add-substitutions*
     (lambda (s x*)
@@ -408,30 +403,24 @@
         (assertion-violation who "invalid syntax list argument" x*))
       (map (lambda (x) (add-substitutions s x)) x*)))
 
-  (define/who syntax-object-marks
-    (lambda (stx)
-      (unless (syntax-object? stx)
-        (assertion-violation who "invalid syntax object argument" stx))
-      (wrap-marks (syntax-object-wrap stx))))
-
   (define apply-anti-mark
     (lambda (x)
-      (extend-wrap x (make-wrap (list (anti-mark)) (list (make-shift))))))
+      (extend-wrap x (list (anti-mark)) (list (make-shift)))))
 
   (define apply-wrap
     (lambda (x mark ribs)
-      (let ([w (let* ([w (syntax-object-wrap x)]
-                      [m* (wrap-marks w)]
-                      [s* (wrap-substitutions w)])
-                 (if (and (pair? m*)
-                          (anti-mark? (car m*)))
-                     (make-wrap (cdr m*)
-                                (cdr s*))
-                     (make-wrap (cons mark m*)
-                                (if ribs
-                                    (cons* ribs (make-shift) s*)
-                                    (cons (make-shift) s*)))))])
-        (make-syntax-object (syntax-object-expression x) w))))
+      (let-values ([(m* s*)
+                    (let ([m* (syntax-object-marks x)]
+                          [s* (syntax-object-substitutions x)])
+                      (if (and (pair? m*)
+                               (anti-mark? (car m*)))
+                          (values (cdr m*)
+                                  (cdr s*))
+                          (values (cons mark m*)
+                                  (if ribs
+                                      (cons* ribs (make-shift) s*)
+                                      (cons (make-shift) s*)))))])
+        (make-syntax-object (syntax-object-expression x) m* s*))))
 
   (define unwrap
     (lambda (stx)
@@ -440,18 +429,22 @@
           stx)))
 
   (define extend-wrap
-    (lambda (x w)
+    (lambda (x m* s*)
       (if (syntax-object? x)
-          (make-syntax-object
-           (syntax-object-expression x)
-           (join-wraps w (syntax-object-wrap x)))
-          (make-syntax-object x w))))
+          (let-values ([(m* s*)
+                        (join-wraps m* s*
+                                    (syntax-object-marks x)
+                                    (syntax-object-substitutions x))])
+            (make-syntax-object (syntax-object-expression x) m* s*))
+          (make-syntax-object x m* s*))))
 
   (define/who datum->syntax-object
     (lambda (tmpl datum)
       (unless ($identifier? tmpl)
         (assertion-violation who "invalid template argument" tmpl))
-      (make-syntax-object (datum->annotated-datum datum) (syntax-object-wrap tmpl))))
+      (make-syntax-object (datum->annotated-datum datum)
+                          (syntax-object-marks tmpl)
+                          (syntax-object-substitutions tmpl))))
 
   (define syntax-object->datum
     (lambda (stx)
@@ -490,9 +483,10 @@
       (unless (syntax-pair? stx)
         (assertion-violation who "invalid syntax pair argument" stx))
       (if (syntax-object? stx)
-          (let ([w (syntax-object-wrap stx)]
+          (let ([m (syntax-object-marks stx)]
+                [s (syntax-object-substitutions stx)]
                 [e (annotated-pair-car (syntax-object-expression stx))])
-            (extend-wrap e w))
+            (extend-wrap e m s))
           (car stx))))
 
   (define/who syntax-cdr
@@ -500,9 +494,10 @@
       (unless (syntax-pair? stx)
         (assertion-violation who "invalid syntax pair argument" stx))
       (if (syntax-object? stx)
-          (let ([w (syntax-object-wrap stx)]
+          (let ([m (syntax-object-marks stx)]
+                [s (syntax-object-substitutions stx)]
                 [e (annotated-pair-cdr (syntax-object-expression stx))])
-            (extend-wrap e w))
+            (extend-wrap e m s))
           (cdr stx))))
 
   (define/who syntax-length+
@@ -559,7 +554,8 @@
         (assertion-violation who "invalid syntax vector argument" stx))
       (if (syntax-object? stx)
           (make-syntax-object (annotated-vector->list  (syntax-object-expression stx))
-                              (syntax-object-wrap stx))
+                              (syntax-object-marks stx)
+                              (syntax-object-substitutions stx))
           (annotated-vector->list stx))))
 
   (define syntax-list->vector
@@ -630,10 +626,9 @@
     (lambda (id)
       (unless ($identifier? id)
         (assertion-violation who "not an identifier" id))
-      (let ([sym (identifier->symbol id)]
-	    [w (syntax-object-wrap id)])
-	(let f ([m* (wrap-marks w)]
-		[s* (wrap-substitutions w)])
+      (let ([sym (identifier->symbol id)])
+	(let f ([m* (syntax-object-marks id)]
+		[s* (syntax-object-substitutions id)])
 	  (and (not (null? s*))
 	       (if (shift? (car s*))
 		   (f (cdr m*) (cdr s*))
@@ -767,15 +762,6 @@
   (record-writer (record-type-descriptor shift)
     (lambda (r p wr)
       (put-string p "#<shift>")))
-
-  (record-writer (record-type-descriptor wrap)
-    (lambda (r p wr)
-      (put-string p "#<wrap ")
-      (wr (wrap-marks r) p)
-      (put-string p " ")
-      (wr (wrap-substitutions r) p)
-      (put-string p ">"))
-    )
 
   (record-writer (record-type-descriptor syntax-object)
     (lambda (r p wr)
