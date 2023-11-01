@@ -5,7 +5,6 @@
 (library (scheme-libraries syntax $marks)
   (export
     make-mark
-    mark-name
     mark?
     mark-list?
     mark=?
@@ -26,6 +25,18 @@
 
   ;; Marks
 
+  (define make-mark
+    (case-lambda
+      [(name) name]
+      [() (uid 'mark)]))
+
+  (define mark?
+    (lambda (obj)
+      (symbol? obj)))
+
+
+
+  #;
   (define-record-type mark
     (nongenerative mark-7f4e42be-fbaf-44b9-a5ee-64fd0190fed3)
     (sealed #t)
@@ -45,6 +56,11 @@
       (and (list? m)
            (for-all mark? m))))
 
+  (define mark=?
+    (lambda (m1 m2)
+      (symbol=? m1 m2)))
+
+  #;
   (define/who mark=?
     (lambda (m1 m2)
       (unless (mark? m1)
@@ -89,8 +105,11 @@
 
   (define/who mark->symbol
     (lambda (m)
+      m
+      #;
       (unless (mark? m)
         (assertion-violation who "invalid mark argument" m))
+      #;
       (or (mark-name m)
           (let ([name (uid 'mark)])
             (mark-name-set! m name)
@@ -98,21 +117,30 @@
 
   (define/who symbol->mark
     (lambda (sym)
+      sym
+      #;
       (unless (symbol? sym)
         (assertion-violation who "invalid symbol argument" sym))
+      #;
       (make-mark sym)))
 
   (define mark-list->s-exp
     (lambda (m)
+      m
+      #;
       (map mark->symbol m)))
 
   (define s-exp->mark-list
     (lambda (e)
+      e
+      #;
       (assert (list? e))
+      #;
       (map symbol->mark e)))
 
   ;; Record writers
 
+  #;
   (record-writer (record-type-descriptor mark)
     (lambda (r p wr)
       (put-string p "#<mark ")
