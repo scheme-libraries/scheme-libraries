@@ -5,6 +5,8 @@
 (library (rnrs exceptions (6))
   (export
     guard
+    =>
+    else
     with-exception-handler
     raise
     raise-continuable)

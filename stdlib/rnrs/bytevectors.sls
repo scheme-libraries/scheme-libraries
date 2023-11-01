@@ -98,5 +98,3 @@
                               (option ...)
                               endiannesses))])))])
     (define-endianness)))
-
-  )
