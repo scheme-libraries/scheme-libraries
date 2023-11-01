@@ -14,4 +14,9 @@ check:
 repl:
 	@$(scheme) schemerc
 
+clean:
+	find . -type f -name '*.so' -exec rm {} \;
+	find . -type f -name '*.wpo' -exec rm {} \;
+	rm -f tests/test-eval
+
 .PHONY: all check repl
