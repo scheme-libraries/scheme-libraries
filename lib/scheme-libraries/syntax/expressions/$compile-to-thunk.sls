@@ -17,8 +17,8 @@
 
   (define compile-to-thunk
     (lambda (e)
-      (let-values ([(e vals) (parse e)])
-
+      (;let-values ([(e vals) (parse e)])
+       let-values ([(e vals) (values e '#())])
         ;; FIXME
         ;;(display "Eval: ")
         ;;(display e) (newline)

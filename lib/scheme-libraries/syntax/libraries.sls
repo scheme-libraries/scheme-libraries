@@ -121,8 +121,8 @@
                        (for-all label? bdg*)))
           (assert (not (null? viscode)))
           (assert (not (null? invcode)))
-          (let ([visiter (and viscode (compile-to-thunk viscode))]
-                [invoker (and invcode (compile-to-thunk invcode))])
+          (let ([visiter (and viscode (lambda () ((compile-to-thunk viscode))))]
+                [invoker (and invcode (lambda () ((compile-to-thunk invcode))))])
             (new name ver uid imports exports visreqs invreqs viscode invcode visiter invoker bdg*))))))
 
   ;; Library names
