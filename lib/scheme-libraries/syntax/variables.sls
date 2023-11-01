@@ -17,6 +17,7 @@
     (scheme-libraries uuid)
     (scheme-libraries record-writer))
 
+  #;
   (define-record-type variable
     (nongenerative variable-7c0fd95e-43aa-46e4-9d67-2fc37ad6b4ef)
     (fields name (mutable symbol))
@@ -28,6 +29,19 @@
             (assertion-violation who "invalid name argument" name))
           (new name #f)))))
 
+  (define make-variable
+    (lambda (name)
+      (uid name)))
+
+  (define variable?
+    (lambda (x)
+      (symbol? x)))
+
+  (define variable=?
+    (lambda (x y)
+      (symbol=? x y)))
+
+  #;
   (define/who variable=?
     (lambda (var1 var2)
       (unless (variable? var1)
@@ -39,6 +53,11 @@
                 [sym2 (variable-symbol var2)])
             (and sym1 sym2 (symbol=? sym1 sym2))))))
 
+  (define variable-hash
+    (lambda (x)
+      (symbol-hash x)))
+
+  #;
   (define/who variable-hash
     (lambda (var)
       (unless (variable? var)
@@ -49,6 +68,11 @@
     (lambda ()
       (make-hashtable variable-hash variable=?)))
 
+  (define variable->symbol
+    (lambda (x)
+      x))
+
+  #;
   (define/who variable->symbol
     (lambda (var)
       (unless (variable? var)
@@ -58,6 +82,11 @@
             (variable-symbol-set! var sym)
             sym))))
 
+  (define symbol->variable
+    (lambda (x)
+      x))
+
+  #;
   (define/who symbol->variable
     (lambda (sym)
       (unless (symbol? sym)
@@ -72,6 +101,7 @@
 
   ;; Record writer
 
+  #;
   (record-writer (record-type-descriptor variable)
     (lambda (r p wr)
       (put-string p "#<variable ")
