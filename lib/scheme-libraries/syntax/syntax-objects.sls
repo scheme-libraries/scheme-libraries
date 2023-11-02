@@ -377,7 +377,7 @@
         (assertion-violation who "invalid environment" env))
       (make-syntax-object annotation
                           '()
-                          (list (make-ribcage (environment-rib env))))))
+                          (list (make-extensible-ribcage (environment-rib env))))))
 
   (define/who syntax-object-source-location
     (lambda (stx)
@@ -391,9 +391,9 @@
 
   (define/who add-substitutions
     (lambda (s x)
-      (unless (substitution? s)
-        (assertion-violation who "invalid substitutions argument" s))
-      (extend-wrap x '() (list s))))
+      (if (ribcage-empty? s)
+          x
+          (extend-wrap x '() (list s)))))
 
   (define/who add-substitutions*
     (lambda (s x*)
@@ -401,7 +401,9 @@
         (assertion-violation who "invalid substitutions argument" s))
       (unless (list? x*)
         (assertion-violation who "invalid syntax list argument" x*))
-      (map (lambda (x) (add-substitutions s x)) x*)))
+      (if (ribcage-empty? s)
+          x*
+          (map (lambda (x) (add-substitutions s x)) x*))))
 
   (define apply-anti-mark
     (lambda (x)
@@ -707,9 +709,9 @@
       (unless (and (list? lbl*)
                    (for-all label? lbl*))
         (assertion-violation who "invalid label list argument" lbl*))
-      (make-ribcage (map identifier->symbol id*)
-                    (map syntax-object-marks id*)
-                    lbl*)))
+      (make-fixed-ribcage (map identifier->symbol id*)
+                          (map syntax-object-marks id*)
+                          lbl*)))
 
   ;; Properties
 

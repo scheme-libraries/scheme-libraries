@@ -152,7 +152,7 @@
   (define expand-body
     (lambda (x*)
       (let-values ([(viscmd* def* e lbl*)
-                    (expand-internal x* (make-ribcage) (expansion-mode body))])
+                    (expand-internal x* (make-extensible-ribcage) (expansion-mode body))])
         (if (null? def*)
             e
             (let ([x* (map definition-var def*)]
@@ -345,7 +345,7 @@
   (module (expand-program)
     (define expand-program
       (lambda (imp* body*)
-        (define ribs (make-ribcage))
+        (define ribs (make-extensible-ribcage))
         (define rib (make-rib))
         (ribcage-add-barrier! ribs rib '())
         (for-each
@@ -380,7 +380,7 @@
     (define expand-library
       (lambda (name ver exp* imp* body*)
         (debug info "Expanding ~s" name)
-        (let ([ribs (make-ribcage)]
+        (let ([ribs (make-extensible-ribcage)]
               [rib (make-rib)]
               [htimp (make-eq-hashtable)])
           ;; XXX: Do we need system libraries like ($system) in the

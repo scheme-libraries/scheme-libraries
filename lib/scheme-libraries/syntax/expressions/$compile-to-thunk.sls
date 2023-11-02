@@ -23,7 +23,7 @@
         ;;(display "Eval: ")
         ;;(display e) (newline)
 
-        (debug info "Size of value vector ~a" (vector-length vals))
+        ;;(debug info "Size of value vector ~a" (vector-length vals))
 
         (($eval `(case-lambda [(vals) (case-lambda [() ,e])]))
          vals))))
