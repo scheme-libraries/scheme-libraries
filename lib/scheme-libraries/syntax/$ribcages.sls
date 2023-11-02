@@ -154,6 +154,16 @@
 		(marks=? barrier-marks m))
 	      barrier)))
 
+  ;; Fixed rib cages
+
+  (define make-fixed-ribcage
+    (lambda (n* m* lbl*)
+      (vector n* m* lbl*)))
+
+  (define fixed-ribcage?
+    (lambda (obj)
+      (vector? obj)))
+
   ;; Serialization
 
   (define ribcage->s-exp
