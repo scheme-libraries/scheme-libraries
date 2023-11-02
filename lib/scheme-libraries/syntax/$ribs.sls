@@ -24,7 +24,9 @@
   ;; Ribs
 
   (define make-rib
-    (lambda () (make-eq-hashtable)))
+    (case-lambda
+      [() (make-eq-hashtable)]
+      [(k) (make-eq-hashtable k)]))
 
   (define rib?
     (lambda (x)
@@ -100,7 +102,7 @@
 
   (define s-exp->rib
     (lambda (s-exp->label/props e*)
-      (let ([rib (make-rib)])
+      (let ([rib (make-rib (length e*))])
         (for-each
           (lambda (e)
             (match e
