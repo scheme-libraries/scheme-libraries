@@ -702,5 +702,5 @@
  ;; Host eval
  $eval
 
- ;; Expanded and serialized standard library collection
- default-stdlibs-collection-datum)
+ ;; Expanded standard library collection
+ default-stdlibs-collection)

@@ -8,6 +8,8 @@
     environment)
   (import
     ($system)
+    (scheme-libraries debug)
+    (scheme-libraries info)
     (scheme-libraries syntax library-loaders)
     (scheme-libraries syntax library-locators)
     (scheme-libraries syntax library-collections)

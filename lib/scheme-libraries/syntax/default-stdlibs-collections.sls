@@ -7,9 +7,9 @@
     make-default-stdlibs-collection)
   (import
     (rnrs)
-    (scheme-libraries syntax $default-stdlibs-collection-datum)
+    (scheme-libraries syntax $default-stdlibs-collection)
     (scheme-libraries syntax $serializing))
 
   (define make-default-stdlibs-collection
     (lambda ()
-      (datum->library-collection (default-stdlibs-collection-datum)))))
+      (default-stdlibs-collection))))
