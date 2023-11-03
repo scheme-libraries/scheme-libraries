@@ -29,6 +29,9 @@
     &violation
     make-violation
     violation?
+    &assertion
+    make-assertion-violation
+    assertion-violation?
     &irritants
     make-irritants-condition
     irritants-condition?
@@ -84,6 +87,7 @@
   (define-condition-name &serious (serious-rtd))
   (define-condition-name &error (error-rtd))
   (define-condition-name &violation (violation-rtd))
+  (define-condition-name &assertion (assertion-rtd))
   (define-condition-name &irritants (irritants-rtd))
   (define-condition-name &who (who-rtd))
   (define-condition-name &non-continuable (non-continuable-rtd))

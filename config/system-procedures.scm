@@ -331,6 +331,8 @@
  error?
  make-violation
  violation?
+ make-assertion-violation
+ assertion-violation?
  make-irritants-condition
  irritants-condition?
  condition-irritants

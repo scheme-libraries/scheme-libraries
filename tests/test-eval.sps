@@ -4,7 +4,7 @@
 
 (import
   (rnrs)
-  (only (chezscheme) display-statistics)
+  ;;(only (chezscheme) display-statistics)
   (scheme-libraries testing)
   (scheme-libraries syntax bootstrap-environment)
   (scheme-libraries syntax library-collections)
@@ -196,7 +196,8 @@
 
 (test-end "eval")
 
-(display-statistics)
+;;(display-statistics)
+
 
 ;; Local Variables:
 ;; eval: (put 'test-eval 'scheme-indent-function 1)

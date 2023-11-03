@@ -4,8 +4,6 @@
 
 (import
   (rnrs)
-  ;; XXX
-  (only (chezscheme) trace-define)
   (scheme-libraries testing)
   (scheme-libraries reading annotated-datums)
   (scheme-libraries syntax bootstrap-environment)

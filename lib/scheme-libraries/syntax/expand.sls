@@ -380,7 +380,7 @@
     ;; TODO: For programs/libs(?): we can have a true body at the end.
     (define expand-library
       (lambda (name ver exp* imp* body*)
-        (debug info "Expanding ~s" name)
+        ;;(debug info "Expanding ~s" name)
         (let ([ribs (make-extensible-ribcage)]
               [rib (make-rib)]
               [htimp (make-eq-hashtable)])

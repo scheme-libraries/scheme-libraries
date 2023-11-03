@@ -34,7 +34,7 @@
 
   ;; Library collections
 
-  (trace define library-collection->datum
+  (define library-collection->datum
     (lambda (lc system? visible?)
       (parameterize ([current-library-collection lc])
         (define libs (library-list))

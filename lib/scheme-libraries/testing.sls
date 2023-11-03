@@ -187,7 +187,7 @@
                                    (symbol=? key 'actual-value)))
                     (put-string output-port
                                 (format "  ~s: ~s\n"
-                                        key (cdr e))))))
+                                  key (cdr e))))))
               (test-result-alist runner))
              (put-string output-port "  ...\n"))]))))
 
@@ -482,11 +482,11 @@
   (define-syntax test-evaluate-with-catch
     (syntax-rules ()
       [(test-evaluate-with-catch test-expression)
-       (guard (condition (else
+       (guard (condition [else
 			  (test-result-set! (test-runner-current)
                                             'actual-error
 					    condition)
-			  #f))
+		          #f])
          test-expression)]))
 
   (define test-report-result

@@ -330,7 +330,6 @@
     condition?
     condition-predicate
     condition-accessor
-    condition
     make-message-condition
     message-condition?
     condition-message
@@ -340,6 +339,8 @@
     error?
     make-violation
     violation?
+    make-assertion-violation
+    assertion-violation?
     make-irritants-condition
     irritants-condition?
     condition-irritants
@@ -437,14 +438,8 @@
     make-custom-textual-input/output-port
 
     ;; (rnrs io simple)
-    eof-object
     call-with-input-file
     call-with-output-file
-    input-port?
-    output-port?
-    current-input-port
-    current-output-port
-    current-error-port
     with-input-from-file
     with-output-to-file
     open-input-file

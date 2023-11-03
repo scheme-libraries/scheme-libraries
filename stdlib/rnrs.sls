@@ -388,6 +388,9 @@
     &violation
     make-violation
     violation?
+    &assertion
+    make-assertion-violation
+    assertion-violation?
     &irritants
     make-irritants-condition
     irritants-condition?

@@ -1143,15 +1143,16 @@
                    (if (null? cl*)
                        (syntax-match cl
                          [[else ,e ,e* ...]
-                          `[else ,e ,e* ...]]
+                          `([else ,e ,e* ...])]
                          [[(,d ...) ,e ,e* ...]
-                          `[(memv ,t '(,d ...)) ,e ,e* ...]]
+                          `([(memv ,t '(,d ...)) ,e ,e* ...])]
                          [,cl (syntax-error who "invalid clause" x cl)])
                        (let ([rest (f (car cl*) (cdr cl*))])
                          (syntax-match cl
                            [[(,d ...) ,e ,e* ...]
-                            `[(memv ,t '(,d ...)) ,e ,e* ...]]
-                           [,cl (syntax-error who "invalid clause" x cl)]))))))))]
+                            `([(memv ,t '(,d ...)) ,e ,e* ...] ,rest ...)]
+                           [,cl (syntax-error who "invalid clause" x cl)]))))
+                ...))))]
         [,x (syntax-error who "invalid sytnax" x)])))
 
   (declare-expander-syntax syntax-case
