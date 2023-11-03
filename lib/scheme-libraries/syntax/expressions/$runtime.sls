@@ -331,10 +331,6 @@
     condition-predicate
     condition-accessor
     condition
-    simple-conditions
-    condition?
-    condition-predicate
-    condition-accessor
     make-message-condition
     message-condition?
     condition-message

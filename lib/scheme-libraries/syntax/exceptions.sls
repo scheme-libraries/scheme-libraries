@@ -8,11 +8,15 @@
     undefined-error
     identifier-error
     current-who
-    current-form)
+    current-form
+    default-exception-handler
+    display-condition)
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
+    (rename (scheme-libraries display-condition)
+      (display-condition $display-condition))
     (scheme-libraries reading source-locations)
     (scheme-libraries syntax syntax-objects)
     (scheme-libraries thread-parameters))
@@ -64,5 +68,22 @@
                   (condition c (make-undefined-error)))])
         (syntax-error #f (format msg (identifier->symbol id)) id))))
 
+  (define default-exception-handler
+    (lambda (obj)
+      (display-condition obj)
+      (newline (current-error-port))
+      (unless (and (condition? obj)
+                   (not (serious-condition? obj)))
+        (exit #f))))
 
+  (define display-condition
+    (lambda (obj)
+      ($display-condition (if (and (source-location-condition? obj)
+                                   (message-condition? obj))
+                              (condition
+                                (make-message-condition (format "~s: ~s"
+                                                          (format-source-location (condition-source-location obj))
+                                                          (condition-message obj)))
+                                obj)
+                              obj))))
   )

@@ -9,16 +9,17 @@
         (scheme-libraries syntax library-collections)
         (scheme-libraries syntax import-specs)
         (scheme-libraries syntax current-command-line)
+        (scheme-libraries syntax exceptions)
         (scheme-libraries syntax programs))
 
-(current-library-collection (make-default-stdlibs-collection))
-(current-library-loader (make-default-library-loader (make-library-locator '("lib/" "tests/lib/") '(".sls"))))
+(with-exception-handler default-exception-handler
+  (lambda ()
+    (current-library-collection (make-default-stdlibs-collection))
+    (current-library-loader (make-default-library-loader (make-library-locator '("lib/" "tests/lib/") '(".sls"))))
 
-;;; FIXME: Test and guard against errors
-(define filename (cadr (command-line)))
-
-(parameterize ([current-command-line (cdr (command-line))])
-  (load-program filename))
+    (let ([filename (cadr (command-line))])
+      (parameterize ([current-command-line (cdr (command-line))])
+        (load-program filename)))))
 
 ;; Local Variables:
 ;; mode: scheme

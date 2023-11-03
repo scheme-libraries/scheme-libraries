@@ -13,6 +13,7 @@
     make-source-location-condition
     source-location-condition?
     condition-source-location
+    format-source-location
     display-source-location
     source-location->s-exp
     s-exp->source-location)

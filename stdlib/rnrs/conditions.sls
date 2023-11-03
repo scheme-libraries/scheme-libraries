@@ -69,9 +69,14 @@
             constructor predicate
             (field accessor) ...)
          (for-all identifier? #'(condition-type super-type constructor predicate field ... accessor ...))
-         #'(define-record-type (condition-type constructor predicate)
-             (parent super-type)
-             (fields (immutable field accessor) ...))]
+         (with-syntax ([(real-accessor ...) (generate-temporaries #'(accessor ...))])
+           #'(begin
+               (define-record-type (condition-type constructor predicate)
+                 (parent super-type)
+                 (fields (immutable field real-accessor) ...))
+               (define accessor
+                 (condition-accessor (record-type-descriptor condition-type) real-accessor))
+               ...))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
   (define-condition-name &message (message-rtd))

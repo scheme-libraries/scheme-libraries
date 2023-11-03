@@ -17,6 +17,7 @@
     make-i/o-encoding-error
     i/o-encoding-error?
     i/o-encoding-error-char
+    eol-style
     native-eol-style
     error-handling-mode
     make-transcoder
@@ -134,6 +135,19 @@
                               (option ...)
                               file-options))])))])
     (define-file-options))
+
+  (let-syntax ([define-eol-style
+                 (with-syntax ([(option ...)
+                                (datum->syntax #'here (cons (native-eol-style)
+                                                            '(lf cr crlf nel crnel ls none)))])
+                   (lambda (x)
+                     (syntax-case x ()
+                       [(k)
+                        (with-implicit (k eol-style)
+                          #'(define-enumeration eol-style
+                              (option ...)
+                              eol-styles))])))])
+    (define-eol-style))
 
   (define-enumeration buffer-mode
     (none line block)

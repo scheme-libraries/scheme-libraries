@@ -725,12 +725,20 @@
   ;; Conditions
 
   ;; TODO: Rewrite the other conditions as nongenerative record types
-  (define-record-type (&syntax make-syntax-error syntax-error?)
+  (define-record-type (&syntax make-syntax-error real-syntax-error?)
     (nongenerative &syntax-080cda56-9262-4443-bf10-638ce129014a)
     (parent &error)
     (fields
-      (immutable form syntax-error-form)
-      (immutable subform syntax-error-subform)))
+      (immutable form real-syntax-error-form)
+      (immutable subform real-syntax-error-subform)))
+
+  (define syntax-error?
+    (condition-predicate (record-type-descriptor &syntax)))
+  (define syntax-error-form
+    (condition-accessor (record-type-descriptor &syntax) real-syntax-error-form))
+  (define syntax-error-subform
+    (condition-accessor (record-type-descriptor &syntax) real-syntax-error-subform))
+
 
   #;
   (define-condition-type &syntax &error

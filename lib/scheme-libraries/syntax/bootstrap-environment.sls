@@ -141,9 +141,9 @@
         [(,k ,x)
          (guard ($identifier? x))
          (values x `(void))]
-	[(,k (,x . ,formals) ,e)
+	[(,k (,x . ,formals) ,e* ... ,e)
 	 (guard ($identifier? x))
-	 (values x `(lambda ,formals ,e))]
+	 (values x `(lambda ,formals ,e* ... ,e))]
         [,x
          (syntax-error who "invalid syntax" x)])))
 

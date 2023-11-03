@@ -428,6 +428,7 @@
     make-i/o-encoding-error
     i/o-encoding-error?
     i/o-encoding-error-char
+    eol-style
     native-eol-style
     error-handling-mode
     make-transcoder

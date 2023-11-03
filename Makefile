@@ -6,11 +6,15 @@ scheme = scheme --libdirs $(libdirs)
 scheme-script = $(scheme) --program
 compile = $(scheme-script) compile.sps
 prove = prove --exec '$(scheme-script)' --ext '.sps' --failures
+prove-expander = prove --exec './scheme-script' --ext '.sps' --failures
 
 all:
 
 check:
 	$(prove) tests/
+
+check-expander: compile
+	$(prove-expander) tests/
 
 repl:
 	@$(scheme) schemerc
@@ -25,4 +29,4 @@ compile:
 	$(compile) scheme-script
 	chmod a+x scheme-script
 
-.PHONY: all check repl
+.PHONY: all check check-expander repl clean compile
