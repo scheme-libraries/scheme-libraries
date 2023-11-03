@@ -225,7 +225,7 @@
 
   (define make-command
     (lambda (e)
-      (make-definition (make-variable 'dummy) e)))
+      (make-definition (make-variable 'dummy) (build (begin ,e (void))))))
 
   ;; Transformations
 
