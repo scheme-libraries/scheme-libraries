@@ -1212,7 +1212,7 @@
             [((unquote-splicing ,expr* ...) . ,tmpl1)
              (guard (fxzero? depth))
              (let-values ([(out var?) (gen-template tmpl1 depth)])
-               (values `(append ,expr* ... ,out) #f))]
+               (values `(append ,expr* ... ,out) #t))]
             [((unquote-splicing ,tmpl* ...) . ,tmpl1)
              (let-values ([(out* var*?) (gen-template tmpl* (fx- depth 1))]
                           [(out1 var1?) (gen-template tmpl1 depth)])
@@ -1230,11 +1230,17 @@
                (if var*?
                    (values `(vector ,out* ...) #t)
                    (values `',tmpl #f)))]
+            ;; XXX: These do not seem to be errors according to the
+            ;; RnRS.
+            ;; TODO: Check and correct also in `match' and `syntax-case'.
+            #;
             [quasiquote
              (syntax-error who "misplaced quasiquote in template" tmpl)]
+            #;
             [,uq
              (guard (unquote? uq))
              (syntax-error who "misplaced unquote in template" tmpl)]
+            #;
             [unquote-splicing
              (syntax-error who "misplaced unquote-splicing in template" tmpl)]
             [,tmpl

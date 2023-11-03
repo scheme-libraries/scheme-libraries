@@ -81,7 +81,7 @@
       ($display-condition (if (and (source-location-condition? obj)
                                    (message-condition? obj))
                               (condition
-                                (make-message-condition (format "~s: ~s"
+                                (make-message-condition (format "~a: ~a"
                                                           (format-source-location (condition-source-location obj))
                                                           (condition-message obj)))
                                 obj)

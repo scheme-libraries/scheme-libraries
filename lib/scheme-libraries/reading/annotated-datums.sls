@@ -47,11 +47,21 @@
            [(hashtable-ref seen x #f)
             (invalid-datum-condition)]
            [(pair? x)
-            (hashtable-set! seen x #t)
-            (make-annotated-pair (f (car x)) (f (cdr x)) #f)]
+            (dynamic-wind
+              (lambda ()
+                (hashtable-set! seen x #t))
+              (lambda ()
+                (make-annotated-pair (f (car x)) (f (cdr x)) #f))
+              (lambda ()
+                (hashtable-delete! seen x)))]
            [(vector? x)
-            (hashtable-set! seen x #t)
-            (make-annotated-vector (map f (vector->list x)) #f)]
+            (dynamic-wind
+              (lambda ()
+                (hashtable-set! seen x #t))
+              (lambda ()
+                (make-annotated-vector (map f (vector->list x)) #f))
+              (lambda ()
+                (hashtable-delete! seen x)))]
            [(atom? x)
             (make-annotated-atom x #f)]
            [else

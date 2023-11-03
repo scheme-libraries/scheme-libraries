@@ -17,8 +17,11 @@
 
   (define compile-to-thunk
     (lambda (e)
-      (;let-values ([(e vals) (parse e)])
-       let-values ([(e vals) (values e '#())])
+      ;; XXX: We should add a compatibility layer to use eval with
+      ;; more general quoted values.  We need to change our own eval
+      ;; to support this when we run our expander through itself.
+      (let-values ([(e vals) (parse e)])
+       ;let-values ([(e vals) (values e '#())])
         ;; FIXME
         ;;(display "Eval: ")
         ;;(display e) (newline)
