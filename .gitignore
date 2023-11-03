@@ -3,3 +3,5 @@
 *.so
 *.wpo
 /README.html
+/scheme-script
+/.prove

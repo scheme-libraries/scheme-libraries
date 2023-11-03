@@ -17,7 +17,7 @@
 
 (current-library-collection (make-default-stdlibs-collection))
 
-(define library-locator (make-library-locator '("tests/") '(".sls")))
+(define library-locator (make-library-locator '("tests/lib/") '(".sls")))
 (current-library-loader (make-default-library-loader library-locator))
 
 (define test-environment

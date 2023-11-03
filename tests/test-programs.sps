@@ -6,30 +6,31 @@
   (rnrs)
   (scheme-libraries testing)
   (scheme-libraries syntax programs)
-  (scheme-libraries syntax bootstrap-environment)
+;  (scheme-libraries syntax bootstrap-environment)
   (scheme-libraries syntax library-collections)
   (scheme-libraries syntax default-stdlibs-collections)
   (scheme-libraries syntax import-specs)
   (scheme-libraries syntax library-loaders)
   (scheme-libraries syntax library-locators)
-  (scheme-libraries syntax syntax-objects))
+ #; (scheme-libraries syntax syntax-objects)
+  )
 
-(define library-locator (make-library-locator '("tests/") '(".sls")))
+(define library-locator (make-library-locator '("tests/lib/") '(".sls")))
 (current-library-collection (make-default-stdlibs-collection))
 (current-library-loader (make-default-library-loader library-locator))
 
 (test-begin "programs")
 
 (test-equal '()
-  (call-with-values (lambda () (load-program "tests/program1.sps"))
+  (call-with-values (lambda () (load-program "tests/src/program1.sps"))
     list))
 
 (test-equal '()
-  (call-with-values (lambda () (load-program "tests/program2.sps"))
+  (call-with-values (lambda () (load-program "tests/src/program2.sps"))
     list))
 
 (test-equal '()
-  (call-with-values (lambda () (load-program "tests/program3.sps"))
+  (call-with-values (lambda () (load-program "tests/src/program3.sps"))
     list))
 
 (test-end "programs")

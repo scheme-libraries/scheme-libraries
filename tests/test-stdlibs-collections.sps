@@ -13,7 +13,7 @@
 (define stdlibs
   (datum->library-collection
    (stdlibs-collection-datum
-    (make-library-locator '("stdlib/" "tests/") '(".sls"))
+    (make-library-locator '("stdlib/" "tests/lib/") '(".sls"))
     ((rnrs base) #t)
     ((rnrs) #t)
     ((test) #t))))

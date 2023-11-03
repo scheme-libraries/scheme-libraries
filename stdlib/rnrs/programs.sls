@@ -7,4 +7,8 @@
     command-line
     exit)
   (import
-    ($system)))
+    ($system))
+
+  (define command-line
+    (lambda ()
+      (current-command-line))))

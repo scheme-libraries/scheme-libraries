@@ -468,7 +468,6 @@
     delete-file
 
     ;; (rnrs programs)
-    command-line
     exit
 
     ;; (rnrs arithmetic fixnums)
@@ -698,6 +697,7 @@
     unbox
     void
     default-stdlibs-collection
+    current-command-line
 
     ;; (scheme-libraries)
     (rename
@@ -747,6 +747,7 @@
     (scheme-libraries uuid)
     (scheme-libraries lists)
     (scheme-libraries reading tokenizers)
+    (scheme-libraries syntax current-command-line)
     (scheme-libraries syntax $helpers)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax $labels)

@@ -454,7 +454,6 @@
  delete-file
 
  ;; (rnrs programs)
- command-line
  exit
 
  ;; (rnrs arithmetic fixnums)
@@ -701,6 +700,9 @@
 
  ;; Host eval
  $eval
+
+ ;; Current command line
+ current-command-line
 
  ;; Expanded standard library collection
  default-stdlibs-collection)
