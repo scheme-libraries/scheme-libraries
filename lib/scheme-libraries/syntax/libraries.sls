@@ -39,6 +39,8 @@
     collected-invoke-requirements)
   (import
     (rnrs)
+    ;; XXX
+    (scheme-libraries uuid)
     (scheme-libraries debug)
     (scheme-libraries info)
     (scheme-libraries basic-format-strings)
