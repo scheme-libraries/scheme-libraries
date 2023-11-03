@@ -88,11 +88,7 @@
 
   (define/who expression=?
     ;; XXX: In our tests, we use ordinary symbols for variables.
-    (let ([variable?
-           (lambda (x)
-             (or (variable? x)
-                 (and (symbol? x)
-                      (eqv? (gensym-marker x) #\.))))])
+    (let ([variable? symbol?])
       (lambda (x y)
         (unless (expression? x)
           (assertion-violation who "invalid expression argument" x))

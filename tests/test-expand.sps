@@ -21,8 +21,7 @@
 (define-syntax test-expand
   (syntax-rules ()
     [(test-expand expected source)
-     (begin
-       (test-assert (expression=? `expected (expand-datum `source))))]))
+     (test-assert (expression=? `expected (expand-datum `source)))]))
 
 (test-begin "expand")
 

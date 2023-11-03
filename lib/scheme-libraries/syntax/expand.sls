@@ -153,11 +153,12 @@
     (lambda (x*)
       (let-values ([(viscmd* def* e lbl*)
                     (expand-internal x* (make-extensible-ribcage) (expansion-mode body))])
-        (if (null? def*)
-            e
-            (let ([x* (map definition-var def*)]
-                  [e* (map definition-expr def*)])
-              (build (letrec* ([,x* ,e*] ...) ,e)))))))
+        (let ([e (build-begin ,e)])
+          (if (null? def*)
+              e
+              (let ([x* (map definition-var def*)]
+                    [e* (map definition-expr def*)])
+                (build (letrec* ([,x* ,e*] ...) ,e))))))))
 
   (define expand-internal
     (lambda (x* ribs mode)
