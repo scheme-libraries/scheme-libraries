@@ -90,7 +90,7 @@
 (test-expand ((case-lambda [(t.0) (if t.0 ('b t.0) 'c)]) 'a)
   (cond ['a => 'b] [else 'c]))
 
-(test-expand ((case-lambda [(k.0) (if (memv k.0 '(3 4)) '#t (values))]) '1)
+(test-expand ((case-lambda [(k.0) (if (memv k.0 '(3 4)) '#t '#f)]) '1)
   (case '1
     [(3 4) #t]
     [else #f]))
