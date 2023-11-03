@@ -12,7 +12,7 @@
         (scheme-libraries syntax exceptions)
         (scheme-libraries syntax programs))
 
-(;with-exception-handler default-exception-handler
+(with-exception-handler default-exception-handler
   (lambda ()
     (current-library-collection (make-default-stdlibs-collection))
     (current-library-loader (make-default-library-loader (make-library-locator '("lib/" "tests/lib/") '(".sls"))))
