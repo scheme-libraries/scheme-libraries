@@ -15,7 +15,7 @@
 (;with-exception-handler default-exception-handler
   (lambda ()
     (current-library-collection (make-default-stdlibs-collection))
-    (current-library-loader (make-default-library-loader (make-library-locator '("lib/" "tests/lib/") '(".sls"))))
+    (current-library-loader (make-default-library-loader (make-library-locator '("lib/" "tests/lib/") '(".scheme-libraries.sls" ".sls"))))
 
     (let ([filename (cadr (command-line))])
       (parameterize ([current-command-line (cdr (command-line))])

@@ -40,7 +40,7 @@
   (import
     (rnrs)
     ;; XXX
-    (scheme-libraries uuid)
+    (scheme-libraries syntax system)
     (scheme-libraries debug)
     (scheme-libraries info)
     (scheme-libraries basic-format-strings)
@@ -264,6 +264,12 @@
   (define/who current-requirements-collector
     (make-parameter #f
       (lambda (x)
+        (newline)
+        (display "current-requirements-collector: ")
+        (display (system)) (newline)
+        (display " -> ")
+        (display x)
+        (newline)
         (unless (or (not x) (requirements-collector? x))
           (assertion-violation who "invalid requirements collector argument" x))
         x)))
@@ -274,6 +280,9 @@
 
   (define current-invoke-requirements
     (lambda ()
+      ;; There is still a Chez lib running?
+      (display "current-invoke-requirements: ")
+      (display (system)) (newline)
       (requirements-collector-invokes (assert (current-requirements-collector)))))
 
   (define current-runtime-requirements
