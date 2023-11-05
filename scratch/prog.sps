@@ -9,13 +9,23 @@
   (scheme-libraries syntax expressions)
   (scheme-libraries syntax expand)
 ;;  (scheme-libraries syntax libraries)
-  (scheme-libraries syntax syntax-objects))
+  (scheme-libraries syntax syntax-objects)
+  #;(rnrs eval)
+
+  )
+
+(display "===========================\n")
+
+;;(eval '(let-syntax ((foo (lambda (stx) #f))) foo) (environment '(rnrs)))
 
 (define expand-datum
   (lambda (x)
     (expand (datum->annotated-datum x)
             (bootstrap-environment))))
 
+;;; Bei (rnrs eval): ruft den eingebauten expander ein...
+
+#;
 (display "===========================\n")
 
 (expand-datum

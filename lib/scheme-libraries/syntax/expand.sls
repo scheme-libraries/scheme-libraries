@@ -12,6 +12,8 @@
     transform)
   (import
     (rnrs)
+    ;; XXX
+    (scheme-libraries syntax system)
     (scheme-libraries debug)
     (scheme-libraries info)
     (scheme-libraries basic-format-strings)
@@ -77,9 +79,18 @@
         (assertion-violation who "invalid environment argument" env))
       (expand-expression (annotated-datum->syntax-object expr env))))
 
+  ;; XXX
+
+  (define *trace*
+    (begin
+      (display "### Invocation of expand.sls by ")
+      (display (system))
+      (newline)
+      (make-parameter '())))
+
   (define expand-expression
     (lambda (x)
-      (let f ([x x])
+      (parameterize ([*trace* (cons x (*trace*))])
         (let-values ([(x t) (syntax-type x #f)])
           (cond
            [(application-type? t)
@@ -97,6 +108,20 @@
              [(variable-binding-library t)
               => (lambda (lib)
                    (let ([var (variable-binding-symbol t)])
+                     (unless (current-requirements-collector)
+                       (display "Trying to expand: ")
+                       (write *body*)
+                       (newline)
+                       (display "TRACE of ")
+                       (display (system))
+                       (display ":")
+                       (newline)
+                       (for-each (lambda (t)
+                                   (display t)
+                                   (newline))
+                         (*trace*))
+
+                       )  ;FIXME
                      (require-for-runtime! lib var (assert (identifier->label x)))
                      (build ,var)))]
              [else
@@ -151,6 +176,8 @@
 
   (define expand-body
     (lambda (x*)
+    ;; DEBUG!!!
+    (set! *body* x*)
       (let-values ([(viscmd* def* e lbl*)
                     (expand-internal x* (make-extensible-ribcage) (expansion-mode body))])
         (let ([e (build-begin ,e)])
@@ -185,8 +212,6 @@
 
   (define expand-form
     (lambda (x x* ribs rviscmd* rdef* lbl* rdeferred*)
-    ;; DEBUG!!!
-    (set! *body* x)
       (let-values ([(x t) (syntax-type x ribs)])
         (cond
          [(definition-binding? t)
@@ -380,7 +405,7 @@
     ;; TODO: For programs/libs(?): we can have a true body at the end.
     (define expand-library
       (lambda (name ver exp* imp* body*)
-        ;;(debug info "Expanding ~s" name)
+        (debug info "Expanding ~s in system ~s:" name (system))
         (let ([ribs (make-extensible-ribcage)]
               [rib (make-rib)]
               [htimp (make-eq-hashtable)])

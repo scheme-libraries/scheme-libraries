@@ -29,7 +29,8 @@
     library-table-set!
     library-table-delete!
     library-table-contains?
-    make-requirements-collector
+    make-requirements-collector         ;XXX: Used?
+    current-requirements-collector      ;DEBUG
     requirements-collector?
     with-requirements-collector
     require-for-runtime!
@@ -264,12 +265,12 @@
   (define/who current-requirements-collector
     (make-parameter #f
       (lambda (x)
-        (newline)
-        (display "current-requirements-collector: ")
-        (display (system)) (newline)
-        (display " -> ")
-        (display x)
-        (newline)
+        ;; (newline)
+        ;; (display "current-requirements-collector: ")
+        ;; (display (system)) (newline)
+        ;; (display " -> ")
+        ;; (display x)
+        ;; (newline)
         (unless (or (not x) (requirements-collector? x))
           (assertion-violation who "invalid requirements collector argument" x))
         x)))
@@ -280,9 +281,9 @@
 
   (define current-invoke-requirements
     (lambda ()
-      ;; There is still a Chez lib running?
-      (display "current-invoke-requirements: ")
-      (display (system)) (newline)
+      ;; ;; There is still a Chez lib running?
+      ;; (display "current-invoke-requirements: ")
+      ;; (display (system)) (newline)
       (requirements-collector-invokes (assert (current-requirements-collector)))))
 
   (define current-runtime-requirements

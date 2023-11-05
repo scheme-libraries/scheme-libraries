@@ -33,7 +33,7 @@
          (identifier? #'name)
          (lambda (lookup)
            (or (lookup #'name #'record-type-descriptor-key)
-               (syntax-violation who "invalid record name syntax" x #'name)))]
+               (syntax-violation who "invalid record name" x #'name)))]
         [_
          (syntax-violation who "invalid syntax" x)])))
 
@@ -44,7 +44,7 @@
          (identifier? #'name)
          (lambda (lookup)
            (or (lookup #'name #'record-constructor-descriptor-key)
-               (syntax-violation who "invalid record name syntax" x #'name)))]
+               (syntax-violation who "invalid record name" x #'name)))]
         [_ (syntax-violation who "invalid syntax" x)])))
 
   ;; Property keys
