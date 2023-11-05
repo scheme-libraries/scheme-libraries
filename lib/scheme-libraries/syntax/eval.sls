@@ -10,6 +10,7 @@
   (import
     (rnrs)
     (scheme-libraries boxes)
+    (scheme-libraries debug)
     (scheme-libraries define-who)
     (scheme-libraries parameters)
     (scheme-libraries reading annotated-datums)
@@ -23,11 +24,11 @@
     (scheme-libraries syntax syntax-match)
     (scheme-libraries syntax syntax-objects))
 
-  (define eval
+  (trace define eval
     (lambda (expr env)
       (eval-annotated-datum (datum->annotated-datum expr) env)))
 
-  (define/who eval-annotated-datum
+  (trace define/who eval-annotated-datum
     (lambda (expr env)
       (unless (annotated-datum? expr)
         (assertion-violation who "invalid expression argument" expr))

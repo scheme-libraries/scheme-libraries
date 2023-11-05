@@ -737,6 +737,7 @@
     (scheme-libraries void)
     (scheme-libraries uuid)
     (scheme-libraries lists)
+    ;; FIXME: bootstrap has to use its own libs here!
     (scheme-libraries reading tokenizers)
     (scheme-libraries syntax current-command-line)
     (scheme-libraries syntax $helpers)

@@ -7,9 +7,11 @@
     $eval)
   (import
     (rnrs)
-    (rnrs eval))
+    (rnrs eval)
+    ;; XXX
+    (scheme-libraries debug))
 
-  (define $eval
+  (trace define $eval
     (lambda (exp)
       (eval exp (runtime-environment))))
 

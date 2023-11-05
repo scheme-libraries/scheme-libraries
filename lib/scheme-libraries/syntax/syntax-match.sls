@@ -14,6 +14,8 @@
     system-environment)
   (import
     (rnrs)
+    (scheme-libraries debug)
+    (scheme-libraries info)
     (scheme-libraries atoms)
     (scheme-libraries define-match)
     (scheme-libraries reading annotated-datums)
@@ -31,6 +33,7 @@
 
   (define system-environment
     (let ([env (make-environment)])
+      (debug info "Initializing system environment")
       (lambda () env)))
 
   (define construct-identifier

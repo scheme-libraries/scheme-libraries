@@ -10,6 +10,7 @@
   (scheme-libraries syntax expand)
 ;;  (scheme-libraries syntax libraries)
   (scheme-libraries syntax syntax-objects)
+  (scheme-libraries syntax eval)
   #;(rnrs eval)
 
   )
@@ -28,6 +29,9 @@
 #;
 (display "===========================\n")
 
+(eval '3 (environment))
+
+#;
 (expand-datum
  '(lambda ()
     (define-syntax foo

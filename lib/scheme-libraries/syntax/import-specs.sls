@@ -9,6 +9,7 @@
     load-library)
   (import
     (rnrs)
+    (scheme-libraries debug)
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries numbers)
@@ -151,7 +152,7 @@
        rib)
       new-rib))
 
-  (define expand-library-reference
+  (trace define expand-library-reference
     (lambda (lib-ref htimp)
       (let ([lib (import-library! lib-ref)])
         (when (library-uid lib) (hashtable-set! htimp lib #t))
@@ -163,7 +164,7 @@
           (syntax-error #f (format "library ~a not found" (syntax-object->datum lib-ref))
             #f lib-ref))))
 
-  (define maybe-import-library!
+  (trace define maybe-import-library!
     (lambda (lib-ref)
       (define who 'import-library!)
       (let-values ([(name pred?) (parse-library-reference lib-ref)])

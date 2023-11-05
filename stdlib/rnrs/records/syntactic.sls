@@ -226,8 +226,4 @@
                    (record-predicate rtd))
                  (define-record-name record-name rtd rcd)
                  definition ...)))]
-        [_ (syntax-violation who "invalid syntax" x)])))
-
-
-
-  )
+        [_ (syntax-violation who "invalid syntax" x)]))))

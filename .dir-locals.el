@@ -54,6 +54,7 @@
           (put 'syntax-match 'scheme-indent-function 1)
           (put 'syntax-error 'scheme-indent-function 'defun)
           (put '$library 'scheme-indent-function 'defun)
+          (put 'trace 'scheme-indent-function 'defun)
 	  (font-lock-add-keywords
 	   nil
 	   '(("(\\($library\\)\\>" 1 font-lock-keyword-face)
@@ -94,6 +95,7 @@
 	     ("(\\(with-syntax\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(with-requirements-collector\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(with-syntax-error-context\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(trace\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(test-datums\\)\\>" 1 font-lock-keyword-face)
              ("\\(define-syntactic-monad\\)\\>[ \t]*\\(\\sw+\\)\\>"
               (1 font-lock-keyword-face)

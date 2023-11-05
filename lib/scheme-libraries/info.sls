@@ -8,11 +8,13 @@
   (import
     (rnrs)
     (scheme-libraries basic-format-strings)
-    (scheme-libraries define-who))
+    (scheme-libraries define-who)
+    ;; TODO: Move to scheme-libraries
+    (scheme-libraries syntax system))
 
   (define info
     (lambda (fmt . arg*)
       (let ([p (current-error-port)])
-        (display "[info] " p)
+        (display (format "[info][~a] " (system)) p)
         (display (apply format fmt arg*) p)
         (newline p)))))

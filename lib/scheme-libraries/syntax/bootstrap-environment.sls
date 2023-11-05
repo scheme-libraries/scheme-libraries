@@ -26,6 +26,7 @@
     (scheme-libraries hashtables)
     (scheme-libraries ports)
     (scheme-libraries uuid)
+    (scheme-libraries debug)
     (scheme-libraries syntax exceptions)
     (scheme-libraries syntax expand)
     (scheme-libraries syntax expressions)
@@ -273,7 +274,7 @@
             ;; XXX: egg2 uses set!
             ,e)))))
 
-  (define execute-transformer
+  (trace define execute-transformer
     (lambda (e who)
       (let ([f (execute e)])
           (unless (or (procedure? f)
@@ -302,14 +303,14 @@
        var* lib* lbl*)
       (values var* loc* e)))
 
-  (define execute
+  (trace define execute
     (lambda (e)
       ;; TODO: Install a continuation barrier.
       ((compile-to-thunk e))))
 
   ;; Syntax-case
 
-  (define/who syntax-case-expander
+  (trace define/who syntax-case-expander
     (define who 'syntax-case)
     (define-record-type pattern-variable
       (nongenerative) (sealed #t)
@@ -490,13 +491,6 @@
                    `(syntax-violation #f "invalid syntax" ,t)
                    cl*))))))))
 
-  ;; FIXME: DEBUG: XXX: LOG
-  ;; Move this into execute-transformer code.
-  ;; (define dlog (lambda (x)
-
-  ;;                (pretty-print (syntax-object->datum x))
-  ;;               x))
-
   (define parse-syntax-case
     (lambda (x)
       (syntax-match x
@@ -509,7 +503,7 @@
                  lit*))
          (values e lit* cl*)])))
 
-  (define/who syntax-expander
+  (trace define/who syntax-expander
     ;; XXX: Check the meaning of tail.
     (define lookup-pattern-variable
       (lambda (x)
@@ -820,8 +814,8 @@
             (identifier-error 'define x "trying to redefine the local keyword ~a"))
           (values
             '()
-            (list (lambda ()
-                    (make-definition var (expand-expression e))))
+            (list (thunk
+                   (make-definition var (expand-expression e))))
             (list lbl))))))
 
   ;; TODO: Return label/binding

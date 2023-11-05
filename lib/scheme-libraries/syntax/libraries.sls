@@ -37,7 +37,8 @@
     require-for-expand!
     current-runtime-globals
     collected-visit-requirements
-    collected-invoke-requirements)
+    collected-invoke-requirements
+    thunk)
   (import
     (rnrs)
     ;; XXX
@@ -251,6 +252,14 @@
              b1 ... b2)]
         [_ (syntax-violation who "invalid syntax" stx)])))
 
+  (define-syntax thunk
+    (syntax-rules ()
+      [(thunk b1 b2 ...)
+       (let ([rc (current-requirements-collector)])
+         (lambda ()
+           (parameterize ([current-requirements-collector rc])
+             b1 b2 ...)))]))
+
   (define-record-type requirements-collector
     (nongenerative requirements-collector-331810a0-1fb7-48de-a422-aaf88b667810)
     (fields invokes visits runtime-globals expand-globals)
@@ -279,11 +288,8 @@
     (lambda ()
       (requirements-collector-visits (assert (current-requirements-collector)))))
 
-  (define current-invoke-requirements
+  (trace define current-invoke-requirements
     (lambda ()
-      ;; ;; There is still a Chez lib running?
-      ;; (display "current-invoke-requirements: ")
-      ;; (display (system)) (newline)
       (requirements-collector-invokes (assert (current-requirements-collector)))))
 
   (define current-runtime-requirements

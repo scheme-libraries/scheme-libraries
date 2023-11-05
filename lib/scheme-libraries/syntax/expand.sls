@@ -79,57 +79,40 @@
         (assertion-violation who "invalid environment argument" env))
       (expand-expression (annotated-datum->syntax-object expr env))))
 
-  ;; XXX
-
-  (define *trace*
-    (begin
-      (display "### Invocation of expand.sls by ")
-      (display (system))
-      (newline)
-      (make-parameter '())))
-
-  (define expand-expression
+  (trace define expand-expression
     (lambda (x)
-      (parameterize ([*trace* (cons x (*trace*))])
-        (let-values ([(x t) (syntax-type x #f)])
+      (let-values ([(x t) (syntax-type x #f)])
+        (cond
+         [(application-type? t)
+          (expand-application x)]
+         [(splicing-binding? t)
+          (expand-splicing-expression x t)]
+         [(expander-binding? t)
+          ((expander-binding-proc t) x)]
+         [(constant-type? t)
+          (build (quote ,(constant-type-datum t)))]
+         [(prim-binding? t)
+          (expand-primop t x)]
+         [(variable-binding? t)
           (cond
-           [(application-type? t)
-            (expand-application x)]
-           [(splicing-binding? t)
-            (expand-splicing-expression x t)]
-           [(expander-binding? t)
-            ((expander-binding-proc t) x)]
-           [(constant-type? t)
-            (build (quote ,(constant-type-datum t)))]
-           [(prim-binding? t)
-            (expand-primop t x)]
-           [(variable-binding? t)
-            (cond
-             [(variable-binding-library t)
-              => (lambda (lib)
-                   (let ([var (variable-binding-symbol t)])
-                     (unless (current-requirements-collector)
-                       (display "Trying to expand: ")
-                       (write *body*)
-                       (newline)
-                       (display "TRACE of ")
-                       (display (system))
-                       (display ":")
-                       (newline)
-                       (for-each (lambda (t)
-                                   (display t)
-                                   (newline))
-                         (*trace*))
-
-                       )  ;FIXME
-                     (require-for-runtime! lib var (assert (identifier->label x)))
-                     (build ,var)))]
-             [else
-              (build ,(variable-binding-symbol t))])]
+           [(variable-binding-library t)
+            => (lambda (lib)
+                 (let ([var (variable-binding-symbol t)])
+                   (unless (current-requirements-collector)
+                     (display "Trying to expand: ")
+                     (write *body*)
+                     (newline)
+                     (print-trace)
+                     )  ;FIXME
+                   ;;when (current-requirements-collector) ;XXX?
+                   (require-for-runtime! lib var (assert (identifier->label x)))
+                   (build ,var)))]
            [else
-            ;; FIXME
-            (display x) (newline)
-            (syntax-error #f "invalid syntax in expression context" x)])))))
+            (build ,(variable-binding-symbol t))])]
+         [else
+          ;; FIXME
+          (display x) (newline)
+          (syntax-error #f "invalid syntax in expression context" x)]))))
 
   (define expand-application
     (lambda (x)
@@ -222,7 +205,7 @@
                  (append
                   (map
                     (lambda (x)
-                      (lambda ()
+                      (thunk
                         (make-command
                          (expand-expression x))))
                     rdeferred*)
@@ -403,9 +386,9 @@
 
   (module (expand-library)
     ;; TODO: For programs/libs(?): we can have a true body at the end.
-    (define expand-library
+    (trace define expand-library
       (lambda (name ver exp* imp* body*)
-        (debug info "Expanding ~s in system ~s:" name (system))
+        (debug info "Expanding ~s" name)
         (let ([ribs (make-extensible-ribcage)]
               [rib (make-rib)]
               [htimp (make-eq-hashtable)])
