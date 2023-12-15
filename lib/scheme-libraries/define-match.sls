@@ -138,10 +138,12 @@
                            [,x
                             (identifier? #'x)
                             (values
-                             (lambda (k)
-                               (k))
-                             (list (make-pattern-variable #'x expr 0))
-                             '())]
+                              (lambda (k)
+                                (k))
+                              (if (free-identifier=? #'x #'_)
+                                  '()
+                                  (list (make-pattern-variable #'x expr 0)))
+                              '())]
                            [(pat1 . pat2)
                             (with-syntax ([(e1 e2) (generate-temporaries '(e1 e2))])
                               (let*-values ([(mat1 pvars1 catas1)
