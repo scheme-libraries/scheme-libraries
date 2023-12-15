@@ -2,3 +2,4 @@
 * Raise an error if exported variable is set!.
 * Check whether enough labels are killed.
 * Implement fluid-let.
+* Use global labels for constants to reduce closure sizes
