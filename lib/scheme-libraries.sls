@@ -218,6 +218,9 @@
     ;; (scheme-libraries syntactic-monads)
     define-syntactic-monad
 
+    ;; (scheme-libraries vectors)
+    vector-fold-right
+
     ;; (scheme-libraries trees)
     tree->list
 
@@ -291,6 +294,7 @@
     (scheme-libraries unicode)
     (scheme-libraries union-find)
     (scheme-libraries uuid)
+    (scheme-libraries vectors)
     (scheme-libraries void)
     (scheme-libraries with-implicit)
     (scheme-libraries worklists)))

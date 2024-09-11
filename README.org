@@ -118,6 +118,8 @@ the ~(srfi :31)~ library of SRFI 31.
 
 ** Thread parameters
 
+** Vectors
+
 ** Worklists
 
 ** Unicode
