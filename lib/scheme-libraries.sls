@@ -89,6 +89,9 @@
     split-at
     take
 
+    ;; (scheme-libraries macros)
+    cons-if
+
     ;; (scheme-libraries match)
     match
     unquote
@@ -264,6 +267,7 @@
     (scheme-libraries helpers)
     (scheme-libraries impure)
     (scheme-libraries lists)
+    (scheme-libraries macros)
     (scheme-libraries match)
     (scheme-libraries multiple-values)
     (scheme-libraries numbers)

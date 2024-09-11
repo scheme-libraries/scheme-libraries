@@ -53,6 +53,11 @@ coloring graphs, suitable in register allocators.
 
 ** Lists
 
+** Macros
+
+The ~(scheme-libraries macros)~ library contains a number of useful
+macros that do no fit anywhere else.
+
 ** Match
 
 The ~(scheme-libraries match)~ library is a drop-in replacement for
