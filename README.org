@@ -58,6 +58,8 @@ coloring graphs, suitable in register allocators.
 The ~(scheme-libraries match)~ library is a drop-in replacement for
 the ~(srfi :241 match)~ library of SRFI 241.
 
+** Multiple values
+
 ** Multiple-value definitions
 
 The ~(scheme-libraries define-values)~ library is a drop-in replacement for

@@ -97,6 +97,9 @@
     ->
     guard
 
+    ;; (scheme-libraries multiple-values)
+    define-values-map
+
     ;; (scheme-libraries numbers)
     exact-integer?
     exact-positive-integer?
@@ -262,6 +265,7 @@
     (scheme-libraries impure)
     (scheme-libraries lists)
     (scheme-libraries match)
+    (scheme-libraries multiple-values)
     (scheme-libraries numbers)
     (scheme-libraries ports)
     (scheme-libraries random-numbers)
