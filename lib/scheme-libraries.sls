@@ -91,6 +91,7 @@
 
     ;; (scheme-libraries macros)
     cons-if
+    syntactify
 
     ;; (scheme-libraries match)
     match
