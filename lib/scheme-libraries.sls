@@ -102,6 +102,7 @@
 
     ;; (scheme-libraries multiple-values)
     define-values-map
+    define-values-append-map
     define-values-fold-right
 
     ;; (scheme-libraries numbers)

@@ -24,6 +24,8 @@
               (2 font-lock-function-name-face nil t))
 	     ("(\\(define-values\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(define-values-map\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(define-values-append-map\\)\\>" 1 font-lock-keyword-face)
+	     ("(\\(define-values-fold-right\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(extend-backquote\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(fields\\)\\>" 1 font-lock-keyword-face)
 	     ("(\\(protocol\\)\\>" 1 font-lock-keyword-face)
