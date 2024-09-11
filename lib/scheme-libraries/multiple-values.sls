@@ -4,7 +4,8 @@
 
 (library (scheme-libraries multiple-values)
   (export
-    define-values-map)
+    define-values-map
+    define-values-fold-right)
   (import
     (rnrs)
     (scheme-libraries define-who)
@@ -38,6 +39,33 @@
                          (let-values ([(t ...) (f (cdr ls1) (cdr ls2) ...)]
                                       [(h ...) (proc (car ls1) (car ls2) ...)])
                            (values (cons h t) ...))))))))]
+        [_ (syntax-violation who "invalid syntax" stx)])))
+
+  (define-syntax/who define-values-fold-right
+    (lambda (stx)
+      (syntax-case stx ()
+        [(_ (x ...) proc-expr (e ...) list-expr1 list-expr2 ...)
+         (and (for-all identifier? #'(x ...))
+              (fx=? (length #'(x ...)) (length #'(e ...))))
+         (with-syntax ([(t ...) (generate-temporaries #'(x ...))]
+                       [(ls1 ls2 ...) (generate-temporaries #'(list-expr1 list-expr2 ...))]
+                       [who #''define-values-fold-right])
+           #'(define-values (x ...)
+               (let ([proc proc-expr]
+                     [ls1 list-expr1]
+                     [ls2 list-expr2]
+                     ...)
+                 (unless (procedure? proc)
+                   (nonprocedure-violation who proc))
+                 (let ([n (list-length ls1 who)])
+                   (unless (fx=? (list-length ls2 who) n)
+                     (length-violation who ls1 ls2))
+                   ...
+                   (let f ([ls1 ls1] [ls2 ls2] ...)
+                     (if (null? ls1)
+                         (values e ...)
+                         (let-values ([(t ...) (f (cdr ls1) (cdr ls2) ...)])
+                           (proc (car ls1) (car ls2) ... t ...))))))))]
         [_ (syntax-violation who "invalid syntax" stx)])))
 
   (define length-violation
