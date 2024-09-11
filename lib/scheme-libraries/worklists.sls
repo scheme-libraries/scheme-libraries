@@ -129,6 +129,4 @@
 
   (record-writer (record-type-descriptor element)
     (lambda (r p wr)
-      (put-string p "#<element>")))
-
-  )
+      (put-string p "#<element>"))))
