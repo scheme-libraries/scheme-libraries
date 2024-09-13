@@ -14,4 +14,7 @@ check:
 repl:
 	@$(scheme) schemerc
 
-.PHONY: all check repl
+clean:
+	rm -rf .prove
+
+.PHONY: all check repl clean
