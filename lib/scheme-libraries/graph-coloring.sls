@@ -16,7 +16,7 @@
     graph-add-move!
     color-graph!)
   (import
-    (rnrs)
+    (rnrs) (only (chezscheme) trace-define trace-lambda pretty-print)
     (scheme-libraries define-who)
     (scheme-libraries heaps)
     (scheme-libraries numbers)
@@ -374,7 +374,7 @@
              (lambda (node)
                (node-spill-priority-set! node
                                          (/ (node-spill-cost node)
-                                            (node-degree node)))
+                                            (inexact (node-degree node))))
                (when (high-degree? node)
                  (heap-push! spill-heap node))
                (worklist-add! (cond
