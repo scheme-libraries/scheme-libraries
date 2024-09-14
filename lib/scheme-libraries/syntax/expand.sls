@@ -13,7 +13,7 @@
   (import
     (rnrs)
     ;; XXX
-    (scheme-libraries syntax system)
+    (scheme-libraries system)
     (scheme-libraries debug)
     (scheme-libraries info)
     (scheme-libraries basic-format-strings)

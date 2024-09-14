@@ -14,7 +14,7 @@
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     (scheme-libraries info)
-    (scheme-libraries syntax system)
+    (scheme-libraries system)
     (scheme-libraries parameters)
     (scheme-libraries thread-parameters))
 

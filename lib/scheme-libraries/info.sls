@@ -10,7 +10,7 @@
     (scheme-libraries basic-format-strings)
     (scheme-libraries define-who)
     ;; TODO: Move to scheme-libraries
-    (scheme-libraries syntax system))
+    (scheme-libraries system))
 
   (define info
     (lambda (fmt . arg*)
