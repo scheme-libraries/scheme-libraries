@@ -246,6 +246,10 @@
     ;; (scheme-libraries syntactic-monads)
     define-syntactic-monad
 
+    ;; (scheme-libraries system)
+    system
+    system-meta-level
+
     ;; (scheme-libraries trees)
     tree->list
 
@@ -317,6 +321,7 @@
     (scheme-libraries strings)
     (scheme-libraries symbols)
     (scheme-libraries syntactic-monads)
+    (scheme-libraries system)
     (scheme-libraries thread-parameters)
     (scheme-libraries trees)
     (scheme-libraries unicode)
