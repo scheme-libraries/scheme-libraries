@@ -182,6 +182,7 @@
                                   (assertion-violationf #f "visit of library ~a did not return" name)))
           (when (eq? visiter #t)
             (assertion-violationf "circular visit of library ~a" name))
+          (debug info "Visiting library ~a" (library-name lib))
           (visiter)
           (library-visiter-set! lib #f)))))
 
@@ -203,7 +204,7 @@
                                   (assertion-violation #f (format "invocation of library ~a did not return" name))))
           (when (eq? invoker #t)
             (assertion-violation #f (format "circular invocation of library ~a" name)))
-          ;;(debug info "Invoking library ~a" (library-name lib))
+          (debug info "Invoking library ~a" (library-name lib))
           (invoker)
           (library-invoker-set! lib #f)))))
 

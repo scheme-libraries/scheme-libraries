@@ -9,6 +9,11 @@
     library-locator-for-each)
   (import
     (rnrs)
+
+    ;; DEBUG
+    (scheme-libraries debug)
+    (scheme-libraries info)
+
     (scheme-libraries define-who)
     (scheme-libraries reading readers))
 

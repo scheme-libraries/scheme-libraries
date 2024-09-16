@@ -7,6 +7,10 @@
     stdlibs-collection-datum)
   (import
     (rnrs)
+
+    (scheme-libraries debug)
+    (scheme-libraries info)
+
     (scheme-libraries define-who)
     (scheme-libraries helpers)
     (scheme-libraries syntax $make-stdlibs-collection-datum)
@@ -50,6 +54,7 @@
                                        (parse-library-reference lib-ref-expr)])
                            (make-stdlib name pred (syntax->datum sys?-expr) )))
                        lib-ref* sys?*)])
+             (debug info "Creating default stdlibs as datum")
              (syntax-quote (make-stdlibs-collection-datum loc stdlib*))))]
         [_ (syntax-violation who "invalid syntax" x)])))
 

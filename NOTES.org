@@ -1,0 +1,43 @@
+* Library Collections
+
+A library collection contains all loaded libraries.
+
+** (scheme-libraries syntax stdlibs-collection-datums)
+
+*** stdlibs-collection-datum
+
+A macro that takes a library locator (expression) and a list of
+(system) libraries and returns a serialized version of the resulting library collection.
+
+While the collection is created, the current library collection is fresh.
+
+** (scheme-libraries syntax default-stdlibs-collections)
+
+*** make-default-stdlibs-collections
+
+Procedure that calls ~default-stdlibs-collection~ from ~(scheme-libraries
+$default-stdlibs-collection)~ and returns the result.
+
+Question: Why is this indirection needed?  Is it needed at all?  Maybe
+the extra library is needed so that the default stdlibs collection is
+set (see below).
+
+Possible answer: The library ~(scheme-libraries syntax
+$default-stdlibs-collection)~ is overwritten in ~stdlibs~.  There, it
+takes the copy from ~($system)~, which comes from the original runtime library.
+
+** (scheme-libraries syntax $default-stdlibs-collection)
+
+*** default-stdlibs-collection
+
+Procedure that returns the result of ~($default-stdlibs-collection)~.
+
+Note that ~(scheme-libraries syntax expressions $runtime)~ also
+exports ~default-stdlibs-collection~ as a parameter.  This is called ~$default-stdlibs-collection~ here.
+
+* General notes
+
+config/system-procedures.scm: Contains a library name (~(scheme-libraries syntax expressions $runtime)~ and exports.
+
+In ~bootstrap-environment.sls~, these procedures are declared as
+primitive syntax.  In particular, they appear in ~$system~.

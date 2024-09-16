@@ -3,3 +3,9 @@
 * Check whether enough labels are killed.
 * Implement fluid-let.
 * Use global labels for constants to reduce closure sizes
+
+* At the moment, the literal returned by stdlibs-collection->datum
+  seems to be only used as an argument to datum->library-collection.
+  This leads the JIT compiler to be invoked on demand.  Maybe it is
+  more useful to let the stdlibs-collection macro expand into code
+  that actually creates the library collection.

@@ -420,6 +420,10 @@
                     (lambda (exp)
                       (export-spec-export! exp exports ribs))
                     exp*)
+
+                  ;; DEBUG
+                  (debug info "Done expanding ~s" name)
+
                   (values
                     (make-library
                      ;; Name

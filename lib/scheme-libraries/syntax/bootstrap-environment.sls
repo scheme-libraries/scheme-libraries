@@ -735,6 +735,8 @@
 
   ;; Bootstrap library collection
 
+  ;; Creates a fresh library collection initally containing only the
+  ;; $system library.
   (define bootstrap-library-collection
     (lambda ()
       (let ([lc (make-library-collection)])

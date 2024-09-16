@@ -23,8 +23,9 @@
                   (syntax-case stx ()
                     [(k)
                      (with-syntax ([(libspec ...) (read-file "config/stdlibs.scm" #'k)])
-                       #'(begin ($default-stdlibs-collection
-                                 (datum->library-collection
-                                  (stdlibs-collection-datum (make-library-locator '("stdlib/" "lib/") '(".sls"))
-                                                            (libspec #t) ...)))))]))])
+                       #'(begin
+                           ($default-stdlibs-collection
+                            (datum->library-collection
+                             stdlibs-collection-datum (make-library-locator '("stdlib/" "lib/") '(".sls"))
+                             (libspec #t) ...))))]))])
     (set-default-stdlibs-collection!)))

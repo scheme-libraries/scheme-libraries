@@ -98,6 +98,8 @@
 (test-expand (case-lambda [() (letrec* ([x.0 '1]) (begin x.0 x.0))])
   (lambda () (begin (define x 1)) (begin x x)))
 
+;;; XXX: The following test fails.
+
 (test-expand (case-lambda [() '#f])
   (lambda ()
     (define-syntax foo

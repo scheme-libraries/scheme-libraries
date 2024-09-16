@@ -17,6 +17,8 @@
 
 (current-library-collection (make-default-stdlibs-collection))
 
+(display "--------------------------\n")
+
 (define library-locator (make-library-locator '("tests/lib/") '(".sls")))
 (current-library-loader (make-default-library-loader library-locator))
 
