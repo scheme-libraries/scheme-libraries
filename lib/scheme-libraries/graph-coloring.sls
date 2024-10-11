@@ -333,12 +333,14 @@
         (define high-degree?
           (lambda (node)
             (and (not (fxnegative? k))
-                 (fx>=? (node-degree node) k))))
+                 (fx>=? (node-degree node) k)
+                 (or (precolored? node graph)))))
 
         (define low-degree?
           (lambda (node)
             (or (fxnegative? k)
-                (fx<? (node-degree node) k))))
+                (and (fx<? (node-degree node) k)
+                     (not (precolored? node graph))))))
 
         (define conservative?
           (lambda (node*)
