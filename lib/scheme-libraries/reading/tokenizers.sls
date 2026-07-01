@@ -325,7 +325,7 @@
              ;; ,
              [(char=? ch #\,)
               (cond
-               [(char=? (peek-char) #\@)
+               [(eq? (peek-char) #\@)
                 (read-char)
                 (make-abbreviation 'unquote-splicing start (position))]
                [else (make-abbreviation 'unquote start (position))])]
